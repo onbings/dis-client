@@ -1,0 +1,9 @@
+"Help://": "Starting a line with // define a comment and this line will be removed from final output file",
+"Help:!Vc_Def(file.json)": "Read the file.json and use it as a dictonay of key/value pair which will be used to process varaible name substitution",
+"Help:!Vc_Inc(file,arg)": "Include file in output file. if arg is defined it will include the file n times, one for every item provided in arg",
+"Help:!Vc_Gen(Rem:MkDir:Deploy,file,Generate json data based on template file with variable name substitution (arg or default)":"arg1,arg2,...",
+"Help:$num": "if num is < 0, the corresponding num arg is inserted in the string as with positive value but at the end if the result is "" this value is replaced by empty ex \"args\":\"[$[-3]]\" wil give \"args\":\"[]\" if arg 3 is \"\"",
+"Help://": "??? is a special tag which will be replaced by the --sys paramater of the vcprj app, default is Lin (To be used as $[???.cmake_generator] to select Lin or Win generator)",
+"Help:; or ;; delimiter":"; delimiter wil expand the variable with enclosing quotes \"arg1\",\"arg2\" ;; delimitter need an even size list of arg and replace thme by \"arg1\":\"val1\",...",
+"Help://": "Naming convention 1: VcRun|VcTsk 2: Win|Tge|Dok|All 3:Pyt|Gdb|VsC 4:PrjName",
+"Help://": "If you need to escape a separator character use \\char_to_escape"

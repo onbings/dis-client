@@ -1,0 +1,14 @@
+"problemMatcher": {
+    "pattern": {
+        "regexp": "^(Starting QEMU)",
+        "line": 1
+    },
+    "background": {
+        "activeOnStart": true,
+        "beginsPattern": "^(Starting QEMU)",
+        "endsPattern": "^(Starting QEMU)"
+    }
+}
+//As this file will be inserted before a "!Vc_Gen( command,
+//we need to insert a ',' character to make json format Ok
+,

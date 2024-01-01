@@ -1,0 +1,6 @@
+    "$[0]" : "$[1]",
+    "cmake.configureOnOpen": false,
+    "cmake.buildDirectory": "$[2]",
+    "cmake.configureSettings": {
+        "$[3]"
+    },

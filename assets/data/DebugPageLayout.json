@@ -1,0 +1,191 @@
+{
+  "version": "1.0.0",
+  "protocolInfo": "",
+  "title": "Gbe Debug Info Server",
+  "page": [
+    {
+      "label": "Gigabit - Configuration",
+      "page": 800,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Ip configuration",
+          "help": "<h1>This is a heading</h1><p>This is some paragraph text.</p>"
+        },
+        {
+          "label": "Filesystem configuration",
+          "help": "untangle yourself !"
+        },
+        {
+          "label": "Ftp server configuration",
+		  "help": "<h1>Keyboard Shortcuts:</h1><ul><li><strong>Page Down (↓)</strong>: Decrease Page</li><li><strong>Page Up (↑)</strong>: Increase Page</li><li><strong>Down Arrow (↓)</strong>: Decrease SubPage</li><li><strong>Up Arrow (↑)</strong>: Increase SubPage</li><li><strong>F</strong>: Pause/Resume Refresh</li><li><strong>R</strong>: Reset Component</li><li><strong>+</strong>: Increase Channel</li><li><strong>-</strong>: Decrease Channel</li><li><strong>!</strong>: Enter User Data</li></ul>"
+        },
+        {
+          "label": "Ftp server user table"
+        },
+        {
+          "label": "Telnet server configuration"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Comram",
+      "page": 801,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "PC to uC Comram info"
+        },
+        {
+          "help": "<h1>Navigation</h1><p>F1 decrease offset.</p><p>Shift-F1 increase offset.</p>",
+          "label": "PC to uC Comram Gbe Cmd"
+        },
+        {
+          "help": "<h1>Navigation</h1><p>F1 decrease offset.</p><p>Shift-F1 increase offset.</p>",
+          "label": "uC to PC Comram Gbe Cmd"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Ethernet Server",
+      "page": 804,
+      "maxChnl": 8,
+      "subPage": [
+        {
+          "label": "Tge server state"
+        },
+        {
+          "label": "Tge file system state"
+        },
+        {
+          "label": "Tge file system lock table [8]"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Server",
+      "page": 805,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Server state"
+        },
+        {
+          "label": "Ftp server state"
+        },		
+        {
+          "label": "Cdx protocol command statistics"
+        },
+        {
+          "label": "Cdx protocol command history"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Session",
+      "page": 806,
+      "maxChnl": 25,
+      "subPage": [
+        {
+          "label": "Session state [25]"
+        },
+        {
+          "label": "Ftp session state (1/3) [25]"
+        },	
+		        {
+          "label": "Ftp session state (2/3) [25]"
+        },	
+        {
+          "label": "Ftp session state (3/3) [25]"
+        },			
+        {
+          "label": "Client state [25]"
+        },
+        {
+          "label": "Cdx protocol command statistics [25]"
+        },
+        {
+          "label": "Cdx protocol command history [25]"
+        },
+        {
+          "label": "Clip info [25]"
+        }		
+      ]
+    },
+    {
+      "label": "Gigabit - Rpc",
+      "page": 807,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Rpc state [25]"
+        }	
+      ]
+    },	
+    {
+      "label": "Gigabit - Telnet",
+      "page": 808,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Telnet server"
+        },
+		{
+          "label": "Telnet session"
+        }	
+      ]
+    },
+    {
+      "label": "Gigabit - System",
+      "page": 810,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "System Reset"
+        }
+      ]
+    },
+	{
+      "label": "Gigabit - Ftp Client Manager",
+      "page": 811,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Ftp Client State"
+        }
+      ]
+    },
+	{
+      "label": "Gigabit - Performance",
+      "page": 812,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Read"
+        },
+        {
+          "label": "Write"
+        },
+        {
+          "label": "Active Session"
+        },
+		        {
+          "label": "Measurement points"
+        },
+        {
+          "label": "Rpc Stat"
+        }		
+      ]
+    },
+	{
+      "label": "Gigabit - Sensor",
+      "page": 813,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Temperature"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+"name": "$[0]",
+"preLaunchTask": "$[1]",
+"type": "cppvsdbg",
+"request": "launch",
+"program": "$[2]",
+"args": [
+    "$[-3]"
+],
+"stopAtEntry": false,
+"cwd": "$[4]",
+"environment": [],
+"externalConsole": true

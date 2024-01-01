@@ -1,0 +1,27 @@
+[
+    {
+        "key": "ctrl+alt+t",
+        "command": "workbench.action.tasks.runTask",
+        "args": "VcTsk:CMake:Conf:Web:dis-client"
+    },
+    {
+        "key": "ctrl+oem_6",
+        "command": "editor.action.jumpToBracket",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl-k ctrl-k",
+        "command": "bookmarks.toggle",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl-k ctrl-p",
+        "command": "bookmarks.jumpToPrevious",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl-k ctrl-n",
+        "command": "bookmarks.jumpToNext",
+        "when": "editorTextFocus"
+    }
+]

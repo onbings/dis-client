@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "!Vc_Def(vcprj_var_def.json)": "",
+    "configurations": [
+        {
+            "!Vc_Inc(debug_mp_launch.vcprj)": "dis-client,app_abc"
+        },
+        {
+            "!Vc_Gen(VcRun:All:Pyt:Discover,debug_python_script.vcprj,)": "./main.py,--file;./data/dis_client.json,${workspaceFolder}/mDNSEngine"
+        }
+    ]
+}

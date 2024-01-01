@@ -1,0 +1,11 @@
+"name": "$[0]",
+"preLaunchTask": "$[1]",
+"type": "python",
+"request": "launch",
+"justMyCode":false,
+"program": "$[2]",
+"args": [
+    "$[-3]"
+],
+"cwd": "$[4]",
+"console": "integratedTerminal"

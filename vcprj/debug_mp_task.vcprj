@@ -1,0 +1,14 @@
+    "!Vc_Inc(problem_matcher_null.vcprj)": "",
+    "!Vc_Gen(VcTsk:Web:$[0],exec_cmd.vcprj,Debug $[0] in chrome web browser)": "echo Chrome,,$[???.dbg_loc_binaries],VcTsk:CMake:Build:Win,false"
+},
+{    
+    "!Vc_Inc(problem_matcher_null.vcprj)": "",
+    "!Vc_Gen(VcTsk:Xts:Gdb:$[0],exec_cmd.vcprj,Debug $[0] with VSCode under windows)": "cd $[Lin.dbg_rem_binaries]/bin,,,VcTsk:CMake:Build:Win,true"
+},
+{    
+    "!Vc_Inc(problem_matcher_gdb.vcprj)": "",
+    "!Vc_Gen(VcTsk:Xts:Gdb:$[0],exec_cmd.vcprj,Debug $[0] with gdb on Xts system)": "ssh,-t;$[Lin.dbg_rem_user]@$[Lin.dbg_rem_ip];cd $[Lin.dbg_rem_binaries]/bin && gdbserver localhost:$[Lin.dbg_rem_port] $[Lin.dbg_rem_$[0]],,VcTsk:CMake:Build:Lin;VcTsk:Setup:Rem:KillAll:gdbserver;VcTsk:Deploy:Rsync:evs-xts,true"
+},
+{
+    "!Vc_Inc(problem_matcher_qemu.vcprj)": "",
+    "!Vc_Gen(VcTsk:Dok:Gdb:$[0],exec_cmd.vcprj,Debug $[0] with gdb and qemu-aarch64 on docker system)": "echo Starting QEMU && cd $[Lin.dbg_loc_binaries]/bin && qemu-aarch64 -g $[Lin.dbg_rem_port] $[Lin.dbg_loc_$[0]],,,VcTsk:CMake:Build:Lin,true"

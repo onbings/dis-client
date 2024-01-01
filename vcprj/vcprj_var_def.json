@@ -1,0 +1,47 @@
+{
+    "All": {
+        "cmake_bld_type": "Debug"
+    },
+    "Lin": {
+        "cmake_src_root": "${userHome}/pro/github/dis-client",
+        "cmake_bld_root": "${userHome}/bld/dis-client-web",
+        "cmake_generator": "Ninja",
+        "vcpkg_toolchain": "/opt/evs/sdk/aarch64.cmake",
+        "vcpkg_overlay_port": "/home/bha/pro/github/onbings-vcpkg-registry",
+        "cmake_toolchain": "/home/bha/pro/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "cmake_chainload_toolchain": "/home/bha/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake",
+        "vcpkg_triplet": "wasm32-emscripten",
+        "build_as_shared_lib": "OFF",
+        "dbg_loc_binaries": "${userHome}/bld/dis-client-web",
+        "dbg_loc_dis-client": "${userHome}/bld/dis-client-web/app.html",
+        "dbg_loc_app_abc": "${userHome}/bld/dis-client-web/dis-client_abc.html",
+        "dbg_loc_gdb": "/opt/evs/sdk/host/bin/aarch64-linux-gnu-gdb",
+        "dbg_rem_binaries": "/tmp/vcprj/dis-client",
+        "dbg_rem_dis-client": "app.html",
+        "dbg_rem_app_abc": "/tmp/vcprj/dis-client-web/bin/xts_agent_abc",
+        "dbg_rem_user": "root",
+        "dbg_rem_ip": "10.129.171.112",
+        "dbg_rem_port": "8080"
+    },
+    "Win": {
+        "cmake_src_root": "C:/pro/github/dis-client",
+        "cmake_bld_root": "C:/bld/dis-client-web",
+        "cmake_generator": "Ninja",
+        "vcpkg_toolchain": "",
+        "vcpkg_overlay_port": "C:/pro/github/onbings-vcpkg-registry",
+        "cmake_toolchain": "C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "cmake_chainload_toolchain": "C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake",
+        "vcpkg_triplet": "wasm32-emscripten",
+        "build_as_shared_lib": "OFF",
+        "dbg_loc_binaries": "C:/bld/dis-client-web",
+        "dbg_loc_dis-client": "C:/bld/dis-client-web/app.html",
+        "dbg_loc_app_abc": "C:/bld/dis-client-web/dis-client_abc.html",
+        "dbg_loc_gdb": "",
+        "dbg_rem_binaries": "",
+        "dbg_rem_dis-client": "app.html",
+        "dbg_rem_app_abc": "",
+        "dbg_rem_user": "",
+        "dbg_rem_ip": "localhost",
+        "dbg_rem_port": "8080"
+    }
+}

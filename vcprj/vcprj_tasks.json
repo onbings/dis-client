@@ -1,0 +1,58 @@
+{
+    "version": "2.0.0",
+    "!Vc_Def(vcprj_var_def.json)": "",
+    "tasks": [
+        {
+            "!Vc_Inc(debug_mp_task.vcprj)": "dis-client,app_abc"
+        },
+        {
+            "!Vc_Gen(VcTsk:Setup:Loc:GdbInit,exec_cmd.vcprj,Setup gdb with gdbinit to be able to see std::string and std::vector under linux)": "cp,setup_gdb.vcprj;${workspaceFolder}/.gdbinit,${workspaceFolder}/vcprj,,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:Setup:Loc:Win,exec_cmd.vcprj,Create local directory to build dis-client under web/windows)": "powershell,New-Item -Path $[Win.cmake_bld_root] -ItemType Directory -Force,,,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:Setup:Loc:Lin,exec_cmd.vcprj,Create local directory to build dis-client under linux)": "mkdir,-p;$[Lin.cmake_bld_root],,,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:Setup:Rem:Lin,exec_cmd.vcprj,Create remote directories to deploy package and ut data under linux)": "ssh,$[Lin.dbg_rem_user]@$[Lin.dbg_rem_ip];mkdir -p $[Lin.dbg_rem_binaries]/lib && mkdir -p $[Lin.dbg_rem_binaries]/bin,,,false"
+        },
+        {
+            "!Vc_Inc(problem_matcher_null.vcprj)": "",
+            "!Vc_Gen(VcTsk:Setup:Rem:KillAll:gdbserver,exec_cmd.vcprj,Kill pending zombie gdbserver)": "ssh,$[Lin.dbg_rem_user]@$[Lin.dbg_rem_ip];killall gdbserver,,,true"
+        },
+        {
+            "!Vc_Gen(VcTsk:EmCMake:Conf:Web:dis-client,exec_cmd.vcprj,Launch EmCmake to configure build system to target emscripten)": "emcmake,cmake;-DCMAKE_EXPORT_COMPILE_COMMANDS=1;-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-S$[???.cmake_src_root];-B$[???.cmake_bld_root],,VcTsk:Setup:Loc:Win,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:CMake:Conf:Web:dis-client,exec_cmd.vcprj,Configure build system to target emscripten and launch WebServer)": "emrun --browser chrome --port $[???.dbg_rem_port] --serve_after_close --serve_after_exit,.,$[???.dbg_loc_binaries],VcTsk:EmCMake:Conf:Web:dis-client,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:Http:Server,exec_cmd.vcprj,Launch Http server to debug dis-client)": "emrun --browser chrome --port $[???.dbg_rem_port] --serve_after_close --serve_after_exit,.,$[???.dbg_loc_binaries],,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:CMake:Conf:Lin:dis-client,exec_cmd.vcprj,Launch cmake to configure build system to target linux)": "cmake,-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-S$[???.cmake_src_root];-B$[???.cmake_bld_root],$[???.cmake_bld_root],VcTsk:Setup:Loc:Lin;VcTsk:Setup:Rem:Lin,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:CMake:Conf:Win:dis-client,exec_cmd.vcprj,Launch cmake to configure build system to target Windows)": "cmake,-DCMAKE_TOOLCHAIN_FILE=$[Win.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[Win.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[Win.build_as_shared_lib];-DCMAKE_GENERATOR=$[Win.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-S$[Win.cmake_src_root];-B$[Win.cmake_bld_root],$[Win.cmake_bld_root],,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:Deploy:Scp:dis-client,exec_cmd.vcprj,Copy package to remote directory using scp)": "scp,-rp;$[Lin.dbg_loc_binaries]/*;$[Lin.dbg_rem_user]@$[Lin.dbg_rem_ip]:$[Lin.dbg_rem_binaries],,,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:Deploy:Rsync:dis-client,exec_cmd.vcprj,Copy package to remote directory using rsync)": "rsync,-av;--exclude='*.core';--exclude='*.a';$[Lin.dbg_loc_binaries]/.;$[Lin.dbg_rem_user]@$[Lin.dbg_rem_ip]:$[Lin.dbg_rem_binaries],,,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:CMake:Build:Lin,exec_cmd.vcprj,Launch cmake to build the configured target)": "cmake,--build;.,$[Lin.cmake_bld_root],,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:CMake:Build:Win,exec_cmd.vcprj,Launch cmake to build the configured target)": "cmake,--build;.,$[Win.cmake_bld_root],,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:CMake:ReBuildAll:Lin,exec_cmd.vcprj,Launch cmake to re build all the files of the project)": "cmake,--build;.;--clean-first,$[Lin.cmake_bld_root],,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:CMake:ReBuildAll:Win,exec_cmd.vcprj,Launch cmake to re build all the files of the project)": "cmake,--build;.;--clean-first,$[Win.cmake_bld_root],,false"
+        }
+    ]
+}

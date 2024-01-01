@@ -1,0 +1,18 @@
+"problemMatcher": {
+    "pattern": {
+        "regexp": ".*"
+    },
+    "background": {
+        "activeOnStart": true,
+        "beginsPattern": "^null",
+        "endsPattern": "^null"
+    }
+}
+//To ignore the exit code of a command in a tasks.json task configuration in Visual Studio Code, 
+//you can use the problemMatcher property with the "background" field set to true. This allows the 
+//task to run in the background without affecting the build status based on the command's exit 
+//You also need to set "isBackground": true by using arg in Vc_Gen
+
+//As this file will be inserted before a "!Vc_Gen( command,
+//we need to insert a ',' character to make json format Ok
+,

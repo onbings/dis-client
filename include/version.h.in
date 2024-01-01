@@ -1,0 +1,38 @@
+#pragma once
+
+namespace EVS
+{
+  namespace XTSAGT
+  {
+      constexpr bool is_digit(char c) 
+      { 
+        return c <= '9' && c >= '0'; 
+      }
+
+      // Recursively convert const char * to int
+      constexpr int stoi_impl(const char * str, int value = 0) 
+      {
+        return *str ? 
+                is_digit(*str) ? stoi_impl(str + 1, (*str - '0') + value * 10)
+                               : throw "compile-time-error: not a digit"
+                : value;
+      }
+
+      constexpr int stoi(const char * str) 
+      {
+        return stoi_impl(str);
+      }
+
+      static constexpr const char * get_version           () { return "@CMAKE_PROJECT_VERSION@"; }
+    
+      static constexpr const char * get_version_major_str () { return "@PROJECT_VERSION_MAJOR@"; }
+      static constexpr const char * get_version_minor_str () { return "@PROJECT_VERSION_MINOR@"; }
+      static constexpr const char * get_version_patch_str () { return "@PROJECT_VERSION_PATCH@"; }
+      static constexpr const char * get_version_build_str () { return "@PROJECT_VERSION_TWEAK@"; }
+
+      static constexpr int          get_version_major     () { return stoi(get_version_major_str()); }
+      static constexpr int          get_version_minor     () { return stoi(get_version_minor_str()); }
+      static constexpr int          get_version_patch     () { return stoi(get_version_patch_str()); }
+      static constexpr int          get_version_build     () { return stoi(get_version_build_str()); }
+  }
+}

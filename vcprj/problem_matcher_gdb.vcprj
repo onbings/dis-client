@@ -1,0 +1,18 @@
+"problemMatcher": {
+    "pattern": [
+        {
+            "regexp": ".",
+            "file": 1,
+            "location": 2,
+            "message": 3
+        }
+    ],
+    "background": {
+        "activeOnStart": true,
+        "beginsPattern": "^.*Process*",
+        "endsPattern": "^.*Listening*"
+    }
+}
+//As this file will be inserted before a "!Vc_Gen( command,
+//we need to insert a ',' character to make json format Ok
+,

@@ -1,0 +1,42 @@
+{
+    "!Vc_Def(vcprj_var_def.json)": "",
+    "!Vc_Gen(CMake:Setting,../vcprj/cmake_setting.vcprj,Needed by CMake extension in Visual Studio Code)": "$[???.cmake_bld_root],VCPKG_CHAINLOAD_TOOLCHAIN_FILE;;$[???.vcpkg_toolchain];;VCPKG_OVERLAY_PORT;;$[???.vcpkg_overlay_port],CMAKE_TOOLCHAIN_FILE;;$[???.cmake_toolchain];;VCPKG_TARGET_TRIPLET;;$[???.vcpkg_triplet];;BUILD_SHARED_LIBS;;$[???.build_as_shared_lib];;CMAKE_GENERATOR;;$[???.cmake_generator]",
+    "workbench.colorTheme": "Default Dark+",
+    "workbench.colorCustomizations": {
+        "tab.activeBackground": "#237a3f"
+    },
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.formatOnPaste": true,
+    "editor.wordWrap": "on",
+    "editor.minimap.enabled": false,
+    "gitlens.currentLine.enabled": false,
+    "gitlens.codeLens.authors.enabled": false,
+    "gitlens.codeLens.recentChange.enabled": false,
+    "files.associations": {
+        ".gdbinit": "noformat"
+    },
+    "[noformat]": {
+        "editor.formatOnSave": false,
+        "editor.formatOnType": false,
+        "editor.formatOnPaste": false
+    },
+    "[cpp]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    },
+    "clang-format.executable": "clang-format",
+    "clang-format.language.cpp.enable": true,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8"
+    },
+    "python.formatting.autopep8Args": [
+        "--max-line-length",
+        "160",
+        "--experimental"
+    ],
+    "docker.host": "localhost:23750",
+    "remote.SSH.remotePlatform": {
+        "10.129.170.18": "linux",
+        "10.129.170.14": "linux"
+    }
+}

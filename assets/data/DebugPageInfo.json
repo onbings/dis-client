@@ -1,0 +1,91 @@
+{
+    "version": "1.0.0",
+    "userInfo": "GET /Gbe/DebugPageInfo/240/0/?flag=3&key=None&user_input=24,32&seq=3",
+    "background": {
+        "bg": "#C0C0C0",
+        "line": [
+            {
+                "x": 2,
+                "y": 4,
+                "bg": "#C0C0C0",
+                "fg": "#FF0000",
+                "text": "Magic number:"
+            },
+            {
+                "x": 2,
+                "y": 5,
+                "bg": "#808080",
+                "fg": "#00FF00",
+                "text": "Cdx version:"
+            },
+            {
+                "x": 2,
+                "y": 6,
+                "bg": "#404040",
+                "fg": "#0000FF",
+                "text": "Cdx channel:"
+            },
+            {
+                "x": 2,
+                "y": 7,
+                "bg": "#C0C0C0",
+                "fg": "#FFFFFF",
+                "text": "Gbe version:"
+            },
+            {
+                "x": 2,
+                "y": 22,
+                "bg": "#C0C0C0",
+                "fg": "#FFFFFF",
+                "text": "Mac address:"
+            }
+        ]
+    },
+    "foreground": {
+        "bg": "#C0C0C0",
+        "line": [
+            {
+                "x": 21,
+                "y": 4,
+                "bg": "#C0C0C0",
+                "fg": "#0000FF",
+                "text": "0x00000000"
+            },
+            {
+                "x": 21,
+                "y": 5,
+                "bg": "#C0C0C0",
+                "fg": "#0000FF",
+                "text": "0x08020304"
+            },
+            {
+                "x": 21,
+                "y": 6,
+                "bg": "#C0C0C0",
+                "fg": "#0000FF",
+                "text": "0"
+            },
+            {
+                "x": 21,
+                "y": 7,
+                "bg": "#C0C0C0",
+                "fg": "#0000FF",
+                "text": "0x20050405"
+            },
+            {
+                "x": 21,
+                "y": 22,
+                "bg": "#C0C0C0",
+                "fg": "#0000FF",
+                "text": "00: 00.00.00.00.00.00"
+            },
+            {
+                "x": 21,
+                "y": 23,
+                "bg": "#FF0000",
+                "fg": "#0000FF",
+                "text": "00000008"
+            }
+        ]
+    }
+}
