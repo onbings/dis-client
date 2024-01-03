@@ -25,7 +25,7 @@
             "!Vc_Gen(VcTsk:EmCMake:Conf:Web:dis-client,exec_cmd.vcprj,Launch EmCmake to configure build system to target emscripten)": "emcmake,cmake;-DCMAKE_EXPORT_COMPILE_COMMANDS=1;-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-S$[???.cmake_src_root];-B$[???.cmake_bld_root],,VcTsk:Setup:Loc:Win,false"
         },
         {
-            "!Vc_Gen(VcTsk:CMake:Conf:Web:dis-client,exec_cmd.vcprj,Configure build system to target emscripten and launch WebServer)": "emrun --browser chrome --port $[???.dbg_rem_port] --serve_after_close --serve_after_exit,.,$[???.dbg_loc_binaries],VcTsk:EmCMake:Conf:Web:dis-client,false"
+            "!Vc_Gen(VcTsk:CMake:Conf:Web:dis-client,exec_cmd.vcprj,Configure build system to target emscripten and launch WebServer)": "emrun,--browser;chrome;--port;$[???.dbg_rem_port];--serve_after_close;--serve_after_exit;.,$[???.dbg_loc_binaries],VcTsk:EmCMake:Conf:Web:dis-client,false"
         },
         {
             "!Vc_Gen(VcTsk:Http:Server,exec_cmd.vcprj,Launch Http server to debug dis-client)": "emrun --browser chrome --port $[???.dbg_rem_port] --serve_after_close --serve_after_exit,.,$[???.dbg_loc_binaries],,false"

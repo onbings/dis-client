@@ -1,3 +1,528 @@
+/*
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\pro\evs-gbio\evs-dis-client>  & 'C:\python310\python.exe' 'c:\Users\bha\.vscode\extensions\ms-python.python-2023.22.1\pythonFiles\lib\python\debugpy\adapter/../..\debugpy\launcher' '62186' '--' './evs-dis-client.py' '--verbose'
+Running from the non-packaged version (data in C:\pro\evs-gbio\evs-dis-client\data).
+Config in C:\Users\bha\.evs-dis-client.
+[DBG_SERVICE_CLT] (v) 1.0.0 (d) 10/07/23 (a) B.harmel
+
+1 command line arguments passed to './evs-dis-client.py' (cwd 'C:\pro\evs-gbio\evs-dis-client')
+--verbose
+Thread starts
+Connection opened
+Send seq '1' cmd 'GET /DebugServiceRoute?seq=1'.
+DEBUG: DebugServiceRoute
+{
+  "version": "1.0.0",
+  "protocolInfo": "GET /DebugServiceRoute?seq=1",
+  "route": [
+    {
+      "name": "/Gbe/",
+      "ip": "127.0.0.1:2510"
+    },
+    {
+      "name": "/V6x/",
+      "ip": "127.0.0.1:2511"
+    },
+    {
+      "name": "/P6x/",
+      "ip": "127.0.0.1:2512"
+    }
+  ]
+}
+Send seq '2' cmd 'GET /Gbe/DebugPageLayout?seq=2'.
+DEBUG: DebugServicePageLayout
+{
+  "version": "1.0.0",
+  "protocolInfo": "GET /Gbe/DebugPageLayout?seq=2",
+  "title": "Gbe Debug Info Server",
+  "page": [
+    {
+      "label": "Gigabit - Configuration",
+      "page": 800,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Ip configuration",
+          "help": "<h1>This is a heading</h1><p>This is some paragraph text.</p>"
+        },
+        {
+          "label": "Filesystem configuration",
+          "help": "untangle yourself !"
+        },
+        {
+          "label": "Ftp server configuration",
+          "help": "<h1>Keyboard Shortcuts:</h1><ul><li><strong>Page Down (\u2193)</strong>: Decrease Page</li><li><strong>Page Up (\u2191)</strong>: Increase Page</li><li><strong>Down Arrow (\u2193)</strong>: Decrease SubPage</li><li><strong>Up Arrow (\u2191)</strong>: Increase SubPage</li><li><strong>F</strong>: Pause/Resume Refresh</li><li><strong>R</strong>: Reset Component</li><li><strong>+</strong>: Increase Channel</li><li><strong>-</strong>: Decrease Channel</li><li><strong>!</strong>: Enter User Data</li></ul>"
+        },
+        {
+          "label": "Ftp server user table"
+        },
+        {
+          "label": "Telnet server configuration"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Comram",
+      "page": 801,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "PC to uC Comram info"
+        },
+        {
+          "help": "<h1>Navigation</h1><p>F1 decrease offset.</p><p>Shift-F1 increase offset.</p>",
+          "label": "PC to uC Comram Gbe Cmd"
+        },
+        {
+          "help": "<h1>Navigation</h1><p>F1 decrease offset.</p><p>Shift-F1 increase offset.</p>",
+          "label": "uC to PC Comram Gbe Cmd"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Ethernet Server",
+      "page": 804,
+      "maxChnl": 8,
+      "subPage": [
+        {
+          "label": "Tge server state"
+        },
+        {
+          "label": "Tge file system state"
+        },
+        {
+          "label": "Tge file system lock table [8]"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Server",
+      "page": 805,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Server state"
+        },
+        {
+          "label": "Ftp server state"
+        },
+        {
+          "label": "Cdx protocol command statistics"
+        },
+        {
+          "label": "Cdx protocol command history"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Session",
+      "page": 806,
+      "maxChnl": 25,
+      "subPage": [
+        {
+          "label": "Session state [25]"
+        },
+        {
+          "label": "Ftp session state (1/3) [25]"
+        },
+        {
+          "label": "Ftp session state (2/3) [25]"
+        },
+        {
+          "label": "Ftp session state (3/3) [25]"
+        },
+        {
+          "label": "Client state [25]"
+        },
+        {
+          "label": "Cdx protocol command statistics [25]"
+        },
+        {
+          "label": "Cdx protocol command history [25]"
+        },
+        {
+          "label": "Clip info [25]"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Rpc",
+      "page": 807,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Rpc state [25]"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Telnet",
+      "page": 808,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Telnet server"
+        },
+        {
+          "label": "Telnet session"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - System",
+      "page": 810,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "System Reset"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Ftp Client Manager",
+      "page": 811,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Ftp Client State"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Performance",
+      "page": 812,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Read"
+        },
+        {
+          "label": "Write"
+        },
+        {
+          "label": "Active Session"
+        },
+        {
+          "label": "Measurement points"
+        },
+        {
+          "label": "Rpc Stat"
+        }
+      ]
+    },
+    {
+      "label": "Gigabit - Sensor",
+      "page": 813,
+      "maxChnl": 0,
+      "subPage": [
+        {
+          "label": "Temperature"
+        }
+      ]
+    }
+  ]
+}
+Send seq '3' cmd 'GET /V6x/DebugPageLayout?seq=3'.
+DEBUG: DebugServicePageLayout
+{
+  "version": "1.0.0",
+  "protocolInfo": "GET /V6x/DebugPageLayout?seq=3",
+  "title": "V6x Debug Info Server",
+  "page": [
+    {
+      "label": "V6x - Configuration",
+      "page": 120,
+      "maxChnl": 12,
+      "subPage": [
+        {
+          "label": "Video"
+        },
+        {
+          "label": "Audio"
+        }
+      ]
+    },
+    {
+      "label": "V6x - Status",
+      "page": 121,
+      "maxChnl": 12,
+      "subPage": [
+        {
+          "label": "VideoSts"
+        },
+        {
+          "label": "AudioSts"
+        }
+      ]
+    }
+  ]
+}
+Send seq '4' cmd 'GET /P6x/DebugPageLayout?seq=4'.
+send_command: Invalid JSON format.
+Cannot 'GET /P6x/DebugPageLayout' from 'ws://10.129.171.112:8080'
+select_navigation_tree_node crt_page_index 0 crt_page 800 crt_sub_page 0 col[i] (800, 0)
+select_navigation_tree_node selection_set I003 page_label Gigabit - Configuration sub_page_label Ip configuration
+Send seq '5' cmd 'GET /Gbe/DebugPageInfo/800/0/?chnl=0&flag=3&key=None&user_input=&seq=5'.
+AbsTime 79888113 nb 1 crt 31427 uS mean 31427.0 uS cmd GET /Gbe/DebugPageInfo/800/0/?chnl=0&flag=3&key=None&user_input=
+DEBUG: DebugPageInfo
+{
+  "version": "1.0.0",
+  "protocolInfo": "GET /Gbe/DebugPageInfo/800/0/?chnl=0&flag=3&key=None&seq=5&user_input",
+  "background": {
+    "bg": "#808080",
+    "line": [
+      {
+        "x": 2,
+        "y": 2,
+        "bg": "#808080",
+        "fg": "#FF0000",
+        "text": "[r] Reset TcpIp stack"
+      },
+      {
+        "x": 2,
+        "y": 4,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Magic number:"
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Cdx version:"
+      },
+      {
+        "x": 2,
+        "y": 6,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Cdx channel:"
+      },
+      {
+        "x": 2,
+        "y": 7,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Gbe version:"
+      },
+      {
+        "x": 2,
+        "y": 8,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Gbe interface:"
+      },
+      {
+        "x": 2,
+        "y": 10,
+        "bg": "#808080",
+        "fg": "#00FF00",
+        "text": "Interface 0"
+      },
+      {
+        "x": 2,
+        "y": 11,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Name:"
+      },
+      {
+        "x": 2,
+        "y": 12,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Ip address:"
+      },
+      {
+        "x": 2,
+        "y": 13,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Gw address:"
+      },
+      {
+        "x": 2,
+        "y": 14,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Ip mask:"
+      },
+      {
+        "x": 2,
+        "y": 15,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Mac address:"
+      },
+      {
+        "x": 2,
+        "y": 17,
+        "bg": "#808080",
+        "fg": "#00FF00",
+        "text": "Interface 1"
+      },
+      {
+        "x": 2,
+        "y": 18,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Name:"
+      },
+      {
+        "x": 2,
+        "y": 19,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Ip address:"
+      },
+      {
+        "x": 2,
+        "y": 20,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Gw address:"
+      },
+      {
+        "x": 2,
+        "y": 21,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Ip mask:"
+      },
+      {
+        "x": 2,
+        "y": 22,
+        "bg": "#808080",
+        "fg": "#FFFFFF",
+        "text": "Mac address:"
+      }
+    ]
+  },
+  "foreground": {
+    "bg": "#808080",
+    "line": [
+      {
+        "x": 21,
+        "y": 4,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "0x0004000A"
+      },
+      {
+        "x": 21,
+        "y": 5,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "0x08020304"
+      },
+      {
+        "x": 21,
+        "y": 6,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "25"
+      },
+      {
+        "x": 21,
+        "y": 7,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "0x20050405"
+      },
+      {
+        "x": 21,
+        "y": 8,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "2"
+      },
+      {
+        "x": 21,
+        "y": 11,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "'eth-1gb0'"
+      },
+      {
+        "x": 21,
+        "y": 12,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "10.129.171.112"
+      },
+      {
+        "x": 21,
+        "y": 13,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "10.129.171.254"
+      },
+      {
+        "x": 21,
+        "y": 14,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "255.255.255.0"
+      },
+      {
+        "x": 21,
+        "y": 15,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "06: 00.1C.F3.0A.20.CC"
+      },
+      {
+        "x": 21,
+        "y": 18,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "'eth-1gb1'"
+      },
+      {
+        "x": 21,
+        "y": 19,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "10.129.172.112"
+      },
+      {
+        "x": 21,
+        "y": 20,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "10.129.171.254"
+      },
+      {
+        "x": 21,
+        "y": 21,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "255.255.255.0"
+      },
+      {
+        "x": 21,
+        "y": 22,
+        "bg": "#808080",
+        "fg": "#0000FF",
+        "text": "06: 00.1C.F3.0A.20.CD"
+      },
+      {
+        "x": 60,
+        "y": 4,
+        "bg": "#FF0000",
+        "fg": "#0000FF",
+        "text": "00000000"
+      }
+    ]
+  }
+}
+*/
+
 #include "bof_imgui.h"
 #include <fstream>
 #include <iostream>
@@ -386,7 +911,6 @@ public:
     ImGui::Begin("##Control", &BoolVar_B, ImGuiWindowFlags_NoTitleBar); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
     windowPos = ImVec2(20.0f, 300.0f);
     ImGui::SetWindowPos(windowPos, ImGuiCond_FirstUseEver);
-
     // EM_ASM(console.log("Hello from C program"););
     if (ImGui::Button("Open WebSocket"))
     {

@@ -17,6 +17,14 @@ project(dis-client)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+if (EMSCRIPTEN)
+#https://decovar.dev/blog/2023/11/20/webassembly-with-pthreads/
+
+#-s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s MAXIMUM_MEMORY=256MB 
+#  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread") #-sUSE_PTHREADS=1") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY") # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
+endif()
+
 # Build hello_imgui
 # =================
 # 1/  Option 1: if you added hello_imgui as a subfolder, you can add it to your project with:
@@ -75,31 +83,31 @@ target_include_directories(app
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> 
 )
 
+ message("EMSCRIPTEN debug------------------1-")
 if (EMSCRIPTEN)
-#-s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s MAXIMUM_MEMORY=256MB 
-  #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY") # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
+ message("EMSCRIPTEN debug------------------2-")
+else()
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
       #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -gsplit-dwarf")
       #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -gsplit-dwarf")
       #message("EMSCRIPTEN Debug Add -g -gsplit-dwarf, flags are now " ${CMAKE_CXX_FLAGS})
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-      message("EMSCRIPTEN Debug Add -g, flags are now " ${CMAKE_CXX_FLAGS})    
-  else()    
-      message("EMSCRIPTEN Release flags are " ${CMAKE_CXX_FLAGS})
+      message("EMSCRIPTEN debug-------------------")
   endif ()
-  target_include_directories(app
+
+  target_include_directories(app 
     PUBLIC
       $<BUILD_INTERFACE:${EMSCRIPTEN_SYSROOT}>
   )
+      message("EMSCRIPTEN add -lwebsocket.js-------------------")
   target_link_libraries(app 
     PRIVATE
       "-lwebsocket.js"
-      pthread
   )
 endif()
-
+message("=====================CMAKE_CXX_FLAGS=>" ${CMAKE_CXX_FLAGS})
+message("=====================CMAKE_C_FLAGS===>" ${CMAKE_C_FLAGS})
 
 if (MSVC)
   target_link_libraries(app

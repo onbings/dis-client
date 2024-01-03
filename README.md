@@ -1,3 +1,13 @@
+https://floooh.github.io/2023/11/11/emscripten-ide.html
+install ninja in path: https://github.com/ninja-build/ninja/releases
+install emsdk in c:/pro/emsdk: : https://emscripten.org/docs/getting_started/downloads.html
+add C:\pro\emsdk\upstream\bin and C:\pro\emsdk\upstream\emscripten to path
+NO vscode kit should be Clang 18.0.0 git x86_64-pc-windows-msvc
+vscode kit should be No active kit
+
+install ms-vscode.wasm-dwarf-debugging in vscode
+install C/C++ DevTools Support (DWARF) in chrome
+
 PS C:\bld\imgui_bundle\bin> emrun --list
 emrun has automatically found the following browsers in the default install locations on the system:
 

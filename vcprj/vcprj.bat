@@ -19,7 +19,7 @@ IF %ERRORLEVEL% NEQ 0 (
     echo Error: Failed to execute the parsing of vcprj_code-workspace.
     exit /b %ERRORLEVEL%
 )
-python vcprj.py --jsonin=vcprj_keybindings.json --jsonout=C:/Users/User/AppData/Roaming/Code/User/keybindings.json --verbose --sys=Win
+python vcprj.py --jsonin=vcprj_keybindings.json --jsonout=%USERPROFILE%/AppData/Roaming/Code/User/keybindings.json --verbose --sys=Win
 IF %ERRORLEVEL% NEQ 0 (
     echo Error: Failed to execute the parsing of keybindings.json.
     exit /b %ERRORLEVEL%
