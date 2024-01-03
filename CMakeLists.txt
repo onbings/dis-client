@@ -19,10 +19,14 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if (EMSCRIPTEN)
 #https://decovar.dev/blog/2023/11/20/webassembly-with-pthreads/
+   message("===EMSCRIPTEN==============")
 
 #-s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s MAXIMUM_MEMORY=256MB 
-#  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread") #-sUSE_PTHREADS=1") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY") # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -sPTHREAD_POOL_SIZE=4") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -sPTHREAD_POOL_SIZE=4") #-sUSE_PTHREADS=1") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY") # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
+#ici ca bloque qq part dans imgui car je pense qu'on est dans un autre thread entre imgui et le main...
+#  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -sPROXY_TO_PTHREAD") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -sPROXY_TO_PTHREAD") #-sUSE_PTHREADS=1") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY") # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
 endif()
 
 # Build hello_imgui
@@ -66,11 +70,39 @@ hello_imgui_add_app(app
 # Now you can build your app with
 #     mkdir build && cd build && cmake .. && cmake --build .
 
-
 include(Dependencies.cmake)
 
 # This will build bofstd under build-bofstd/ subdirectory in the project's build tree
 ####add_subdirectory(C:/pro/github/bofstd build-bofstd)
+
+if (EMSCRIPTEN)
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+      #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -gsplit-dwarf")
+      #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -gsplit-dwarf")
+      #message("EMSCRIPTEN Debug Add -g -gsplit-dwarf, flags are now " ${CMAKE_CXX_FLAGS})
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+  endif ()
+
+  target_include_directories(app 
+    PUBLIC
+      $<BUILD_INTERFACE:${EMSCRIPTEN_SYSROOT}>
+  )
+  target_link_libraries(app 
+    PRIVATE
+      "-lwebsocket.js"
+  )
+endif()
+message("=====================CMAKE_CXX_FLAGS=>" ${CMAKE_CXX_FLAGS})
+message("=====================CMAKE_C_FLAGS===>" ${CMAKE_C_FLAGS})
+#message("=====================CMAKE_RC_COMPILER===>" ${CMAKE_RC_COMPILER})
+
+if (MSVC)
+  target_link_libraries(app
+    PRIVATE
+      Shcore
+  )
+endif()
 
 target_compile_definitions(app
   PRIVATE
@@ -81,41 +113,8 @@ target_include_directories(app
     ####$<BUILD_INTERFACE:${bofstd_BINARY_DIR}/lib> #for #include <bofstd_export.h> when we do not link with bofstd
     ####$<BUILD_INTERFACE:${bofstd_SOURCE_DIR}/lib/include> #for #include <bofstd/bofstd.h> when we do not link with bofstd
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> 
+    $<BUILD_INTERFACE:${HELLOIMGUI_IMGUI_SOURCE_DIR}>
 )
-
- message("EMSCRIPTEN debug------------------1-")
-if (EMSCRIPTEN)
- message("EMSCRIPTEN debug------------------2-")
-else()
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-      #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -gsplit-dwarf")
-      #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -gsplit-dwarf")
-      #message("EMSCRIPTEN Debug Add -g -gsplit-dwarf, flags are now " ${CMAKE_CXX_FLAGS})
-      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-      message("EMSCRIPTEN debug-------------------")
-  endif ()
-
-  target_include_directories(app 
-    PUBLIC
-      $<BUILD_INTERFACE:${EMSCRIPTEN_SYSROOT}>
-  )
-      message("EMSCRIPTEN add -lwebsocket.js-------------------")
-  target_link_libraries(app 
-    PRIVATE
-      "-lwebsocket.js"
-  )
-endif()
-message("=====================CMAKE_CXX_FLAGS=>" ${CMAKE_CXX_FLAGS})
-message("=====================CMAKE_C_FLAGS===>" ${CMAKE_C_FLAGS})
-
-if (MSVC)
-  target_link_libraries(app
-    PRIVATE
-      Shcore
-  )
-endif()
-
 target_link_libraries(app
   PRIVATE
     nlohmann_json::nlohmann_json

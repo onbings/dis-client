@@ -532,10 +532,11 @@ DEBUG: DebugPageInfo
 #if defined(_WIN32)
 #include <Windows.h>
 #endif
-// #define WITH_TREAD
+// https://decovar.dev/blog/2023/11/20/webassembly-with-pthreads/
+#define WITH_TREAD
 #if defined(WITH_TREAD)
 #include <pthread.h>
-// #include <thread>
+#include <thread>
 #endif
 
 #if defined(__EMSCRIPTEN__)
@@ -558,7 +559,7 @@ void *thread_function(void *arg)
   int i;
   for (i = 0; i < 8; i++)
   {
-    printf("Hello from thread %d i=%d\n", thread_id, i);
+    printf("Hello from a thread %d i=%d\n", thread_id, i);
   }
   return nullptr;
 }
@@ -658,11 +659,22 @@ public:
     }
     return Rts_E;
   }
+  void V_LoadAdditionalFonts() override
+  {
+    std::string FontFilename_S = "./data/font/cour.ttf";
+#if defined(__EMSCRIPTEN__)
+    if (HelloImGui::AssetExists(FontFilename_S))
+#endif
+    {
+      mpConsoleFont_X = LoadFont(FontFilename_S.c_str(), 16, &mConsoleFontIndex_U32, &mNbFontLoaded_U32);
+    }
+    DisClient::S_Log("Try to load font %s ->ptr %p\n", FontFilename_S.c_str(), mpConsoleFont_X);
+  }
   BOFERR LoadNavigation(std::string &_rNavJson_S, nlohmann::json &_rJsonData)
   {
     BOFERR Rts_E = BOF_ERR_NOT_FOUND;
     FILE *pIo_X;
-    std::string NavJsonFilename_S = "data/DebugPageLayout.json";
+    std::string NavJsonFilename_S = "./data/DebugPageLayout.json";
 
     if (HelloImGui::AssetExists(NavJsonFilename_S))
     {
@@ -797,7 +809,7 @@ public:
   {
     BOFERR Rts_E = BOF_ERR_NOT_FOUND;
     FILE *pIo_X;
-    std::string PgInfoJsonFilename_S = "data/DebugPageInfo.json";
+    std::string PgInfoJsonFilename_S = "./data/DebugPageInfo.json";
     if (HelloImGui::AssetExists(PgInfoJsonFilename_S))
     {
       Rts_E = BOF_ERR_NO_ERROR;
@@ -918,6 +930,8 @@ public:
     }
     if (ImGui::Button("Send WebSocket Msg"))
     {
+      Sts_E = WriteWebSocket("GET /DebugServiceRoute?seq=1");
+#if 0      
       std::string NavJson_S, PgInfoJson_S;
       EMSCRIPTEN_RESULT Sts;
       Sts_E = LoadNavigation(NavJson_S, mNavigationJsonData);
@@ -939,6 +953,7 @@ public:
                   */
         }
       }
+#endif
     }
     if (ImGui::Button("Close WebSocket"))
     {
@@ -948,9 +963,10 @@ public:
 #if defined(WITH_TREAD)
     if (ImGui::Button("Test thread"))
     {
-      // std::thread t1(thread_function, 0);
-      // t1.join();
-#if 1
+#if 0      
+      std::thread t1(thread_function, 0);
+      t1.join();
+#else
       const int num_threads = 3;
       pthread_t threads[num_threads];
       int i, sts, thread_ids[num_threads];
@@ -995,12 +1011,16 @@ public:
   BOFERR OpenWebSocket()
   {
     BOFERR Rts_E = BOF_ERR_NOT_SUPPORTED;
-    EmscriptenWebSocketCreateAttributes ws_attrs = {"wss://echo.websocket.org", nullptr, EM_TRUE};
+    // EmscriptenWebSocketCreateAttributes ws_attrs = {"wss://echo.websocket.org", nullptr, EM_TRUE};
+    EmscriptenWebSocketCreateAttributes ws_attrs = {"ws://10.129.171.112:8080", nullptr, EM_TRUE};
 
     if (emscripten_websocket_is_supported())
     {
       CloseWebSocket();
       mWs = emscripten_websocket_new(&ws_attrs);
+      // EMSCRIPTEN_WEBGL_CONTEXT_HANDLE socketHandle = emscripten_websocket_open("ws://example.com/socket", "your_protocol");
+      // EMSCRIPTEN_WEBGL_CONTEXT_HANDLE socketHandle = emscripten_websocket_open("ws://example.com/socket", "your_protocol");
+
       printf("CREATE Ws %d\n", mWs);
       if (mWs > 0)
       {
@@ -1053,6 +1073,7 @@ public:
 
     if (_pWebsocketEvent_X)
     {
+      Rts_E = CloseWebSocket();
       Rts_E = BOF_ERR_NO_ERROR;
     }
     return Rts_E;
@@ -1081,7 +1102,7 @@ public:
       }
       else
       {
-        printf("----------------->BIN message from %d: %d:%p\n", _pWebsocketEvent_X->socket, _pWebsocketEvent_X->numBytes, _pWebsocketEvent_X->data);
+        printf("----------------->BIN message from %d: %d:%s\n", _pWebsocketEvent_X->socket, _pWebsocketEvent_X->numBytes, _pWebsocketEvent_X->data);
       }
       mLastWebSocketMessage_S = std::string((const char *)_pWebsocketEvent_X->data, _pWebsocketEvent_X->numBytes);
       Rts_E = BOF_ERR_NO_ERROR;
@@ -1092,9 +1113,9 @@ public:
 
 private:
   bool mVisible_B = true;
-  ImFont *mpButtonFont_X = nullptr;
-  ImFont *mpLDCFont_X = nullptr;
-  ImFont *mpSmallFont_X = nullptr;
+  uint32_t mNbFontLoaded_U32 = 0;
+  uint32_t mConsoleFontIndex_U32 = 0;
+  ImFont *mpConsoleFont_X = nullptr;
   nlohmann::json mNavigationJsonData;
   bool mIsNavigationVisible_B = true;
   uint32_t mNavigationLeafIdSelected_U32 = -1;

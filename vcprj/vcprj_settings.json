@@ -5,6 +5,8 @@
     "workbench.colorCustomizations": {
         "tab.activeBackground": "#237a3f"
     },
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.intelliSenseEngineFallback": "enabled",
     "editor.formatOnSave": true,
     "editor.formatOnType": true,
     "editor.formatOnPaste": true,

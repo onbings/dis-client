@@ -22,7 +22,13 @@
             "!Vc_Gen(VcTsk:Setup:Rem:KillAll:gdbserver,exec_cmd.vcprj,Kill pending zombie gdbserver)": "ssh,$[Lin.dbg_rem_user]@$[Lin.dbg_rem_ip];killall gdbserver,,,true"
         },
         {
-            "!Vc_Gen(VcTsk:EmCMake:Conf:Web:dis-client,exec_cmd.vcprj,Launch EmCmake to configure build system to target emscripten)": "emcmake,cmake;-DCMAKE_EXPORT_COMPILE_COMMANDS=1;-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-S$[???.cmake_src_root];-B$[???.cmake_bld_root],,VcTsk:Setup:Loc:Win,false"
+            "!Vc_Gen(VcTsk:CMake:Conf:del-cache,exec_cmd.vcprj,Delete cmake cache)": "powershell,Remove-Item -Path $[???.dbg_loc_binaries]/CMakeCache.txt -ErrorAction SilentlyContinue,,,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:ORG:EmCMake:Conf:Web:dis-client,exec_cmd.vcprj,Launch EmCmake to configure build system to target emscripten)": "emcmake,cmake;-DCMAKE_EXPORT_COMPILE_COMMANDS=1;-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-DFETCHCONTENT_QUIET=OFF;-DCMAKE_VERBOSE_MAKEFILE=ON;-S$[???.cmake_src_root];-B$[???.cmake_bld_root],,VcTsk:Setup:Loc:Win,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:EmCMake:Conf:Web:dis-client,exec_cmd.vcprj,Launch Cmake to configure build system to target emscripten)": "cmake,-DCMAKE_EXPORT_COMPILE_COMMANDS=1;-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-DCMAKE_CROSSCOMPILING_EMULATOR=$[???.cmake_crosscompiling_emulator];-DFETCHCONTENT_QUIET=OFF;-DCMAKE_VERBOSE_MAKEFILE=ON;-S$[???.cmake_src_root];-B$[???.cmake_bld_root],,VcTsk:Setup:Loc:Win,false"
         },
         {
             "!Vc_Gen(VcTsk:CMake:Conf:Web:dis-client,exec_cmd.vcprj,Configure build system to target emscripten and launch WebServer)": "emrun,--browser;chrome;--port;$[???.dbg_rem_port];--serve_after_close;--serve_after_exit;.,$[???.dbg_loc_binaries],VcTsk:EmCMake:Conf:Web:dis-client,false"

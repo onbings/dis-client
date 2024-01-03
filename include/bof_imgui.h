@@ -259,6 +259,7 @@ public:
   BOFERR DisplayText(const char *_pText_c, bool _Wrapped_B, bool _Disabled_B, const Bof_ImGui_ImTextCustomization *_pTextCustomization_X);
   BOFERR DisplayText(BOF::BOF_POINT_2D<int32_t> *_pCursorPos_X, const char *_pText_c, bool _Wrapped_B, bool _Disabled_B, const Bof_ImGui_ImTextCustomization *_pTextCustomization_X);
   ImFont *GetFont(uint32_t _FontIndex_U32);
+  ImFont *LoadFont(const char *_pFontFileTtf_c, uint32_t _FontSizeInPixel_U32, uint32_t *_pFontIndex_U32, uint32_t *_pNbFontLoaded_U32);
   BOF::BOF_SIZE<uint32_t> GetTextSize(const char *_pText_c);
 
 protected:

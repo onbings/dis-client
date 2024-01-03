@@ -2,11 +2,11 @@ https://floooh.github.io/2023/11/11/emscripten-ide.html
 install ninja in path: https://github.com/ninja-build/ninja/releases
 install emsdk in c:/pro/emsdk: : https://emscripten.org/docs/getting_started/downloads.html
 add C:\pro\emsdk\upstream\bin and C:\pro\emsdk\upstream\emscripten to path
-NO vscode kit should be Clang 18.0.0 git x86_64-pc-windows-msvc
-vscode kit should be No active kit
-
+vscode kit should be Clang 18.0.0 git x86_64-pc-windows-msvc
+cmake 3.25.1 at least but prefer 3.28.1
 install ms-vscode.wasm-dwarf-debugging in vscode
 install C/C++ DevTools Support (DWARF) in chrome
+cmake configure for emscripten is configure: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_GENERATOR=Ninja -DCMAKE_BUILD_TYPE=Debug -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe -G Ninja   
 
 PS C:\bld\imgui_bundle\bin> emrun --list
 emrun has automatically found the following browsers in the default install locations on the system:
@@ -38,6 +38,8 @@ https://thatonegamedev.com/cpp/debugging-c-compiled-to-webassembly/  in chrome
 https://developer.chrome.com/blog/wasm-debugging-2020  in chrome
 https://floooh.github.io/2023/11/11/emscripten-ide.html in vscode
 https://code.visualstudio.com/blogs/2023/06/05/vscode-wasm-wasi
+https://decovar.dev/blog/2023/11/20/webassembly-with-pthreads/ pthread
+https://emscripten.org/docs/porting/pthreads.html#blocking-on-the-main-browser-thread 
 
 How to quickly create a truly multi-platform application with Dear ImGui and Hello ImGui (for Windows, Linux, macOS, iOS, and as a web application), based on an example where we develop a simple RPN Calculator.
 

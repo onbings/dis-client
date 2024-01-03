@@ -305,6 +305,27 @@ ImFont *Bof_ImGui::GetFont(uint32_t _FontIndex_U32)
   }
   return pRts;
 }
+ImFont *Bof_ImGui::LoadFont(const char *_pFontFileTtf_c, uint32_t _FontSizeInPixel_U32, uint32_t *_pFontIndex_U32, uint32_t *_pNbFontLoaded_U32)
+{
+  ImFont *pRts = nullptr;
+
+  if ((mLastError_E == BOF_ERR_NO_ERROR) && (_pFontFileTtf_c) && (_FontSizeInPixel_U32))
+  {
+    pRts = ImGui::GetIO().Fonts->AddFontFromFileTTF(_pFontFileTtf_c, _FontSizeInPixel_U32, nullptr, nullptr);
+    if (pRts)
+    {
+      if (_pFontIndex_U32)
+      {
+        //*_pFontIndex_U32 = ;
+      }
+      if (_pNbFontLoaded_U32)
+      {
+        //*_pNbFontLoaded_U32 = ;
+      }
+    }
+  }
+  return pRts;
+}
 BOF::BOF_SIZE<uint32_t> Bof_ImGui::GetTextSize(const char *_pText_c)
 {
   BOF::BOF_SIZE<uint32_t> Rts_X;
