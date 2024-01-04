@@ -1,3 +1,18 @@
+#COMPIL EMSCRIPTEN VCPKG WASM
+#md dis-client-web
+#cd dis-client-web
+#emcmake cmake -DCMAKE_BUILD_TYPE=Debug -DHELLOIMGUI_WITH_SDL=ON -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -B C:/bld/dis-client-web -S C:/pro/github/dis-client
+#cmake --build . --target help
+#cmake --build . --target app
+#emrun --browser chrome .
+#
+#COMPIL WINDOWS VCPKG 
+#md dis-client
+#cd dis-client
+#cmake -DHELLOIMGUI_WITH_SDL=ON -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -B C:/bld/dis-client -S C:/pro/github/dis-client
+
+
+
 https://floooh.github.io/2023/11/11/emscripten-ide.html
 install ninja in path: https://github.com/ninja-build/ninja/releases
 install emsdk in c:/pro/emsdk: : https://emscripten.org/docs/getting_started/downloads.html

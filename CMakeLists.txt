@@ -1,25 +1,21 @@
 #see README.md
-#COMPIL EMSCRIPTEN VCPKG WASM
-#md dis-client-web
-#cd dis-client-web
-#emcmake cmake -DCMAKE_BUILD_TYPE=Debug -DHELLOIMGUI_WITH_SDL=ON -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -B C:/bld/dis-client-web -S C:/pro/github/dis-client
-#cmake --build . --target help
-#cmake --build . --target app
-#emrun --browser chrome .
-#
-#COMPIL WINDOWS VCPKG 
-#md dis-client
-#cd dis-client
-#cmake -DHELLOIMGUI_WITH_SDL=ON -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -B C:/bld/dis-client -S C:/pro/github/dis-client
 
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.28)
 project(dis-client)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+#Done by helloimgui: result in C:\bld\dis-client-win\assets
+#set(DATA_FILES
+#  ./assets/font/cour.ttf
+#)
+
+message("=====================CMAKE_CXX_FLAGS=1>" ${CMAKE_CXX_FLAGS})
 if (EMSCRIPTEN)
 #https://decovar.dev/blog/2023/11/20/webassembly-with-pthreads/
    message("===EMSCRIPTEN==============")
+    set(HELLOIMGUI_EMSCRIPTEN_PTHREAD ON)
+    set(HELLOIMGUI_EMSCRIPTEN_PTHREAD_ALLOW_MEMORY_GROWTH ON)
 
 #-s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s MAXIMUM_MEMORY=256MB 
   set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -sPTHREAD_POOL_SIZE=4") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
@@ -28,6 +24,7 @@ if (EMSCRIPTEN)
 #  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -sPROXY_TO_PTHREAD") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
 #  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -sPROXY_TO_PTHREAD") #-sUSE_PTHREADS=1") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY") # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
 endif()
+message("=====================CMAKE_CXX_FLAGS=1>" ${CMAKE_CXX_FLAGS})
 
 # Build hello_imgui
 # =================
@@ -119,6 +116,16 @@ target_link_libraries(app
   PRIVATE
     nlohmann_json::nlohmann_json
 )
+if (EMSCRIPTEN)
+else()
+#Done by helloimgui: result in C:\bld\dis-client-win\assets
+#message("dis-client: Create data dir " ${COMPILED_BINARIES_DIR} "/bin/data")
+#file(MAKE_DIRECTORY ${COMPILED_BINARIES_DIR}/bin/data)  #Ut under linux from vscode
+#foreach(Filename ${DATA_FILES})
+#  message("dis-client: Copy " ${Filename} " to " ${COMPILED_BINARIES_DIR} "/bin/data")
+#  file(COPY ${Filename} DESTINATION ${COMPILED_BINARIES_DIR}/bin/data)
+#endforeach() 
+endif()
 
 # Print all CMake variables
 #get_cmake_property(_variableNames VARIABLES)

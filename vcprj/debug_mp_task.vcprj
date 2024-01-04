@@ -1,5 +1,5 @@
     "!Vc_Inc(problem_matcher_null.vcprj)": "",
-    "!Vc_Gen(VcTsk:Web:$[0],exec_cmd.vcprj,Debug $[0] in chrome web browser)": "echo Chrome,,$[???.dbg_loc_binaries],VcTsk:CMake:Build:Win,false"
+    "!Vc_Gen(VcTsk:Web:$[0],exec_cmd.vcprj,Debug $[0] in chrome web browser)": "echo Chrome,,$[???.dbg_loc_binaries],VcTsk:CMake:Build:Web,false"
 },
 {    
     "!Vc_Inc(problem_matcher_null.vcprj)": "",

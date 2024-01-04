@@ -4,7 +4,8 @@ import re
 import sys
 import argparse
 import shutil
-
+import platform
+import getpass
 
 def exit_app(msg, exit_code):
     print(f"\n!VCPRJ! '{msg}'")
@@ -106,28 +107,21 @@ if __name__ == "__main__":
         description="This script is used with Visual Code to manage compile/deploy/debug functionnalities in the project file")
     # Mandatory arguments
     requiredArguments = cli_parser.add_argument_group("Mandatory arguments")
-    requiredArguments.add_argument("--jsonin", dest="jsonin",
-                                   help="The path to the input file to be processed", required=True)
-    requiredArguments.add_argument(
-        "--jsonout", dest="jsonout",
-        help="The path to the output file which will be generated (Should be .vscode/launch.json or .vscode/tasks.json)",
-        required=True)
+    requiredArguments.add_argument("--jsonin", dest="jsonin", help="The path to the input file to be processed", required=True)
+    requiredArguments.add_argument("--jsonout", dest="jsonout", help="The path to the output file which will be generated (Should be .vscode/launch.json or .vscode/tasks.json)", required=True)
     # Optional arguments
-    cli_parser.add_argument("--sys", dest="sys", default="Lin",
-                            help="Define the value which is used to replace ??? in tagg like $[???.param] such as Lin or Win for settings def.")
+    cli_parser.add_argument("--sys", dest="sys", default="Lin", help="Define the value which is used to replace ??? in tag like $[???.param] such as Lin or Win for selecting var.")
+    cli_parser.add_argument("--usr", dest="usr", default="", help="Define the value which is used to replace ??? in Vc_Def cmd. It is used to select the 'good' ...def.'user'.json file among various version defined by each user of the project")
     cli_parser.set_defaults(verbose=False)
-    cli_parser.add_argument("--verbose", dest="verbose",
-                            action="store_true", help="Activate verbose mode.")
+    cli_parser.add_argument("--verbose", dest="verbose", action="store_true", help="Activate verbose mode.")
     cli_parser.set_defaults(verbose=False)
-    cli_parser.add_argument("-d", "--dryrun", dest="dryrun",
-                            action="store_true", help="Activate dry run.")
+    cli_parser.add_argument("-d", "--dryrun", dest="dryrun", action="store_true", help="Activate dry run.")
     cli_parser.set_defaults(dryrun=False)
     # cli_parser.add_argument("--version",   dest="version",   help="The version to override")
 
-    print(f"[VCPRJ] (v) 1.0.0 (d) 21/06/23 (a) B.harmel\n")
+    print(f"[VCPRJ] (v) 2.1.0 (d) 21/06/23 (a) B.harmel\n")
     argc = len(sys.argv)
-    print(
-        f"{argc-1} command line arguments passed to '{sys.argv[0]}' (cwd '{os.getcwd()}')")
+    print(f"{argc-1} command line arguments passed to '{sys.argv[0]}' (cwd '{os.getcwd()}')")
     for i in range(1, argc):
         print(sys.argv[i])
     if len(sys.argv) == 1:
@@ -135,9 +129,16 @@ if __name__ == "__main__":
         exit_app("Incomplete argument", 3)
     args = cli_parser.parse_args()
     if args.sys == "":
-        args.sys = "Lin"  # for $[???.cmake_generator]
+        exit_app(f"No sys arg specified, must be Win, Lin or Web", 4)        
+        #if platform.system() == 'Windows':
+        #    args.sys = "Win" 
+        #else:
+        #    args.sys = "Lin"  # for $[???.cmake_generator]
+    if args.usr == "":            
+        args.usr = getpass.getuser()
+    print(f"Running for user '{args.usr}' target '{args.sys}'")    
     if not os.path.exists(args.jsonin):
-        exit_app(f"Cannot find '{args.jsonin}'", 4)
+        exit_app(f"Cannot find '{args.jsonin}'", 5)
 
     default_dictionary_list = []
     # regex to decode vcprj command embedded as json var such as "!Vc_Gen(Name)" : "arg1,arg2,..."
@@ -170,11 +171,16 @@ if __name__ == "__main__":
                     vcprj_arg_list = matches.group(3).strip().split(",")
                     file_to_include = vcprj_name_list[0]
                     if vcprj_cmd == "Inc":
-                        include_file(file_to_include, vcprj_arg_list,
-                                     io_pre_processed_file_out)
+                        include_file(file_to_include, vcprj_arg_list, io_pre_processed_file_out)
+                    elif vcprj_cmd == "Sys":
+                        if len(vcprj_name_list)==1 and len(vcprj_arg_list)==1 and "???" in vcprj_arg_list[0]:
+                            arg_sys = vcprj_arg_list[0].replace("???", args.sys)
+                            line = f'"{vcprj_name_list[0]}":"{arg_sys}"\n'
+                        io_pre_processed_file_out.write(line)                       
                     elif vcprj_cmd == "Def":
-                        default_dictionary_list = definition_file(
-                            file_to_include, default_dictionary_list)
+                        if "???" in file_to_include:
+                            file_to_include = file_to_include.replace("???", args.usr)
+                        default_dictionary_list = definition_file(file_to_include, default_dictionary_list)
                     else:
                         io_pre_processed_file_out.write(line)
                 else:
@@ -210,8 +216,7 @@ if __name__ == "__main__":
                         include_file(file_to_include,
                                      vcprj_arg_list, io_gen_file_out)
                     elif vcprj_cmd == "Def":
-                        default_dictionary_list = definition_file(
-                            file_to_include, default_dictionary_list)
+                        default_dictionary_list = definition_file(file_to_include, default_dictionary_list)
                     elif vcprj_cmd == "Gen":
                         if (len(vcprj_name_list) == 3):
                             action_name = vcprj_name_list[0]
@@ -256,8 +261,7 @@ if __name__ == "__main__":
                                                     if ((len(arg_list) % 2) == 0):
                                                         colon_mode = True
                                                     else:
-                                                        exit_app(
-                                                            f"List length ({len(arg_list)}) delimitted with ';;' must be even: {arg_list}", 5)
+                                                        exit_app(f"List length ({len(arg_list)}) delimitted with ';;' must be even: {arg_list}", 6)
                                                 else:
                                                     colon_mode = False
                                                     # arg_list = vcprj_arg_list[arg_index].split(";")
@@ -288,22 +292,23 @@ if __name__ == "__main__":
                                                             f'$[{arg_index}]', vcprj_arg_list[arg_index])
                                                     # print(f"final line '{line}'")
                                             else:
-                                                exit_app(
-                                                    f"Arg index ({arg_index}) is out of range", 6)
+                                                exit_app(f"Arg index ({arg_index}) is out of range", 7)
                                         else:
-                                            exit_app(
-                                                f"Arg index ({index}) is not a number", 7)
+                                            exit_app(f"Arg index ({index}) is not a number", 8)
                                     io_gen_file_out.write(line)
                             else:
-                                exit_app(
-                                    f"Cannot find include file: '{file_to_include}'", 8)
+                                exit_app(f"Cannot find include file: '{file_to_include}'", 9)
                         else:
-                            exit_app(
-                                f"Bad number of paramter: cmd '{vcprj_cmd}' name '{vcprj_name_list}' arg '{vcprj_arg_list}'", 9)
+                            exit_app(f"Bad number of paramter: cmd '{vcprj_cmd}' name '{vcprj_name_list}' arg '{vcprj_arg_list}'", 10)
                     else:
-                        exit_app(
-                            f"Unknown command: cmd '{vcprj_cmd}' name '{vcprj_name_list}' arg '{vcprj_arg_list}'", 10)
+                        exit_app(f"Unknown command: cmd '{vcprj_cmd}' name '{vcprj_name_list}' arg '{vcprj_arg_list}'", 11)
                 else:
+                    if "???" in line:
+                        line_key = line.replace("???", args.sys)                    
+                        for json_def in default_dictionary_list:
+                            print(f"aa={json_def[args.sys]}")
+                            if line_key in json_def[args.sys]:
+                                json_key = json_def[args.sys]
                     io_gen_file_out.write(line)
 
     print(f"[VCPRJ] ------- Pass 3: Build result from '{gen_file}' -------")
@@ -337,9 +342,9 @@ if __name__ == "__main__":
                             if args.verbose:
                                 print(f"[VCPRJ] Line is now:  {line}", end="")
                 if json_value_found == False:
-                    exit_app(f"Key '{key}': not found", 11)
+                    exit_app(f"Key '{key}': not found", 12)
             else:
-                exit_app(f"Key '{key}': bad synthax", 12)
+                exit_app(f"Key '{key}': bad synthax", 13)
         new_lines.append(line)
 
     if args.verbose:

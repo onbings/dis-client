@@ -535,7 +535,7 @@ DEBUG: DebugPageInfo
 // https://decovar.dev/blog/2023/11/20/webassembly-with-pthreads/
 #define WITH_TREAD
 #if defined(WITH_TREAD)
-#include <pthread.h>
+// #include <pthread.h>
 #include <thread>
 #endif
 
@@ -661,7 +661,8 @@ public:
   }
   void V_LoadAdditionalFonts() override
   {
-    std::string FontFilename_S = "./data/font/cour.ttf";
+    std::string FontFilename_S = "./assets/font/cour.ttf";
+
 #if defined(__EMSCRIPTEN__)
     if (HelloImGui::AssetExists(FontFilename_S))
 #endif

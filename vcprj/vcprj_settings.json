@@ -1,5 +1,5 @@
 {
-    "!Vc_Def(vcprj_var_def.json)": "",
+    "!Vc_Def(vcprj_var_def.???.json)": "",
     "!Vc_Gen(CMake:Setting,../vcprj/cmake_setting.vcprj,Needed by CMake extension in Visual Studio Code)": "$[???.cmake_bld_root],VCPKG_CHAINLOAD_TOOLCHAIN_FILE;;$[???.vcpkg_toolchain];;VCPKG_OVERLAY_PORT;;$[???.vcpkg_overlay_port],CMAKE_TOOLCHAIN_FILE;;$[???.cmake_toolchain];;VCPKG_TARGET_TRIPLET;;$[???.vcpkg_triplet];;BUILD_SHARED_LIBS;;$[???.build_as_shared_lib];;CMAKE_GENERATOR;;$[???.cmake_generator]",
     "workbench.colorTheme": "Default Dark+",
     "workbench.colorCustomizations": {

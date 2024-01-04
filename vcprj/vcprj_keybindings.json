@@ -2,7 +2,7 @@
     {
         "key": "ctrl+alt+t",
         "command": "workbench.action.tasks.runTask",
-        "args": "VcTsk:CMake:Conf:Web:dis-client"
+        "!Vc_Sys(args)": "VcTsk:CMake:Conf:???:dis-client"
     },
     {
         "key": "ctrl+oem_6",
@@ -22,6 +22,16 @@
     {
         "key": "ctrl-k ctrl-n",
         "command": "bookmarks.jumpToNext",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+shift+s",
+        "command": "saveAll",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+s",
+        "command": "workbench.action.files.save",
         "when": "editorTextFocus"
     }
 ]
