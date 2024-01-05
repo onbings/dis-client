@@ -10,6 +10,9 @@
 #md dis-client
 #cd dis-client
 #cmake -DHELLOIMGUI_WITH_SDL=ON -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -B C:/bld/dis-client -S C:/pro/github/dis-client
+bofstd:
+compile with emscripten: https://thatonegamedev.com/cpp/programming-a-c-game-for-the-web-emscripten/
+#emcmake cmake -S C:/pro/github/bofstd -D__EMSCRIPTEN__=1 -B C:/bld/bofstd-web -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten
 
 
 

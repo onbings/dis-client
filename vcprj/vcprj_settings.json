@@ -6,6 +6,8 @@
         "tab.activeBackground": "#237a3f"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.default.intelliSenseMode": "windows-clang-x64",
+    "C_Cpp.intelliSenseEngine": "Tag Parser",
     "C_Cpp.intelliSenseEngineFallback": "enabled",
     "editor.formatOnSave": true,
     "editor.formatOnType": true,

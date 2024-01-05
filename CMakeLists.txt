@@ -12,14 +12,15 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 message("=====================CMAKE_CXX_FLAGS=1>" ${CMAKE_CXX_FLAGS})
 if (EMSCRIPTEN)
+  set(CMAKE_EXECUTABLE_SUFFIX ".html")   #to generate .html in addition to .js and .wasm
 #https://decovar.dev/blog/2023/11/20/webassembly-with-pthreads/
    message("===EMSCRIPTEN==============")
     set(HELLOIMGUI_EMSCRIPTEN_PTHREAD ON)
     set(HELLOIMGUI_EMSCRIPTEN_PTHREAD_ALLOW_MEMORY_GROWTH ON)
 
 #-s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s MAXIMUM_MEMORY=256MB 
-  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -sPTHREAD_POOL_SIZE=4") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -sPTHREAD_POOL_SIZE=4") #-sUSE_PTHREADS=1") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY") # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -sPTHREAD_POOL_SIZE=4 -s ALLOW_MEMORY_GROWTH -s TOTAL_STACK=8388608") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -sPTHREAD_POOL_SIZE=4 -s ALLOW_MEMORY_GROWTH -s TOTAL_STACK=8388608") #-sUSE_PTHREADS=1") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY") # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
 #ici ca bloque qq part dans imgui car je pense qu'on est dans un autre thread entre imgui et le main...
 #  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -sPROXY_TO_PTHREAD") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
 #  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -sPROXY_TO_PTHREAD") #-sUSE_PTHREADS=1") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY") # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
@@ -52,6 +53,9 @@ hello_imgui_add_app(app
    include/bofstd_export.h
    src/bof_imgui_internal.cpp
    src/bof_imgui_internal.h
+
+   include/bof_web_socket_client.h
+   src/bof_web_socket_client.cpp
 )
 
 
@@ -92,6 +96,8 @@ if (EMSCRIPTEN)
 endif()
 message("=====================CMAKE_CXX_FLAGS=>" ${CMAKE_CXX_FLAGS})
 message("=====================CMAKE_C_FLAGS===>" ${CMAKE_C_FLAGS})
+message("=====================CMAKE_EFFECTIVE_SYSTEM_NAME===>" ${CMAKE_EFFECTIVE_SYSTEM_NAME})
+message("=====================CMAKE_C_COMPILER_ID===>" ${CMAKE_C_COMPILER_ID})
 #message("=====================CMAKE_RC_COMPILER===>" ${CMAKE_RC_COMPILER})
 
 if (MSVC)

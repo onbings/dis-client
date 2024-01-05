@@ -636,14 +636,18 @@ public:
 
     auto Json = ToJson();
     std::string StateSerialized_S = Json.dump();
+#if defined(__EMSCRIPTEN__)
+#else
     HelloImGui::SaveUserPref(APP_NAME, StateSerialized_S);
+#endif
     return Rts_E;
   }
 
   BOFERR V_ReadSettings() override
   {
     BOFERR Rts_E = BOF_ERR_NO_ERROR;
-
+#if defined(__EMSCRIPTEN__)
+#else
     std::string StateSerialized_S = HelloImGui::LoadUserPref(APP_NAME);
     if (!StateSerialized_S.empty())
     {
@@ -657,6 +661,7 @@ public:
         DisClient::S_Log("Failed to load %s state from user pref\n", APP_NAME);
       }
     }
+#endif
     return Rts_E;
   }
   void V_LoadAdditionalFonts() override
@@ -964,20 +969,34 @@ public:
 #if defined(WITH_TREAD)
     if (ImGui::Button("Test thread"))
     {
-#if 0      
-      std::thread t1(thread_function, 0);
-      t1.join();
-#else
       const int num_threads = 3;
+      int i, thread_ids[num_threads];
+#if 1
+      static std::thread threads[num_threads];
+      for (i = 0; i < num_threads; ++i)
+      {
+        thread_ids[i] = i;
+        threads[i] = std::thread(thread_function, &thread_ids[i]);
+        printf("std::thread%d created\n", i);
+      }
+      // emscripten_sleep(1000);
+      //  Wait for threads to finish
+      for (i = 0; i < num_threads; ++i)
+      {
+        printf("join thread%d\n", i);
+        threads[i].join();
+        printf("join done for %d\n", i);
+      }
+#else
       pthread_t threads[num_threads];
-      int i, sts, thread_ids[num_threads];
+      int sts;
 
       // Create threads
       for (i = 0; i < num_threads; ++i)
       {
         thread_ids[i] = i;
         sts = pthread_create(&threads[i], nullptr, thread_function, &thread_ids[i]);
-        printf("thread%d hndl %x created sts %d e %d\n", i, (int)threads[i], sts, errno);
+        printf("thread%d hndl %x created sts %d\n", i, (int)threads[i], sts);
       }
       // emscripten_sleep(1000);
       //  Wait for threads to finish
@@ -985,7 +1004,7 @@ public:
       {
         printf("join thread%d hndl %x\n", i, (int)threads[i]);
         sts = pthread_join(threads[i], nullptr);
-        printf("join status %d e %d\n", sts, errno);
+        printf("join status %d\n", sts);
       }
 #endif
     }
@@ -1008,7 +1027,9 @@ public:
     return Rts_E;
   }
 
+
 #if defined(__EMSCRIPTEN__)
+
   BOFERR OpenWebSocket()
   {
     BOFERR Rts_E = BOF_ERR_NOT_SUPPORTED;
@@ -1019,8 +1040,6 @@ public:
     {
       CloseWebSocket();
       mWs = emscripten_websocket_new(&ws_attrs);
-      // EMSCRIPTEN_WEBGL_CONTEXT_HANDLE socketHandle = emscripten_websocket_open("ws://example.com/socket", "your_protocol");
-      // EMSCRIPTEN_WEBGL_CONTEXT_HANDLE socketHandle = emscripten_websocket_open("ws://example.com/socket", "your_protocol");
 
       printf("CREATE Ws %d\n", mWs);
       if (mWs > 0)
