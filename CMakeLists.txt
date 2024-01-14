@@ -259,7 +259,7 @@ endif()
 # ==============
 hello_imgui_add_app(dis-client 
    main.cpp 
-   #include/nlohmann_json.hpp
+
    src/bof_imgui.cpp
    include/bof_imgui.h
    src/bof_imgui_internal.cpp
@@ -267,6 +267,8 @@ hello_imgui_add_app(dis-client
 
    include/bof_web_socket_client.h
    src/bof_web_socket_client.cpp
+  include/dis_client.h
+   src/dis_client.cpp
 )
 
 # hello_imgui_add_app is a helper function, similar to cmake's "add_executable"

@@ -5,6 +5,11 @@
         "!Vc_Sys(args)": "VcTsk:CMake:Conf:???:Html:bofstd"
     },
     {
+        "key": "ctrl+f7",
+        "command": "workbench.action.tasks.runTask",
+        "!Vc_Sys(args)": "VcTsk:CMake:Build:???"
+    },
+    {
         "key": "ctrl+oem_6",
         "command": "editor.action.jumpToBracket",
         "when": "editorTextFocus"
