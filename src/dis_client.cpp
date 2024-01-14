@@ -16,6 +16,28 @@
  *
  */
 #include "dis_client.h"
+#include <bofstd/bofenum.h>
+#include <bofstd/bofhttprequest.h>
+
+uint32_t DisClient::S_mSeqId_U32 = 1;
+static BOF::BofEnum<DIS_CLIENT_STATE> S_DisClientStateTypeEnumConverter(
+    {
+        {DIS_CLIENT_STATE::DIS_CLIENT_STATE_IDLE, "Idle"},
+        {DIS_CLIENT_STATE::DIS_CLIENT_STATE_OPEN_WS, "OpenWs"},
+        {DIS_CLIENT_STATE::DIS_CLIENT_STATE_CONNECT, "Connect"},
+        {DIS_CLIENT_STATE::DIS_CLIENT_STATE_GET_DEBUG_SERVICE_ROUTE, "GetDbgSrvRoute"},
+        {DIS_CLIENT_STATE::DIS_CLIENT_STATE_GET_DEBUG_PAGE_LAYOUT, "GetDbgPageLayout"},
+        {DIS_CLIENT_STATE::DIS_CLIENT_STATE_GET_DEBUG_PAGE_INFO, "GetDbgPageInfo"},
+        {DIS_CLIENT_STATE::DIS_CLIENT_STATE_MAX, "Max"},
+    },
+    DIS_CLIENT_STATE::DIS_CLIENT_STATE_MAX);
+
+#define DIS_CLIENT_END_OF_COMMAND()  \
+  {                                  \
+    mLastCmdSentTimeoutInMs_U32 = 0; \
+    mWaitForReplyId_U32 = 0;         \
+  }
+
 #if defined(__EMSCRIPTEN__)
 EM_BOOL WebSocket_OnOpen(int _Event_i, const EmscriptenWebSocketOpenEvent *_pWebsocketEvent_X, void *_pUserData)
 {
@@ -61,38 +83,28 @@ EM_BOOL WebSocket_OnMessage(int _Event_i, const EmscriptenWebSocketMessageEvent 
 
 #endif
 
-/*
-#include <bofstd/boffs.h>
-#include <bofstd/bofstd.h>
-#include <fstream>
-#include <iostream>
-#include <stdio.h>
-
-#if defined(_WIN32)
-#include <Windows.h>
-#endif
-
-#if defined(__EMSCRIPTEN__)
-#pragma message("__EMSCRIPTEN__")
-//"wss://echo.websocket.org",
-#include <emscripten/emscripten.h>
-#include <emscripten/websocket.h>
-EM_BOOL WebSocket_OnOpen(int _Event_i, const EmscriptenWebSocketOpenEvent *_pWebsocketEvent_X, void *_pUserData);
-EM_BOOL WebSocket_OnError(int _Event_i, const EmscriptenWebSocketErrorEvent *_pWebsocketEvent_X, void *_pUserData);
-EM_BOOL WebSocket_OnClose(int _Event_i, const EmscriptenWebSocketCloseEvent *_pWebsocketEvent_X, void *_pUserData);
-EM_BOOL WebSocket_OnMessage(int _Event_i, const EmscriptenWebSocketMessageEvent *_pWebsocketEvent_X, void *_pUserData);
-#endif
-*/
-
-DisClient::DisClient(const BOF::BOF_IMGUI_PARAM &_rImguiParam_X)
-    : BOF::Bof_ImGui(_rImguiParam_X)
+DisClient::DisClient(const DIS_CLIENT_PARAM &_rDisClientParam_X)
+    : BOF::Bof_ImGui(_rDisClientParam_X.ImguiParam_X)
 {
-#if defined(__EMSCRIPTEN__)
-  OpenWebSocket();
-#endif
+  mDisClientParam_X = _rDisClientParam_X;
+  mDisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_OPEN_WS;
+  BOF::BOF_RAW_CIRCULAR_BUFFER_PARAM RawCircularBufferParam_X;
+  RawCircularBufferParam_X.MultiThreadAware_B = true;
+  RawCircularBufferParam_X.BufferSizeInByte_U32 = mDisClientParam_X.RxBufferSize_U32;
+  RawCircularBufferParam_X.SlotMode_B = false;
+  RawCircularBufferParam_X.AlwaysContiguous_B = true; // false;
+  RawCircularBufferParam_X.NbMaxBufferEntry_U32 = mDisClientParam_X.NbMaxBufferEntry_U32;
+  RawCircularBufferParam_X.pData_U8 = nullptr;
+  RawCircularBufferParam_X.Overwrite_B = false;
+  RawCircularBufferParam_X.Blocking_B = true;
+  mpuRxBufferCollection = std::make_unique<BOF::BofRawCircularBuffer>(RawCircularBufferParam_X);
+  if ((mpuRxBufferCollection) && (mpuRxBufferCollection->LastErrorCode() == BOF_ERR_NO_ERROR))
+  {
+  }
 }
 DisClient::~DisClient()
 {
+  CloseWebSocket();
 }
 void DisClient::S_Log(const char *_pFormat_c, ...)
 {
@@ -407,7 +419,105 @@ void DisClient::DisplayPageInfo(int32_t _x_U32, int32_t _y_U32, bool &_rIsPgInfo
   ImGui::PopStyleColor();
   ImGui::PopFont();
 }
+void DisClient::V_PreNewFrame()
+{
+  BOFERR Sts_E, StsCmd_E;
+  bool Rts_B = false;
+  uint32_t Delta_U32;
 
+  if (mDisClientState_E != mDisClientLastState_E)
+  {
+    printf("ENTER: State change %s->%s: %s\n", S_DisClientStateTypeEnumConverter.ToString(mDisClientLastState_E).c_str(), S_DisClientStateTypeEnumConverter.ToString(mDisClientState_E).c_str(), IsWebSocketConnected() ? "Connected" : "Disconnected");
+    mDisClientLastState_E = mDisClientState_E;
+  }
+  if (IsWebSocketConnected())
+  {
+    StsCmd_E = IsCommandRunning() ? CheckForCommandReply(mLastWebSocketMessage_S) : BOF_ERR_NO;
+  }
+
+  switch (mDisClientState_E)
+  {
+    case DIS_CLIENT_STATE::DIS_CLIENT_STATE_OPEN_WS:
+      Sts_E = OpenWebSocket();
+      if (Sts_E == BOF_ERR_NO_ERROR)
+      {
+        mWsConnectTimer_U32 = BOF::Bof_GetMsTickCount();
+        mDisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_CONNECT;
+      }
+      break;
+
+    case DIS_CLIENT_STATE::DIS_CLIENT_STATE_CONNECT:
+      if (IsWebSocketConnected())
+      {
+        mDisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_GET_DEBUG_SERVICE_ROUTE;
+      }
+      else
+      {
+        Delta_U32 = BOF::Bof_ElapsedMsTime(mWsConnectTimer_U32);
+        if (Delta_U32 > 2000)
+        {
+          mDisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_OPEN_WS;
+          DIS_CLIENT_END_OF_COMMAND();
+          StsCmd_E = BOF_ERR_ENOTCONN;
+        }
+      }
+      break;
+
+    case DIS_CLIENT_STATE::DIS_CLIENT_STATE_GET_DEBUG_SERVICE_ROUTE:
+      if (StsCmd_E == BOF_ERR_NO)
+      {
+        Sts_E = SendCommand(2000, "GET /DebugServiceRoute");
+      }
+      else
+      {
+        if (StsCmd_E == BOF_ERR_NO_ERROR)
+        {
+          mDisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_GET_DEBUG_PAGE_LAYOUT;
+        }
+      }
+      break;
+
+    case DIS_CLIENT_STATE::DIS_CLIENT_STATE_GET_DEBUG_PAGE_LAYOUT:
+      if (StsCmd_E == BOF_ERR_NO)
+      {
+        Sts_E = SendCommand(2000, "GET /Gbe/DebugPageLayout");
+      }
+      else
+      {
+        if (StsCmd_E == BOF_ERR_NO_ERROR)
+        {
+          mDisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_GET_DEBUG_PAGE_INFO;
+        }
+      }
+      break;
+
+    case DIS_CLIENT_STATE::DIS_CLIENT_STATE_GET_DEBUG_PAGE_INFO:
+      if (StsCmd_E == BOF_ERR_NO)
+      {
+        Sts_E = SendCommand(2000, "GET /Gbe/DebugPageInfo/800/0/?chnl=0&flag=3&key=None&user_input=");
+      }
+      else
+      {
+        if (StsCmd_E == BOF_ERR_NO_ERROR)
+        {
+          mDisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_GET_DEBUG_PAGE_INFO;
+        }
+      }
+      break;
+
+    default:
+      break;
+  }
+  if (StsCmd_E == BOF_ERR_NO_ERROR)
+  {
+    printf("Reply:\n%s\n", mLastWebSocketMessage_S.c_str());
+  }
+  if (mDisClientState_E != mDisClientLastState_E)
+  {
+    printf("LEAVE: State change %s->%s: %s Sts %s StsCmd %s\n", S_DisClientStateTypeEnumConverter.ToString(mDisClientLastState_E).c_str(), S_DisClientStateTypeEnumConverter.ToString(mDisClientState_E).c_str(), IsWebSocketConnected() ? "Connected" : "Disconnected", BOF::Bof_ErrorCode(Sts_E), BOF::Bof_ErrorCode(StsCmd_E));
+    mDisClientLastState_E = mDisClientState_E;
+  }
+}
 BOFERR DisClient::V_RefreshGui()
 {
   BOFERR Rts_E = BOF_ERR_NO_ERROR, Sts_E;
@@ -457,7 +567,9 @@ BOFERR DisClient::V_RefreshGui()
   }
   if (ImGui::Button("Send WebSocket Msg"))
   {
-    Sts_E = WriteWebSocket("GET /DebugServiceRoute?seq=1");
+    // Sts_E = SendCommand(2000, "GET /DebugServiceRoute"); // WriteWebSocket("GET /DebugServiceRoute?seq=1");
+    // Sts_E = SendCommand(2000, "GET /Gbe/DebugPageLayout");
+    //  Sts_E = SendCommand(2000, "GET /Gbe/DebugPageInfo/800/0/?chnl=0&flag=3&key=None&user_input=&seq=5");
 #if 0      
       std::string NavJson_S, PgInfoJson_S;
       EMSCRIPTEN_RESULT Sts;
@@ -487,7 +599,7 @@ BOFERR DisClient::V_RefreshGui()
     Sts_E = CloseWebSocket();
   }
 
-  ImGui::Text("Ws is now %d\n", mWs);
+  ImGui::Text("Ws is now %d %s\n", mWs, mWsConnected_B ? "Connected" : "Disconnected");
   ImGui::Text("Last msg %zd:%s\n", mLastWebSocketMessage_S.size(), mLastWebSocketMessage_S.c_str());
   ImGui::End();
 
@@ -501,6 +613,122 @@ BOFERR DisClient::V_RefreshGui()
   }
 #endif
 
+  return Rts_E;
+}
+bool DisClient::IsWebSocketConnected()
+{
+  return mWsConnected_B;
+}
+bool DisClient::IsCommandRunning()
+{
+  bool Rts_B = false;
+  uint32_t Delta_U32;
+
+  if (IsWebSocketConnected())
+  {
+    if (mLastCmdSentTimeoutInMs_U32)
+    {
+      Delta_U32 = BOF::Bof_ElapsedMsTime(mLastCmdSentTimer_U32);
+      if (Delta_U32 >= mLastCmdSentTimeoutInMs_U32)
+      {
+        DIS_CLIENT_END_OF_COMMAND(); // Cancel previous one
+      }
+    }
+    if (mLastCmdSentTimeoutInMs_U32)
+    {
+      Rts_B = true;
+    }
+  }
+  return Rts_B;
+}
+BOFERR DisClient::SendCommand(uint32_t _TimeoutInMsForReply_U32, const std::string &_rCmd_S)
+{
+  BOFERR Rts_E = BOF_ERR_ENOTCONN;
+  std::string Command_S;
+
+  if (!IsCommandRunning())
+  {
+    Rts_E = BOF_ERR_EINVAL;
+    if (_TimeoutInMsForReply_U32)
+    {
+      mWaitForReplyId_U32 = S_mSeqId_U32;
+      BOF_INC_TICKET_NUMBER(S_mSeqId_U32);
+
+      Command_S = _rCmd_S + "?seq=" + std::to_string(mWaitForReplyId_U32);
+      mLastCmdSentTimer_U32 = BOF::Bof_GetMsTickCount();
+      Rts_E = WriteWebSocket(Command_S.c_str());
+      printf("Send seq '%d' cmd '%s' Err %s\n", mWaitForReplyId_U32, Command_S.c_str(), BOF::Bof_ErrorCode(Rts_E));
+      if (Rts_E == BOF_ERR_NO_ERROR)
+      {
+        mLastCmdSentTimeoutInMs_U32 = _TimeoutInMsForReply_U32;
+      }
+    }
+  }
+  return Rts_E;
+}
+BOFERR DisClient::CheckForCommandReply(std::string &_rReply_S)
+{
+  BOFERR Rts_E = BOF_ERR_ENOTCONN;
+  std::string Command_S;
+  nlohmann::json JsonData;
+  uint32_t MaxSize_U32, Seq_U32, NbOfSubDir_U32;
+  char pData_c[0x8000];
+  std::map<std::string, std::string> QueryParamCollection;
+  std::string ProtocolInfo_S;
+  BOF::BofHttpRequest HttpRequest;
+  BOF::BOF_HTTP_REQUEST_TYPE Method_E;
+
+  if (IsCommandRunning())
+  {
+    MaxSize_U32 = sizeof(pData_c);
+    Rts_E = ReadWebSocket(MaxSize_U32, pData_c);
+    if (Rts_E == BOF_ERR_NO_ERROR)
+    {
+      Rts_E = BOF_ERR_EBADF;
+      try
+      {
+        JsonData = nlohmann::json::parse(pData_c);
+        auto It = JsonData.find("protocolInfo");
+        if (It != JsonData.end())
+        {
+          ProtocolInfo_S = *It;
+          HttpRequest = ProtocolInfo_S;
+          QueryParamCollection = HttpRequest.QueryParamCollection();
+          Seq_U32 = BOF::Bof_StrToBin(10, QueryParamCollection["seq"].c_str());
+          Method_E = BOF::BofHttpRequest::S_RequestType((const char *)pData_c);
+          NbOfSubDir_U32 = HttpRequest.Path().NumberOfSubDirectory();
+          printf("ProtoInfo %s Seq %d wait %d Meth %d NbSub %d\n", ProtocolInfo_S.c_str(), Seq_U32, mWaitForReplyId_U32, Method_E, NbOfSubDir_U32);
+
+          switch (Method_E)
+          {
+            case BOF::BOF_HTTP_REQUEST_TYPE::BOF_HTTP_REQUEST_GET:
+              break;
+
+            default:
+              break;
+          }
+          if (Seq_U32 == mWaitForReplyId_U32)
+          {
+            _rReply_S = pData_c;
+            DIS_CLIENT_END_OF_COMMAND();
+            Rts_E = BOF_ERR_NO_ERROR;
+          }
+        }
+      }
+      catch (nlohmann::json::type_error &re)
+      {
+        Rts_E = BOF_ERR_INVALID_ANSWER;
+        printf(" nlohmann::json::parse: exception caught '%s'\n", re.what());
+      }
+    }
+  }
+  return Rts_E;
+}
+BOFERR DisClient::ReadWebSocket(uint32_t &_rMaxSize_U32, char *_pData_c)
+{
+  BOFERR Rts_E;
+
+  Rts_E = mpuRxBufferCollection->PopBuffer(0, &_rMaxSize_U32, (uint8_t *)_pData_c);
   return Rts_E;
 }
 
@@ -533,11 +761,14 @@ BOFERR DisClient::CloseWebSocket()
 {
   BOFERR Rts_E = BOF_ERR_CLOSE;
   EMSCRIPTEN_RESULT Sts;
+
+  mpuRxBufferCollection->Reset();
   Sts = emscripten_websocket_close(mWs, 1000, "CloseWebSocket");
   printf("STOP Ws %d res %d\n", mWs, Sts);
   if (Sts == 0)
   {
     mWs = -1;
+    mWsConnected_B = false;
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
@@ -553,12 +784,14 @@ BOFERR DisClient::WriteWebSocket(const char *_pData_c)
   }
   return Rts_E;
 }
+
 BOFERR DisClient::OnWebSocketOpenEvent(const EmscriptenWebSocketOpenEvent *_pWebsocketEvent_X)
 {
   BOFERR Rts_E = BOF_ERR_EINVAL;
 
   if (_pWebsocketEvent_X)
   {
+    mWsConnected_B = true;
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
@@ -580,6 +813,9 @@ BOFERR DisClient::OnWebSocketCloseEvent(const EmscriptenWebSocketCloseEvent *_pW
 
   if (_pWebsocketEvent_X)
   {
+    mWsConnected_B = false;
+    mWs = -1;
+    DIS_CLIENT_END_OF_COMMAND();
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
@@ -588,6 +824,8 @@ BOFERR DisClient::OnWebSocketMessageEvent(const EmscriptenWebSocketMessageEvent 
 {
   BOFERR Rts_E = BOF_ERR_EINVAL;
   EMSCRIPTEN_RESULT Sts;
+  BOF::BOF_RAW_BUFFER *pRawBuffer_X;
+  bool FinalFragment_B;
 
   if (_pWebsocketEvent_X)
   {
@@ -600,11 +838,37 @@ BOFERR DisClient::OnWebSocketMessageEvent(const EmscriptenWebSocketMessageEvent 
     {
       printf("----------------->BIN message from %d: %d:%s\n", _pWebsocketEvent_X->socket, _pWebsocketEvent_X->numBytes, _pWebsocketEvent_X->data);
     }
-    mLastWebSocketMessage_S = std::string((const char *)_pWebsocketEvent_X->data, _pWebsocketEvent_X->numBytes);
-    Rts_E = BOF_ERR_NO_ERROR;
+    mpuRxBufferCollection->SetAppendMode(0, true, nullptr); // By default we append
+    FinalFragment_B = true;
+    Rts_E = mpuRxBufferCollection->PushBuffer(0, _pWebsocketEvent_X->numBytes, (const uint8_t *)_pWebsocketEvent_X->data, &pRawBuffer_X);
+    printf("err %d data %d:%p Rts:indx %d slot %x 1: %x:%p 2: %x:%p\n", Rts_E, _pWebsocketEvent_X->numBytes, (const uint8_t *)_pWebsocketEvent_X->data, pRawBuffer_X->IndexInBuffer_U32, pRawBuffer_X->SlotEmpySpace_U32, pRawBuffer_X->Size1_U32, pRawBuffer_X->pData1_U8, pRawBuffer_X->Size2_U32, pRawBuffer_X->pData2_U8);
+    mpuRxBufferCollection->SetAppendMode(0, !FinalFragment_B, &pRawBuffer_X); // If it was the final one, we stop append->Result is pushed and committed
+    if (Rts_E != BOF_ERR_NO_ERROR)
+    {
+      CloseWebSocket();
+    }
   }
   return Rts_E;
 }
+
+#else
+
+BOFERR DisClient::OpenWebSocket()
+{
+  BOFERR Rts_E = BOF_ERR_NOT_SUPPORTED;
+  return Rts_E;
+}
+BOFERR DisClient::CloseWebSocket()
+{
+  BOFERR Rts_E = BOF_ERR_NOT_SUPPORTED;
+  return Rts_E;
+}
+BOFERR DisClient::WriteWebSocket(const char *_pData_c)
+{
+  BOFERR Rts_E = BOF_ERR_NOT_SUPPORTED;
+  return Rts_E;
+}
+
 #endif
 
 /*
@@ -875,6 +1139,7 @@ send_command: Invalid JSON format.
 Cannot 'GET /P6x/DebugPageLayout' from 'ws://10.129.171.112:8080'
 select_navigation_tree_node crt_page_index 0 crt_page 800 crt_sub_page 0 col[i] (800, 0)
 select_navigation_tree_node selection_set I003 page_label Gigabit - Configuration sub_page_label Ip configuration
+
 Send seq '5' cmd 'GET /Gbe/DebugPageInfo/800/0/?chnl=0&flag=3&key=None&user_input=&seq=5'.
 AbsTime 79888113 nb 1 crt 31427 uS mean 31427.0 uS cmd GET /Gbe/DebugPageInfo/800/0/?chnl=0&flag=3&key=None&user_input=
 DEBUG: DebugPageInfo

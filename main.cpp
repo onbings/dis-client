@@ -80,7 +80,7 @@ int main(int _Argc_i, char *_pArgv[])
 {
   int Rts_i;
   BOF::BOFSTDPARAM StdParam_X;
-  BOF::BOF_IMGUI_PARAM ImguiParam_X;
+  DIS_CLIENT_PARAM DisClientParam_X;
   std::string Cwd_S;
   /*
   https://floooh.github.io/2023/11/11/emscripten-ide.html
@@ -109,7 +109,7 @@ int main(int _Argc_i, char *_pArgv[])
 #if 0
 #if defined(__EMSCRIPTEN__)
 #if defined(IMGUI_IMPL_API)
-// HelloImGui defines and uses its own personal mainloop
+// HelloImGui defines and uses its own personal mainloop (emscripten_set_main_loop_arg)
 #else
   StdParam_X.EmscriptenCallback = EmscriptenCallback;
 #endif
@@ -124,11 +124,13 @@ int main(int _Argc_i, char *_pArgv[])
     // BOF::Bof_GetCurrentDirectory(Cwd_S);
     printf("\nPwd %s\nRunning BofStd V %s on %s under %s\n", Cwd_S.c_str(), StdParam_X.Version_S.c_str(), StdParam_X.ComputerName_S.c_str(), StdParam_X.OsName_S.c_str());
 
-    ImguiParam_X.AppName_S = APP_NAME;
-    ImguiParam_X.Size_X = BOF::BOF_SIZE<uint32_t>(800, 600);
-    ImguiParam_X.Log = DisClient::S_Log;
-    ImguiParam_X.ShowDemoWindow_B = true;
-    std::unique_ptr<DisClient> puDisClient = std::make_unique<DisClient>(ImguiParam_X);
+    DisClientParam_X.RxBufferSize_U32 = 0x100000;
+    DisClientParam_X.NbMaxBufferEntry_U32 = 128;
+    DisClientParam_X.ImguiParam_X.AppName_S = APP_NAME;
+    DisClientParam_X.ImguiParam_X.Size_X = BOF::BOF_SIZE<uint32_t>(800, 600);
+    DisClientParam_X.ImguiParam_X.Log = DisClient::S_Log;
+    DisClientParam_X.ImguiParam_X.ShowDemoWindow_B = true;
+    std::unique_ptr<DisClient> puDisClient = std::make_unique<DisClient>(DisClientParam_X);
     Rts_i = (int)puDisClient->MainLoop();
     BOF::Bof_Shutdown();
   }

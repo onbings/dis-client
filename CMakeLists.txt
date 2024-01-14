@@ -265,8 +265,6 @@ hello_imgui_add_app(dis-client
    src/bof_imgui_internal.cpp
    src/bof_imgui_internal.h
 
-   include/bof_web_socket_client.h
-   src/bof_web_socket_client.cpp
   include/dis_client.h
    src/dis_client.cpp
 )
