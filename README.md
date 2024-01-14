@@ -58,8 +58,20 @@ https://floooh.github.io/2023/11/11/emscripten-ide.html in vscode
 https://code.visualstudio.com/blogs/2023/06/05/vscode-wasm-wasi
 https://decovar.dev/blog/2023/11/20/webassembly-with-pthreads/ pthread
 https://emscripten.org/docs/porting/pthreads.html#blocking-on-the-main-browser-thread 
-
+https://github.com/WebAssembly/design/issues/1271 ->Mem and pthread in emscripten
+https://www.jamesfmackenzie.com/2019/12/08/webassembly-loading-files/ fs with emscripten
+https://www.jamesfmackenzie.com/2019/12/03/webassembly-emscripten-loops/ infinite loop
+https://www.alxm.org/notes/emscripten.html#show-application-on-an-html-page persist, loop, sdl, audio...
 How to quickly create a truly multi-platform application with Dear ImGui and Hello ImGui (for Windows, Linux, macOS, iOS, and as a web application), based on an example where we develop a simple RPN Calculator.
+
+
+create a duplicate of C:\pro\emsdk\upstream\emscripten\cmake\Modules\Platform\Emscripten.cmake and call it emscripten-pthread.cmake
+add the following line after set(CMAKE_CXX_COMPILER_RANLIB "${CMAKE_RANLIB}")
+#BHA
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -s NO_DISABLE_EXCEPTION_CATCHING -s ALLOW_MEMORY_GROWTH -s TOTAL_STACK=8388608")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -s NO_DISABLE_EXCEPTION_CATCHING -s ALLOW_MEMORY_GROWTH -s TOTAL_STACK=8388608")
+message("==CMAKE_CXX_FLAGS EMSCRIPTEN=================================>"  ${CMAKE_CXX_FLAGS})
+
 
 Links:
 =====

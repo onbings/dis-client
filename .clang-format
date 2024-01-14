@@ -118,7 +118,7 @@ IndentPPDirectives: None
 IndentRequiresClause: true
 IndentWidth:     2
 IndentWrappedFunctionNames: false
-InsertBraces:    true
+InsertBraces:    false
 InsertTrailingCommas: None
 JavaScriptQuotes: Leave
 JavaScriptWrapImports: true

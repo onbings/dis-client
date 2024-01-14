@@ -3,7 +3,7 @@
     "!Vc_Def(vcprj_var_def.???.json)": "",
     "configurations": [
         {
-            "!Vc_Inc(debug_mp_launch.vcprj)": "dis-client,app_abc"
+            "!Vc_Inc(debug_mp_launch.vcprj)": "ut_disclient,dis-client"
         },
         {
             "!Vc_Gen(VcRun:All:Pyt:vcprj:settings,debug_python_script.vcprj,)": "./vcprj.py,--jsonin=vcprj_settings.json;--jsonout=../.vscode/settings.json;--verbose;--sys=Win,${workspaceFolder}/vcprj"

@@ -1,0 +1,23 @@
+"name":  "$[0]",
+"preLaunchTask": "$[1]",
+"type": "node",
+"request": "launch",
+"program": "$[2]",
+"args": [
+    "$[-3]"
+],
+"cwd": "$[4]",
+"stopOnEntry": false,
+"runtimeExecutable": "node",
+"runtimeArgs": [
+    "--inspect-brk"
+],
+"restart": true,
+"sourceMaps": true,
+"outFiles": [
+    "$[7]"
+],
+"smartStep": true,
+"skipFiles": [],
+"internalConsoleOptions": "openOnSessionStart",
+"outputCapture": "std"

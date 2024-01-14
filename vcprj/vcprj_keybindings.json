@@ -2,7 +2,7 @@
     {
         "key": "ctrl+alt+t",
         "command": "workbench.action.tasks.runTask",
-        "!Vc_Sys(args)": "VcTsk:CMake:Conf:???:dis-client"
+        "!Vc_Sys(args)": "VcTsk:CMake:Conf:???:Html:bofstd"
     },
     {
         "key": "ctrl+oem_6",

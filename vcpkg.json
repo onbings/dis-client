@@ -3,6 +3,11 @@
   "version": "1.0.0.7",
   "description": "The onbings imgui disclient c++ Multiplatform library",
   "dependencies": [
-    { "name": "nlohmann-json" }
+    {
+      "name": "nlohmann-json"
+    },
+    {
+      "name": "bofstd"
+    }
   ]
 }

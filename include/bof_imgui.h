@@ -44,7 +44,7 @@ Warning: if using SDL, you will need to #define SDL_MAIN_HANDLED before any incl
 #include <SDL.h>
 #else
 #endif
-#include "bofstd.h"
+#include <bofstd/bofstd.h>
 #include <functional>
 #include <stdarg.h>
 

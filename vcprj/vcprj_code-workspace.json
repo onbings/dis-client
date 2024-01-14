@@ -4,7 +4,7 @@
             "path": ".."
         },
         {
-            "path": "../../../../bld/dis-client-web"
+            "path": "../../../../bld/bofstd-web"
         }
     ]
 }

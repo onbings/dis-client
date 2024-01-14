@@ -14,9 +14,9 @@
  */
 #pragma once
 
-#include "bofstd.h"
-#include <thread>
+#include <bofstd/bofstd.h>
 #include <functional>
+#include <thread>
 
 BEGIN_BOF_NAMESPACE()
 
@@ -35,11 +35,11 @@ private:
 
   std::string mpUrl_S;
   WebSocketClientState mState_E;
-  bool mWaitForCmdReply_B=false;
+  bool mWaitForCmdReply_B = false;
   std::string mReply_S;
-  uint32_t mReplyId_U32=0;
+  uint32_t mReplyId_U32 = 0;
   std::thread mClientThread;
-  bool mConnected_B=false;
+  bool mConnected_B = false;
 
   std::function<void()> mOnOpen;
   std::function<void(const std::string &)> mOnRx;
@@ -56,12 +56,12 @@ public:
   BOFERR SendCommand(uint32_t _TimeoutInMs_U32, const std::string &_rCmd_S, std::string &_rReply_S);
   std::string WsUrl();
   bool IsConnected();
-  BOFERR Connect(int timeout_in_ms, const std::string &url);
+  BOFERR Connect(uint32_t _TimeoutInMs_U32, const std::string &_rUrl_S);
   BOFERR Disconnect();
   void OnOpen();
-  void OnMessage(const std::string &message);
-  void OnClose(const std::string &close_msg);
-  void OnError(const std::string &error);
+  void OnMessage(const std::string &_rMessage_S);
+  void OnClose(const std::string &_rMessage_S);
+  void OnError(const std::string &_rMessage_S);
 };
 
 END_BOF_NAMESPACE()

@@ -1,6 +1,10 @@
     "!Vc_Inc(problem_matcher_gdb.vcprj)": "",
-    "!Vc_Gen(VcTsk:Web:$[0],exec_cmd.vcprj,Debug $[0] in chrome web browser)": "echo Chrome,,$[???.dbg_loc_binaries],VcTsk:CMake:Build:Web,false"
+    "!Vc_Gen(VcTsk:Web:Html:$[0],exec_cmd.vcprj,Debug $[0] in chrome web browser)": "echo Chrome,,$[???.dbg_loc_binaries],VcTsk:CMake:Build:Web,false"
 },
+{
+    "!Vc_Inc(problem_matcher_gdb.vcprj)": "",
+    "!Vc_Gen(VcTsk:Web:Node:$[0],exec_cmd.vcprj,Debug $[0] with node)": "echo Node,,$[???.dbg_loc_binaries],VcTsk:CMake:Build:Web,false"
+},    
 {    
     "!Vc_Inc(problem_matcher_null.vcprj)": "",
     "!Vc_Gen(VcTsk:Xts:Gdb:$[0],exec_cmd.vcprj,Debug $[0] with VSCode under windows)": "cd $[Lin.dbg_rem_binaries]/bin,,,VcTsk:CMake:Build:Win,true"

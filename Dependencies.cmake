@@ -29,3 +29,4 @@ endif()
 # ===========================
 #find_package_dependency(date REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(bofstd CONFIG REQUIRED)

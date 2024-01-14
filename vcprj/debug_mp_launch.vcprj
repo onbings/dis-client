@@ -1,5 +1,8 @@
-    "!Vc_Gen(VcRun:Web:$[0],debug_web_app.vcprj,VcTsk:Web:$[0])": "$[???.dbg_rem_$[0]],,,$[???.dbg_rem_ip],$[???.dbg_rem_port],$[???.cmake_bld_root]"
+    "!Vc_Gen(VcRun:Web:Html:$[0],debug_html_web_app.vcprj,VcTsk:Web:Html:$[0])": "$[???.dbg_rem_$[0]],,,$[???.dbg_rem_ip],$[???.dbg_rem_port],$[???.cmake_src_root]"
 },
+{
+    "!Vc_Gen(VcRun:Web:Node:$[0],debug_node_web_app.vcprj,VcTsk:Web:Node:$[0])": "$[???.dbg_loc_$[0]],,,$[???.dbg_loc_binaries],,$[???.dbg_loc_$[0]],$[???.cmake_src_root]"
+},    
 {
     "!Vc_Gen(VcRun:Win:VsC:$[0],debug_windows_app.vcprj,VcTsk:CMake:Build:Win)": "$[Win.dbg_loc_$[0]],-d15,$[Win.dbg_loc_binaries]/bin"
 },

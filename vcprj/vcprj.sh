@@ -37,7 +37,7 @@ if [ $exit_code -ne 0 ]; then
     echo "Error: Failed to execute the parsing of vcprj_settings."
     exit $exit_code
 fi
-python3 ./vcprj.py --jsonin=./vcprj_code-workspace.json --jsonout=../.vscode/dis-client.code-workspace --verbose --sys=$sys
+python3 ./vcprj.py --jsonin=./vcprj_code-workspace.json --jsonout=../.vscode/bofstd.code-workspace --verbose --sys=$sys
 if [ $exit_code -ne 0 ]; then
     echo "Error: Failed to execute the parsing of vcprj_code-workspace."
     exit $exit_code

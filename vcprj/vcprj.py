@@ -119,7 +119,7 @@ if __name__ == "__main__":
     cli_parser.set_defaults(dryrun=False)
     # cli_parser.add_argument("--version",   dest="version",   help="The version to override")
 
-    print(f"[VCPRJ] (v) 2.1.0 (d) 21/06/23 (a) B.harmel\n")
+    print(f"[VCPRJ] (v) 2.1.1 (d) 01/08/24 (a) B.harmel\n")
     argc = len(sys.argv)
     print(f"{argc-1} command line arguments passed to '{sys.argv[0]}' (cwd '{os.getcwd()}')")
     for i in range(1, argc):
@@ -145,11 +145,9 @@ if __name__ == "__main__":
     vcprj_cmd_re = re.compile(r"\s*\"!Vc_(\w*).*\((.*)\).*:.*\"(.*)\"")
     # regex to find text between $[] such as $[2] (Gen Arg) or $[VcprjWinParam.dbg_local_ut_BofStd]
     vcprj_var_re = re.compile(r"\$\[(.*?)\]")
-    pre_processed_file = os.path.splitext(
-        args.jsonin)[0] + ".PreProcessed.json"
+    pre_processed_file = os.path.splitext(args.jsonin)[0] + ".PreProcessed.json"
     backup_file = os.path.splitext(args.jsonout)[0]+".back.json"
-    print(
-        f"[VCPRJ] ------- Make a backup of '{args.jsonout}' into '{backup_file}' -------")
+    print(f"[VCPRJ] ------- Make a backup of '{args.jsonout}' into '{backup_file}' -------")
     if os.path.exists(args.jsonout):
         shutil.copy2(args.jsonout, backup_file)
 
@@ -192,8 +190,7 @@ if __name__ == "__main__":
     #    lines = io_include.readlines()
     # beautify_json(pre_processed_file, pre_processed_file)
     gen_file = os.path.splitext(args.jsonin)[0] + ".Generation.json"
-    print(
-        f"[VCPRJ] ------- Pass 2: Process '{pre_processed_file}' generation into '{gen_file}' -------")
+    print(f"[VCPRJ] ------- Pass 2: Process '{pre_processed_file}' generation into '{gen_file}' -------")
     with open(pre_processed_file, "r") as io_pre_processed_file_in:
         with open(gen_file, "w") as io_gen_file_out:
             for line in io_pre_processed_file_in:

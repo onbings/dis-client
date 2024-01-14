@@ -524,6 +524,8 @@ DEBUG: DebugPageInfo
 */
 
 #include "bof_imgui.h"
+#include <bofstd/boffs.h>
+#include <bofstd/bofstd.h>
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -544,7 +546,6 @@ DEBUG: DebugPageInfo
 //"wss://echo.websocket.org",
 #include <emscripten/emscripten.h>
 #include <emscripten/websocket.h>
-
 EM_BOOL WebSocket_OnOpen(int _Event_i, const EmscriptenWebSocketOpenEvent *_pWebsocketEvent_X, void *_pUserData);
 EM_BOOL WebSocket_OnError(int _Event_i, const EmscriptenWebSocketErrorEvent *_pWebsocketEvent_X, void *_pUserData);
 EM_BOOL WebSocket_OnClose(int _Event_i, const EmscriptenWebSocketCloseEvent *_pWebsocketEvent_X, void *_pUserData);
@@ -667,10 +668,14 @@ public:
   void V_LoadAdditionalFonts() override
   {
     std::string FontFilename_S = "./assets/font/cour.ttf";
-
-#if defined(__EMSCRIPTEN__)
+    /*
+        FILE *pIo_X = fopen(FontFilename_S.c_str(), "r");
+        if (pIo_X)
+        {
+          fclose(pIo_X);
+        }
+    */
     if (HelloImGui::AssetExists(FontFilename_S))
-#endif
     {
       mpConsoleFont_X = LoadFont(FontFilename_S.c_str(), 16, &mConsoleFontIndex_U32, &mNbFontLoaded_U32);
     }
@@ -1027,7 +1032,6 @@ public:
     return Rts_E;
   }
 
-
 #if defined(__EMSCRIPTEN__)
 
   BOFERR OpenWebSocket()
@@ -1192,17 +1196,116 @@ EM_BOOL WebSocket_OnMessage(int _Event_i, const EmscriptenWebSocketMessageEvent 
 }
 
 #endif
+#if defined(__EMSCRIPTEN__)
+BOFERR EmscriptenCallback(void *_pArg)
+{
+  BOFERR Rts_E = BOF_ERR_NO_ERROR;
+  int i, Len_i;
+  FILE *pIo_X;
+  char pTxt_c[0x100], pFn_c[] = "/offline/any_file.bha";
+
+  const std::filesystem::directory_iterator end;
+  for (std::filesystem::directory_iterator it("/"); it != end; ++it)
+  {
+    const std::filesystem::path &entry = it->path();
+    printf("root: %s\n", entry.c_str());
+  }
+
+  pIo_X = fopen(pFn_c, "rb");
+  if (pIo_X)
+  {
+    for (i = 0; i < 10; i++)
+    {
+      if (fgets(pTxt_c, sizeof(pTxt_c), pIo_X) == nullptr)
+      {
+        break;
+      }
+      else
+      {
+        printf("[%d] '%s'\n", i, pTxt_c);
+      }
+    }
+    fclose(pIo_X);
+  }
+  else
+  {
+    pIo_X = fopen(pFn_c, "wb");
+    if (pIo_X)
+    {
+      for (i = 0; i < 10; i++)
+      {
+        Len_i = sprintf(pTxt_c, "This is line %d\n", i);
+        if (fwrite(pTxt_c, Len_i, 1, pIo_X) != 1)
+        {
+          break;
+        }
+      }
+      fclose(pIo_X);
+    }
+  }
+  for (std::filesystem::directory_iterator it("/offline"); it != end; ++it)
+  {
+    const std::filesystem::path &entry = it->path();
+    printf("offline: %s\n", entry.c_str());
+  }
+  Rts_E = BOF_ERR_FINISHED;
+  return Rts_E;
+}
+#endif
 
 int main(int _Argc_i, char *_pArgv[])
 {
   int Rts_i;
+  BOF::BOFSTDPARAM StdParam_X;
+  std::string Cwd_S;
+  /*
+  https://floooh.github.io/2023/11/11/emscripten-ide.html
+  Breakpoints in WebAssembly code are resolved asynchronously, so breakpoints hit early on in a program’s lifecycle may be missed. There are plans to fix this in the future. If you’re debugging in a browser, you can refresh the page for your breakpoint to be hit. If you’re in Node.js, you can add an artificial delay, or set another breakpoint, after your WebAssembly module is loaded but before your desired breakpoint is hit.
+  Hopefully this problem will be fixed soon-ish, since it’s currently the most annoying.
+  One workaround is to first set a breakpoint in the Javascript launch file at a point where the WASM blob has been loaded.
+  Load the file binaries/bin/dis-client.js into the editor, search the function callMain, and set a breakpoint there.
 
-  BOF::BOF_IMGUI_PARAM ImguiParam_X;
-  ImguiParam_X.AppName_S = APP_NAME;
-  ImguiParam_X.Size_X = BOF::BOF_SIZE<uint32_t>(800, 600);
-  ImguiParam_X.Log = DisClient::S_Log;
-  ImguiParam_X.ShowDemoWindow_B = true;
-  std::unique_ptr<DisClient> puDisClient = std::make_unique<DisClient>(ImguiParam_X);
-  Rts_i = (int)puDisClient->MainLoop();
+  To debug bof fct, put brk on the call in c++, step in javascript, in getWasmTableEntry the func object contains the path to the source file of the bof fct:
+  C:\pro\vcpkg\buildtrees\bofstd\src\08de758d7f-37ed795cab.clean\lib\src\bofsystem.cpp
+
+ function invoke_vi(index,a1) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1); ------------------------------->var getWasmTableEntry = (funcPtr) => {
+  } catch(e) {                                                      var func = wasmTableMirror[funcPtr];
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+  */
+  BOF::Bof_MsSleep(1000);
+  BOF::Bof_MsSleep(0);
+  BOF::Bof_MsSleep(0);
+  BOF::Bof_MsSleep(0);
+  BOF::Bof_MsSleep(0);
+  StdParam_X.AssertInRelease_B = true;
+  StdParam_X.AssertCallback = nullptr;
+#if defined(__EMSCRIPTEN__)
+  StdParam_X.EmscriptenCallback = EmscriptenCallback;
+  StdParam_X.EmscriptenCallbackFps_U32 = 0;
+  StdParam_X.pEmscriptenCallbackArg = (void *)0x12345678;
+  StdParam_X.pPersistentRootDir_c = "/offline";
+  StdParam_X.ExitOnBofShutdown_B = true;
+#endif
+  if (Bof_Initialize(StdParam_X) == BOF_ERR_NO_ERROR)
+  {
+    // BOF::Bof_GetCurrentDirectory(Cwd_S);
+    printf("\nPwd %s\nRunning BofStd V %s on %s under %s\n", Cwd_S.c_str(), StdParam_X.Version_S.c_str(), StdParam_X.ComputerName_S.c_str(), StdParam_X.OsName_S.c_str());
+
+    BOF::BOF_IMGUI_PARAM ImguiParam_X;
+    ImguiParam_X.AppName_S = APP_NAME;
+    ImguiParam_X.Size_X = BOF::BOF_SIZE<uint32_t>(800, 600);
+    ImguiParam_X.Log = DisClient::S_Log;
+    ImguiParam_X.ShowDemoWindow_B = true;
+    std::unique_ptr<DisClient> puDisClient = std::make_unique<DisClient>(ImguiParam_X);
+    Rts_i = (int)puDisClient->MainLoop();
+    BOF::Bof_Shutdown();
+  }
   return Rts_i;
 }
