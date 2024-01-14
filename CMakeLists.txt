@@ -1,7 +1,8 @@
 #see README.md
-#cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_GENERATOR=Ninja -DCMAKE_BUILD_TYPE=Debug -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe -G Ninja 
+#cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe -G Ninja 
 #https://github.com/microsoft/vcpkg/discussions/36049
 #https://github.com/microsoft/vcpkg/discussions/30108#top
+
 cmake_minimum_required(VERSION 3.28)
 
 # Paranoid check : in-source generation is forbidden
@@ -35,7 +36,7 @@ option(DISCLIENT_FORCE_EXPORT_ALL  "Force exporting all symbols of dis-client li
 option(EMSCRIPTEN_GEN_HTML "EMSCRIPTEN generateq .wasm and .js file. If you set this option to ON we also generate an html container" OFF)
 set(DISCLIENT_EMSCRIPTEN_MEMORY 256MB CACHE STRING "Specify emscripten default memory size")
 message("emscripten default memory size: ${DISCLIENT_EMSCRIPTEN_MEMORY}")
-set(DISCLIENT_EMSCRIPTEN_STACK 8MB CACHE STRING "Specify emscripten default stack size")
+set(DISCLIENT_EMSCRIPTEN_STACK 4MB CACHE STRING "Specify emscripten default stack size")
 message("emscripten default stack size: ${DISCLIENT_EMSCRIPTEN_STACK}")
 set(DISCLIENT_EMSCRIPTEN_THREAD_POOL 4 CACHE STRING "Specify emscripten default thread pool size")
 message("emscripten default thread pool size: ${DISCLIENT_EMSCRIPTEN_THREAD_POOL}")
@@ -62,6 +63,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_COLOR_MAKEFILE ON)
 SET(CMAKE_VERBOSE_MAKEFILE ON)
 # set(CMAKE_DEBUG_POSTFIX _d)
+
 if (EMSCRIPTEN)
 
 #sometime it cannot find pthread. If i force it in C:\Program Files\CMake\share\cmake-3.28\Modules\FindThreads.cmake it works...
@@ -71,7 +73,7 @@ if (EMSCRIPTEN)
 
 #https://decovar.dev/blog/2023/11/20/webassembly-with-pthreads/
   set(HELLOIMGUI_EMSCRIPTEN_PTHREAD ON)
-  set(HELLOIMGUI_EMSCRIPTEN_PTHREAD_ALLOW_MEMORY_GROWTH OFF)
+  set(HELLOIMGUI_EMSCRIPTEN_PTHREAD_ALLOW_MEMORY_GROWTH ON)
 
   if (EMSCRIPTEN_GEN_HTML)
     message("===EMSCRIPTEN=== Add .html to .wasm and .js files")
@@ -80,8 +82,8 @@ if (EMSCRIPTEN)
     message("===EMSCRIPTEN=== Generate .wasm and .js files")
   endif()
 
-  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -s NO_DISABLE_EXCEPTION_CATCHING")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -s NO_DISABLE_EXCEPTION_CATCHING")
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread")  #hang with imgui: -s NO_DISABLE_EXCEPTION_CATCHING
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")  #hang with imgui: -s NO_DISABLE_EXCEPTION_CATCHING
 #ici ca bloque qq part dans imgui car je pense qu'on est dans un autre thread entre imgui et le main...
 #  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -sPROXY_TO_PTHREAD") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
 #  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -sPROXY_TO_PTHREAD") #-sUSE_PTHREADS=1") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY") # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
@@ -95,8 +97,8 @@ if (EMSCRIPTEN)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
   endif ()
-    message("===EMSCRIPTEN=== CMAKE_CXX_FLAGS is ${CMAKE_CXX_FLAGS}")
-  endif()
+  message("===EMSCRIPTEN=== CMAKE_CXX_FLAGS is ${CMAKE_CXX_FLAGS}")
+endif()
 
 # For shared libraries we need to compile with "-fPIC"
 # But for static libraries user can choose

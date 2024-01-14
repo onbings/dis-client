@@ -44,7 +44,6 @@ void LogHelper(Logger &_rLogFunction, const char *_pFormat_c, ...)
 Bof_ImGui::Bof_ImGui(const BOF_IMGUI_PARAM &_rImguiParam_X)
 {
   mImguiParam_X = _rImguiParam_X;
-  mLastError_E = BOF_ERR_INIT;
   mLastError_E = BOF_ERR_NO_ERROR;
 }
 Bof_ImGui::~Bof_ImGui()
@@ -142,7 +141,14 @@ std::string Bof_ImGui::S_GetKeyboardState()
 
   return Rts_S;
 }
-
+void MyGui()
+{
+  ImGui::Text("Hello, world");
+  if (ImGui::Button("Exit"))
+  {
+    HelloImGui::GetRunnerParams()->appShallExit = true;
+  }
+}
 BOFERR Bof_ImGui::MainLoop()
 {
   BOFERR Rts_E = mLastError_E;
@@ -152,6 +158,12 @@ BOFERR Bof_ImGui::MainLoop()
   {
     mShowDemoWindow_B = mImguiParam_X.ShowDemoWindow_B;
 
+    // HelloImGui::SimpleRunnerParams simpleRunnerParams;
+    // simpleRunnerParams.guiFunction = MyGui;
+    // simpleRunnerParams.windowSizeAuto = true;
+    // simpleRunnerParams.windowTitle = "Example";
+    // HelloImGui::Run(simpleRunnerParams);
+    // return Rts_E;
     /* MobileCallbacks **is a struct that contains callbacks that are called by the application when running under "Android, iOS and WinRT".
     #ifdef HELLOIMGUI_MOBILEDEVICE
       if (params.callbacks.mobileCallbacks.OnResume)
@@ -166,6 +178,7 @@ BOFERR Bof_ImGui::MainLoop()
     RunnerParam_X.callbacks.PreNewFrame = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_PreNewFrame);
     // If callback not defined, call Impl_Frame_3D_ClearColor();
     // RunnerParam_X.callbacks.CustomBackground = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_CustomBackground);
+    RunnerParam_X.callbacks.CustomBackground = nullptr;
     RunnerParam_X.callbacks.ShowMenus = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_ShowMenus);
     RunnerParam_X.callbacks.ShowStatus = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_ShowStatus);
     RunnerParam_X.callbacks.ShowGui = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_ShowGui);
@@ -399,7 +412,7 @@ void Bof_ImGui::V_LoadAdditionalFonts()
 }
 void Bof_ImGui::V_PreNewFrame()
 {
-  // DBG_LOG("V_PreNewFrame\n", 0); // Before ImGui::NewFrame();
+  //  DBG_LOG("V_PreNewFrame\n", 0); // Before ImGui::NewFrame();
 }
 void Bof_ImGui::V_CustomBackground()
 {

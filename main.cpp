@@ -1263,7 +1263,7 @@ int main(int _Argc_i, char *_pArgv[])
   Breakpoints in WebAssembly code are resolved asynchronously, so breakpoints hit early on in a program’s lifecycle may be missed. There are plans to fix this in the future. If you’re debugging in a browser, you can refresh the page for your breakpoint to be hit. If you’re in Node.js, you can add an artificial delay, or set another breakpoint, after your WebAssembly module is loaded but before your desired breakpoint is hit.
   Hopefully this problem will be fixed soon-ish, since it’s currently the most annoying.
   One workaround is to first set a breakpoint in the Javascript launch file at a point where the WASM blob has been loaded.
-  Load the file binaries/bin/dis-client.js into the editor, search the function callMain, and set a breakpoint there.
+  Load the file localhost:8080/binaries/bin/dis-client.js into the editor, search the function callMain, and set a breakpoint there.
 
   To debug bof fct, put brk on the call in c++, step in javascript, in getWasmTableEntry the func object contains the path to the source file of the bof fct:
   C:\pro\vcpkg\buildtrees\bofstd\src\08de758d7f-37ed795cab.clean\lib\src\bofsystem.cpp
@@ -1279,19 +1279,21 @@ int main(int _Argc_i, char *_pArgv[])
   }
 }
   */
-  BOF::Bof_MsSleep(1000);
-  BOF::Bof_MsSleep(0);
-  BOF::Bof_MsSleep(0);
-  BOF::Bof_MsSleep(0);
-  BOF::Bof_MsSleep(0);
+  BOF::Bof_MsSleep(2000);
   StdParam_X.AssertInRelease_B = true;
   StdParam_X.AssertCallback = nullptr;
+#if 0
 #if defined(__EMSCRIPTEN__)
+#if defined(IMGUI_IMPL_API)
+// HelloImGui defines and uses its own personal mainloop
+#else
   StdParam_X.EmscriptenCallback = EmscriptenCallback;
+#endif
   StdParam_X.EmscriptenCallbackFps_U32 = 0;
   StdParam_X.pEmscriptenCallbackArg = (void *)0x12345678;
   StdParam_X.pPersistentRootDir_c = "/offline";
   StdParam_X.ExitOnBofShutdown_B = true;
+#endif
 #endif
   if (Bof_Initialize(StdParam_X) == BOF_ERR_NO_ERROR)
   {
