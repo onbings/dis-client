@@ -7,4 +7,4 @@
 "Help:; or ;; delimiter":"; delimiter wil expand the variable with enclosing quotes \"arg1\",\"arg2\" ;; delimitter need an even size list of arg and replace thme by \"arg1\":\"val1\",...",
 "Help://": "Naming convention 1: VcRun|VcTsk 2: Win|Tge|Dok|All 3:Pyt|Gdb|VsC 4:PrjName",
 "Help://": "If you need to escape a separator character use \\char_to_escape"
-"!Vc_Sys(args)": "VcTsk:CMake:Conf:???:bofstd  will replace ??? by args.sys"
+"!Vc_Sys(args)": "VcTsk:CMake:Conf:???  will replace ??? by args.sys"

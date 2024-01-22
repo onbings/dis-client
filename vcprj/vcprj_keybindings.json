@@ -2,7 +2,7 @@
     {
         "key": "ctrl+alt+t",
         "command": "workbench.action.tasks.runTask",
-        "!Vc_Sys(args)": "VcTsk:CMake:Conf:???:Html:bofstd"
+        "!Vc_Sys(args)": "VcTsk:CMake:Conf:???"
     },
     {
         "key": "ctrl+f7",

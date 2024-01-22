@@ -119,7 +119,7 @@ if __name__ == "__main__":
     cli_parser.set_defaults(dryrun=False)
     # cli_parser.add_argument("--version",   dest="version",   help="The version to override")
 
-    print(f"[VCPRJ] (v) 2.1.1 (d) 01/08/24 (a) B.harmel\n")
+    print(f"[VCPRJ] (v) 2.1.2 (d) 01/08/24 (a) B.harmel\n")
     argc = len(sys.argv)
     print(f"{argc-1} command line arguments passed to '{sys.argv[0]}' (cwd '{os.getcwd()}')")
     for i in range(1, argc):
@@ -135,7 +135,7 @@ if __name__ == "__main__":
         #else:
         #    args.sys = "Lin"  # for $[???.cmake_generator]
     if args.usr == "":            
-        args.usr = getpass.getuser()
+        args.usr = getpass.getuser().upper()
     print(f"Running for user '{args.usr}' target '{args.sys}'")    
     if not os.path.exists(args.jsonin):
         exit_app(f"Cannot find '{args.jsonin}'", 5)

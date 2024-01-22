@@ -36,10 +36,10 @@
             "!Vc_Gen(VcTsk:Setup:Loc:Lin,exec_cmd.vcprj,Create local directory to build for Lin)": "mkdir,-p;$[Lin.cmake_bld_root],,,false"
         },
         {
-            "!Vc_Gen(VcTsk:Deploy:Scp:bofstd,exec_cmd.vcprj,Copy package to remote directory using scp)": "scp,-rp;$[Lin.dbg_loc_binaries]/*;$[Lin.dbg_rem_user]@$[Lin.dbg_rem_ip]:$[Lin.dbg_rem_binaries],,,false"
+            "!Vc_Gen(VcTsk:Deploy:Scp,exec_cmd.vcprj,Copy package to remote directory using scp)": "scp,-rp;$[Lin.dbg_loc_binaries]/*;$[Lin.dbg_rem_user]@$[Lin.dbg_rem_ip]:$[Lin.dbg_rem_binaries],,,false"
         },
         {
-            "!Vc_Gen(VcTsk:Deploy:Rsync:bofstd,exec_cmd.vcprj,Copy package to remote directory using rsync)": "rsync,-av;--exclude='*.core';--exclude='*.a';$[Lin.dbg_loc_binaries]/.;$[Lin.dbg_rem_user]@$[Lin.dbg_rem_ip]:$[Lin.dbg_rem_binaries],,,false"
+            "!Vc_Gen(VcTsk:Deploy:Rsync,exec_cmd.vcprj,Copy package to remote directory using rsync)": "rsync,-av;--exclude='*.core';--exclude='*.a';$[Lin.dbg_loc_binaries]/.;$[Lin.dbg_rem_user]@$[Lin.dbg_rem_ip]:$[Lin.dbg_rem_binaries],,,false"
         },
         {
             "!Vc_Gen(VcTsk:Setup:Rem:Lin,exec_cmd.vcprj,Create remote directories to deploy package and ut data under linux)": "ssh,$[Lin.dbg_rem_user]@$[Lin.dbg_rem_ip];mkdir -p $[Lin.dbg_rem_binaries]/lib && mkdir -p $[Lin.dbg_rem_binaries]/bin,,,false"
@@ -52,25 +52,33 @@
             "!Vc_Gen(VcTsk:CMake:Conf:del-cache,exec_cmd.vcprj,Delete cmake cache)": "powershell,if (Test-Path $[???.dbg_loc_binaries]) { Get-ChildItem $[???.dbg_loc_binaries] | ForEach-Object { Remove-Item $_.FullName -Recurse -Force } } else { exit 0 },,,false"
         },
         {
-            "!Vc_Gen(VcTsk:EmCMake:Conf:Web:Html:bofstd,exec_cmd.vcprj,Launch Cmake to configure build system to target emscripten)": "cmake,-DCMAKE_EXPORT_COMPILE_COMMANDS=1;-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-DCMAKE_CROSSCOMPILING_EMULATOR=$[???.cmake_crosscompiling_emulator];-DFETCHCONTENT_QUIET=OFF;-DCMAKE_VERBOSE_MAKEFILE=ON;-DEMSCRIPTEN_GEN_HTML=ON;-S$[???.cmake_src_root];-B$[???.cmake_bld_root],,,false"
+            "!Vc_Gen(VcTsk:EmCMake:Conf:WebHtml,exec_cmd.vcprj,Launch Cmake to configure build system to target emscripten)": "cmake,-DCMAKE_EXPORT_COMPILE_COMMANDS=1;-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-DCMAKE_CROSSCOMPILING_EMULATOR=$[???.cmake_crosscompiling_emulator];-DCMAKE_VERBOSE_MAKEFILE=ON;-DEMSCRIPTEN_GEN_HTML=ON;-S$[???.cmake_src_root];-B$[???.cmake_bld_root],,,false"
         },
         {
-            "!Vc_Gen(VcTsk:EmCMake:Conf:Web:Node:bofstd,exec_cmd.vcprj,Launch Cmake to configure build system to target emscripten)": "cmake,-DCMAKE_EXPORT_COMPILE_COMMANDS=1;-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-DCMAKE_CROSSCOMPILING_EMULATOR=$[???.cmake_crosscompiling_emulator];-DFETCHCONTENT_QUIET=OFF;-DCMAKE_VERBOSE_MAKEFILE=ON;-DEMSCRIPTEN_GEN_HTML=OFF;-S$[???.cmake_src_root];-B$[???.cmake_bld_root],,,false"
+            "!Vc_Gen(VcTsk:EmCMake:Conf:WebNode,exec_cmd.vcprj,Launch Cmake to configure build system to target emscripten)": "cmake,-DCMAKE_EXPORT_COMPILE_COMMANDS=1;-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-DCMAKE_CROSSCOMPILING_EMULATOR=$[???.cmake_crosscompiling_emulator];-DCMAKE_VERBOSE_MAKEFILE=ON;-DEMSCRIPTEN_GEN_HTML=OFF;-S$[???.cmake_src_root];-B$[???.cmake_bld_root],,,false"
         },
         {
-            "!Vc_Gen(VcTsk:Web:Serve:bofstd,exec_cmd.vcprj,Launch WebServer)": "emrun,--browser;chrome;--port;$[???.dbg_rem_port];--serve_after_close;--serve_after_exit;.,$[???.dbg_loc_binaries],VcTsk:Setup:Loc:Web,false"
+            "!Vc_Gen(VcTsk:Web:Serve,exec_cmd.vcprj,Launch WebServer)": "emrun,--browser;chrome;--port;$[???.dbg_rem_port];--serve_after_close;--serve_after_exit;.,$[???.dbg_loc_binaries],VcTsk:Setup:Loc:Web,false"
         },
         {
-            "!Vc_Gen(VcTsk:CMake:Conf:Web:Html:bofstd,exec_cmd.vcprj,Configure build system to target html emscripten and launch WebServer)": "emrun,--browser;chrome;--port;$[???.dbg_rem_port];--serve_after_close;--serve_after_exit;.,$[???.dbg_loc_binaries],VcTsk:Setup:Loc:Web;VcTsk:EmCMake:Conf:Web:Html:bofstd,false"
+            "label": "VcTsk:CMake:Conf:Web",
+            "type": "shell",
+            "command": "echo Web",
+            "dependsOn": [
+                "VcTsk:CMake:Conf:WebHtml"
+            ]
         },
         {
-            "!Vc_Gen(VcTsk:CMake:Conf:Web:Node:bofstd,exec_cmd.vcprj,Configure build system to target node emscripten)": "echo,Node,$[???.dbg_loc_binaries],VcTsk:Setup:Loc:Web;VcTsk:EmCMake:Conf:Web:Node:bofstd,false"
+            "!Vc_Gen(VcTsk:CMake:Conf:WebHtml,exec_cmd.vcprj,Configure build system to target html emscripten and launch WebServer)": "emrun,--browser;chrome;--port;$[???.dbg_rem_port];--serve_after_close;--serve_after_exit;.,$[???.dbg_loc_binaries],VcTsk:Setup:Loc:Web;VcTsk:EmCMake:Conf:WebHtml,false"
         },
         {
-            "!Vc_Gen(VcTsk:CMake:Conf:Win:bofstd,exec_cmd.vcprj,Launch cmake to configure build system to target Windows)": "cmake,-DCMAKE_TOOLCHAIN_FILE=$[Win.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[Win.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[Win.build_as_shared_lib];-DCMAKE_GENERATOR=$[Win.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-S$[Win.cmake_src_root];-B$[Win.cmake_bld_root],$[Win.cmake_bld_root],VcTsk:Setup:Loc:Win,false"
+            "!Vc_Gen(VcTsk:CMake:Conf:WebNode,exec_cmd.vcprj,Configure build system to target node emscripten)": "echo,Node,$[???.dbg_loc_binaries],VcTsk:Setup:Loc:Web;VcTsk:EmCMake:Conf:WebNode,false"
         },
         {
-            "!Vc_Gen(VcTsk:CMake:Conf:Lin:bofstd,exec_cmd.vcprj,Launch cmake to configure build system to target linux)": "cmake,-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-S$[???.cmake_src_root];-B$[???.cmake_bld_root],$[???.cmake_bld_root],VcTsk:Setup:Loc:Lin;VcTsk:Setup:Rem:Lin,false"
+            "!Vc_Gen(VcTsk:CMake:Conf:Win,exec_cmd.vcprj,Launch cmake to configure build system to target Windows)": "cmake,-DCMAKE_TOOLCHAIN_FILE=$[Win.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[Win.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[Win.build_as_shared_lib];-DCMAKE_GENERATOR=$[Win.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-S$[Win.cmake_src_root];-B$[Win.cmake_bld_root],$[Win.cmake_bld_root],VcTsk:Setup:Loc:Win,false"
+        },
+        {
+            "!Vc_Gen(VcTsk:CMake:Conf:Lin,exec_cmd.vcprj,Launch cmake to configure build system to target linux)": "cmake,-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$[???.cmake_chainload_toolchain];-DCMAKE_TOOLCHAIN_FILE=$[???.cmake_toolchain];-DVCPKG_TARGET_TRIPLET=$[???.vcpkg_triplet];-DBUILD_SHARED_LIBS=$[???.build_as_shared_lib];-DCMAKE_GENERATOR=$[???.cmake_generator];-DCMAKE_BUILD_TYPE=$[All.cmake_bld_type];-S$[???.cmake_src_root];-B$[???.cmake_bld_root],$[???.cmake_bld_root],VcTsk:Setup:Loc:Lin;VcTsk:Setup:Rem:Lin,false"
         }
     ]
 }

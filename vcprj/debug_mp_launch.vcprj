@@ -1,13 +1,13 @@
-    "!Vc_Gen(VcRun:Web:Html:$[0],debug_html_web_app.vcprj,VcTsk:Web:Html:$[0])": "$[???.dbg_rem_$[0]],,,$[???.dbg_rem_ip],$[???.dbg_rem_port],$[???.cmake_src_root]"
+    "!Vc_Gen(VcRun:WebHtml:$[0],debug_html_web_app.vcprj,VcTsk:WebHtml:$[0])": "$[???.dbg_rem_$[0]],,,$[???.dbg_rem_ip],$[???.dbg_rem_port],$[???.cmake_src_root]"
 },
 {
-    "!Vc_Gen(VcRun:Web:Node:$[0],debug_node_web_app.vcprj,VcTsk:Web:Node:$[0])": "$[???.dbg_loc_$[0]],,,$[???.dbg_loc_binaries],,$[???.dbg_loc_$[0]],$[???.cmake_src_root]"
+    "!Vc_Gen(VcRun:WebNode:$[0],debug_node_web_app.vcprj,VcTsk:WebNode:$[0])": "$[???.dbg_loc_$[0]],,,$[???.dbg_loc_binaries],,$[???.dbg_loc_$[0]],$[???.cmake_src_root]"
 },    
 {
-    "!Vc_Gen(VcRun:Win:VsC:$[0],debug_windows_app.vcprj,VcTsk:CMake:Build:Win)": "$[Win.dbg_loc_$[0]],-d15,$[Win.dbg_loc_binaries]/bin"
+    "!Vc_Gen(VcRun:Win:Gdb:$[0],debug_windows_app.vcprj,VcTsk:CMake:Build:Win)": "$[Win.dbg_loc_$[0]],-d15,$[Win.dbg_loc_binaries]/bin"
 },
 {
-    "!Vc_Gen(VcRun:Xts:Gdb:$[0],debug_linux_app.vcprj,VcTsk:Xts:Gdb:$[0])": "$[Lin.dbg_loc_$[0]],,$[Lin.dbg_loc_binaries],$[Lin.dbg_rem_ip],$[Lin.dbg_rem_port],$[Lin.dbg_loc_gdb]"
+    "!Vc_Gen(VcRun:Lin:Gdb:$[0],debug_linux_app.vcprj,VcTsk:Lin:Gdb:$[0])": "$[Lin.dbg_loc_$[0]],,$[Lin.dbg_loc_binaries],$[Lin.dbg_rem_ip],$[Lin.dbg_rem_port],$[Lin.dbg_loc_gdb]"
 },
 {
     "!Vc_Gen(VcRun:Dok:Gbd:$[0],debug_linux_app.vcprj,VcTsk:Dok:Gdb:$[0])": "$[Lin.dbg_loc_$[0]],,$[Lin.dbg_loc_binaries],localhost,$[Lin.dbg_rem_port],$[Lin.dbg_loc_gdb]"

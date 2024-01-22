@@ -53,19 +53,19 @@
         "vcpkg_toolchain": "/opt/evs/sdk/aarch64.cmake",
         "vcpkg_overlay_port": "/home/bha/pro/github/onbings-vcpkg-registry",
         "cmake_toolchain": "/home/bha/pro/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        "cmake_chainload_toolchain": "",
+        "cmake_chainload_toolchain": "/opt/evs/sdk/aarch64.cmake",
         "cmake_crosscompiling_emulator": "",
-        "vcpkg_triplet": "arm64-linux-static",
+        "vcpkg_triplet": "evs-arm64-linux-static",
         "build_as_shared_lib": "OFF",
         "dbg_loc_binaries": "${userHome}/bld/dis-client-lin/binaries",
-        "dbg_loc_ut_disclient": "${userHome}/bld/dis-client-lin/binaries/bin/ut",
-        "dbg_loc_dis-client": "${userHome}/bld/dis-client-lin/binaries/bin/app",
+        "dbg_loc_ut_disclient": "${userHome}/bld/dis-client-lin/binaries/bin/ut_disclient",
+        "dbg_loc_dis-client": "${userHome}/bld/dis-client-lin/binaries/bin/dis-client",
         "dbg_loc_gdb": "/opt/evs/sdk/host/bin/aarch64-linux-gnu-gdb",
         "dbg_rem_binaries": "/tmp/vcprj/dis-client-lin",
-        "dbg_rem_ut_disclient": "/tmp/vcprj/dis-client-lin/bin/ut",
-        "dbg_rem_dis-client": "/tmp/vcprj/dis-client-lin/bin/app",
+        "dbg_rem_ut_disclient": "/tmp/vcprj/dis-client-lin/bin/ut_disclient",
+        "dbg_rem_dis-client": "/tmp/vcprj/dis-client-lin/bin/dis-client",
         "dbg_rem_user": "root",
         "dbg_rem_ip": "10.129.171.112",
-        "dbg_rem_port": "8080"
+        "dbg_rem_port": "2345"
     }
 }

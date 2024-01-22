@@ -309,7 +309,18 @@ void ImFontRenderText(const ImFont *pFont, ImDrawList *draw_list, float size, Im
         {
           const ImFontGlyph *glyph = font->FindGlyph((ImWchar)glyph_code);
           const float cw = glyph == nullptr ? 0.0f : glyph->AdvanceX * (size / font->FontSize);
-          segments.data.back().EndPos = ImVec2(x + cw, y + end_pt_offset_y);
+
+          //BHA bug: dump if only one char
+          // original segments.data.back().EndPos = ImVec2(x + cw, y + end_pt_offset_y);
+          // now:
+          if (segments.data.size())
+          {
+            segments.data.back().EndPos = ImVec2(x + cw, y + end_pt_offset_y);
+          }
+          else
+          {
+            segments.data.push_back({ImVec2(x + cw, y + end_pt_offset_y)});
+          }
         }
         else
         {

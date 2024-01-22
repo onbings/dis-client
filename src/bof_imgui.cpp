@@ -35,9 +35,9 @@ void LogHelper(Logger &_rLogFunction, const char *_pFormat_c, ...)
 #define DBG_LOG(fmt, ...)                             \
   do                                                  \
   {                                                   \
-    if (mImguiParam_X.Log)                            \
+    if (mImguiParam_X.TheLogger)                      \
     {                                                 \
-      LogHelper(mImguiParam_X.Log, fmt, __VA_ARGS__); \
+      LogHelper(mImguiParam_X.TheLogger, fmt, __VA_ARGS__); \
     }                                                 \
   } while (0)
 
@@ -133,7 +133,7 @@ std::string Bof_ImGui::S_GetKeyboardState()
     if (ImGui::IsKeyPressed((ImGuiKey)i_U32, true))
     {
       Rts_S += S_pKeyNameCollection_c[i_U32 - ImGuiKey_Tab];
-      // printf("rts %s\n", Rts_S.c_str());
+      //printf("rts %s\n", Rts_S.c_str());
     }
   }
   // char pKeyCombi_c[0x100];
@@ -207,7 +207,7 @@ BOFERR Bof_ImGui::MainLoop()
     RunnerParam_X.appWindowParams.windowGeometry.windowSizeState = HelloImGui::WindowSizeState::Standard;
     RunnerParam_X.appWindowParams.windowGeometry.windowSizeMeasureMode = HelloImGui::WindowSizeMeasureMode::RelativeTo96Ppi;
     // if true, then save & restore from last run
-    RunnerParam_X.appWindowParams.restorePreviousGeometry = true;
+    RunnerParam_X.appWindowParams.restorePreviousGeometry = false; 
     RunnerParam_X.appWindowParams.borderless = false;
     RunnerParam_X.appWindowParams.resizable = true;
     RunnerParam_X.appWindowParams.hidden = false;
@@ -307,7 +307,26 @@ BOFERR Bof_ImGui::SetNextWindowSize(uint32_t _Width_U32, uint32_t _Height_U32)
   }
   return Rts_E;
 }
+std::vector<BOF_IMGUI_FONT> Bof_ImGui::GetFontList()
+{
+  std::vector<BOF_IMGUI_FONT> Rts;
+  BOF_IMGUI_FONT Font_X;
+  ImFontAtlas *pFontAtlas_X = ImGui::GetIO().Fonts;
+  ImFont *pFont_X;
+  uint32_t i_U32;
 
+  // Get the font atlas and iterate through the available fonts
+  for (i_U32 = 0; i_U32 < pFontAtlas_X->Fonts.Size; ++i_U32)
+  {
+    pFont_X = pFontAtlas_X->Fonts[i_U32];
+    Font_X.Name_S = pFont_X->ConfigData ? pFont_X->ConfigData[0].Name : "Unknown";
+    Font_X.Size_U32 = pFont_X->FontSize;
+    Rts.push_back(Font_X);
+    // Print information about each font
+    DBG_LOG("Font %d: Name - %s, Size - %.2f\n", i_U32, pFont_X->ConfigData ? pFont_X->ConfigData[0].Name : "Unknown", pFont_X->FontSize);
+  }
+  return Rts;
+}
 ImFont *Bof_ImGui::GetFont(uint32_t _FontIndex_U32)
 {
   ImFont *pRts = nullptr;
@@ -318,24 +337,13 @@ ImFont *Bof_ImGui::GetFont(uint32_t _FontIndex_U32)
   }
   return pRts;
 }
-ImFont *Bof_ImGui::LoadFont(const char *_pFontFileTtf_c, uint32_t _FontSizeInPixel_U32, uint32_t *_pFontIndex_U32, uint32_t *_pNbFontLoaded_U32)
+ImFont *Bof_ImGui::LoadFont(const char *_pFontFileTtf_c, uint32_t _FontSizeInPixel_U32)
 {
   ImFont *pRts = nullptr;
 
   if ((mLastError_E == BOF_ERR_NO_ERROR) && (_pFontFileTtf_c) && (_FontSizeInPixel_U32))
   {
     pRts = ImGui::GetIO().Fonts->AddFontFromFileTTF(_pFontFileTtf_c, _FontSizeInPixel_U32, nullptr, nullptr);
-    if (pRts)
-    {
-      if (_pFontIndex_U32)
-      {
-        //*_pFontIndex_U32 = ;
-      }
-      if (_pNbFontLoaded_U32)
-      {
-        //*_pNbFontLoaded_U32 = ;
-      }
-    }
   }
   return pRts;
 }
@@ -457,7 +465,7 @@ bool Bof_ImGui::V_AnyBackendEventCallback(void *_pEvent)
 {
   bool Rts_B = false; // By default let's the system handle events
 #if defined(HELLOIMGUI_USE_SDL)
-#if 1
+#if 0
   SDL_Event *pEvent_X = (SDL_Event *)_pEvent;
   // DBG_LOG("V_AnyBackendEventCallback %p\n", pEvent_X);
   if (pEvent_X)
@@ -865,20 +873,20 @@ BOFERR Bof_ImGui::ShowDemoSpecialTextWindow()
     {
       ImGui::NewLine();
       ImGui::Text("Color the whole text");
-      DisplayText(nullptr, pText1_c, true, false, &tc.Range(pText1_c).TextColor_X(green));
+      DisplayText(nullptr, pText1_c, true, false, &tc.Range(pText1_c).TextColor(green));
 
       // With Bof_ImGui_ImTextCustomization we can chain multiple styles for one range
       ImGui::Text("Or color and underline it at the same time");
-      DisplayText(nullptr, pText1_c, true, false, &tc.Range(pText1_c).TextColor_X(yellow).Unerline(red));
+      DisplayText(nullptr, pText1_c, true, false, &tc.Range(pText1_c).TextColor(yellow).Underline(red));
 
       ImGui::Text("Color the substring of the text");
-      DisplayText(nullptr, pText1_c, true, false, &tc.Clear().Range(pText1_c + 14, pText1_c + 17).TextColor_X(red).Range(pText1_c + 39, pText1_c + 42).TextColor_X(green));
+      DisplayText(nullptr, pText1_c, true, false, &tc.Clear().Range(pText1_c + 14, pText1_c + 17).TextColor(red).Range(pText1_c + 39, pText1_c + 42).TextColor(green));
 
       ImGui::Text("Underline");
-      DisplayText(nullptr, pText1_c, true, false, &tc.Clear().Range(pText1_c).Unerline());
+      DisplayText(nullptr, pText1_c, true, false, &tc.Clear().Range(pText1_c).Underline());
 
       ImGui::Text("Underline with color");
-      DisplayText(nullptr, pText1_c, true, false, &tc.Clear().Range(pText1_c).Unerline(blue));
+      DisplayText(nullptr, pText1_c, true, false, &tc.Clear().Range(pText1_c).Underline(blue));
 
       ImGui::Text("Strikethrough");
       DisplayText(nullptr, pText1_c, true, false, &tc.Clear().Range(pText1_c).Strkethrough());
@@ -973,8 +981,8 @@ BOFERR Bof_ImGui::ShowDemoSpecialTextWindow()
       // text color range
       if (c.textcolor)
       {
-        thestyle.Range(pText2_c + c.txt_1_pos_begin, pText2_c + c.txt_1_pos_end).TextColor_X(c.txt_col_1).Disabled(c.disabled);
-        thestyle.Range(pText2_c + c.txt_2_pos_begin, pText2_c + c.txt_2_pos_end).TextColor_X(c.txt_col_2).Disabled(c.disabled);
+        thestyle.Range(pText2_c + c.txt_1_pos_begin, pText2_c + c.txt_1_pos_end).TextColor(c.txt_col_1).Disabled(c.disabled);
+        thestyle.Range(pText2_c + c.txt_2_pos_begin, pText2_c + c.txt_2_pos_end).TextColor(c.txt_col_2).Disabled(c.disabled);
       }
       // highlight range
       if (c.highlight)
@@ -985,8 +993,8 @@ BOFERR Bof_ImGui::ShowDemoSpecialTextWindow()
       // underline range
       if (c.underline)
       {
-        thestyle.Range(pText2_c + c.ul_1_pos_begin, pText2_c + c.ul_1_pos_end).Unerline(c.ul_col_1);
-        thestyle.Range(pText2_c + c.ul_2_pos_begin, pText2_c + c.ul_2_pos_end).Unerline(c.ul_col_2);
+        thestyle.Range(pText2_c + c.ul_1_pos_begin, pText2_c + c.ul_1_pos_end).Underline(c.ul_col_1);
+        thestyle.Range(pText2_c + c.ul_2_pos_begin, pText2_c + c.ul_2_pos_end).Underline(c.ul_col_2);
       }
       // strikethrough range
       if (c.strikethrough)

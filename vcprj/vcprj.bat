@@ -37,7 +37,7 @@ IF %ERRORLEVEL% NEQ 0 (
     echo Error: Failed to execute the parsing of vcprj_settings.
     exit /b %ERRORLEVEL%
 )
-python vcprj.py --jsonin=vcprj_code-workspace.json --jsonout=../.vscode/bofstd.code-workspace --verbose --sys=%sys%
+python vcprj.py --jsonin=vcprj_code-workspace.json --jsonout=../.vscode/disclient.code-workspace --verbose --sys=%sys%
 IF %ERRORLEVEL% NEQ 0 (
     echo Error: Failed to execute the parsing of vcprj_code-workspace.
     exit /b %ERRORLEVEL%

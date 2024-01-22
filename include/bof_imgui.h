@@ -56,7 +56,7 @@ struct BOF_IMGUI_PARAM
   std::string AppName_S;
   BOF::BOF_SIZE<uint32_t> Size_X;
   bool ShowDemoWindow_B;
-  Logger Log;
+  Logger TheLogger;
 
   BOF_IMGUI_PARAM()
   {
@@ -67,10 +67,23 @@ struct BOF_IMGUI_PARAM
     AppName_S = "";
     Size_X.Reset();
     ShowDemoWindow_B = false;
-    Log = nullptr;
+    TheLogger = nullptr;
   }
 };
-
+struct BOF_IMGUI_FONT
+{
+  std::string Name_S;
+  uint32_t Size_U32;  //To be multiplied by ImGui::GetIO().FontGlobalScale if needed
+  BOF_IMGUI_FONT()
+  {
+    Reset();
+  }
+  void Reset()
+  {
+    Name_S = "";
+    Size_U32 = 0;
+  }
+};
 struct Bof_ImGui_ImTextCustomization
 {
   struct Bof_ImGui_RangeItem
@@ -133,7 +146,7 @@ struct Bof_ImGui_ImTextCustomization
     return *this;
   }
   // The last range specified will be colored
-  Bof_ImGui_ImTextCustomization &TextColor_X(ImColor _Color_X)
+  Bof_ImGui_ImTextCustomization &TextColor(ImColor _Color_X)
   {
     Bof_ImGui_RangeItem &rItem_X = RangeCollection.back();
     rItem_X.Flag_U32 |= Bof_ImGui_RangeItem::FLAG::TEXTCOLOR;
@@ -149,7 +162,7 @@ struct Bof_ImGui_ImTextCustomization
     return *this;
   }
   // The last range specified will be underlined
-  Bof_ImGui_ImTextCustomization &Unerline(ImColor _Color_X = 0)
+  Bof_ImGui_ImTextCustomization &Underline(ImColor _Color_X = 0)
   {
     Bof_ImGui_RangeItem &rItem_X = RangeCollection.back();
     rItem_X.Flag_U32 |= Bof_ImGui_RangeItem::FLAG::UNDERLINE;
@@ -258,8 +271,9 @@ public:
   BOFERR SetCursorPos(int32_t _x_S32, int32_t _y_S32);
   BOFERR DisplayText(const char *_pText_c, bool _Wrapped_B, bool _Disabled_B, const Bof_ImGui_ImTextCustomization *_pTextCustomization_X);
   BOFERR DisplayText(BOF::BOF_POINT_2D<int32_t> *_pCursorPos_X, const char *_pText_c, bool _Wrapped_B, bool _Disabled_B, const Bof_ImGui_ImTextCustomization *_pTextCustomization_X);
+  std::vector<BOF_IMGUI_FONT> GetFontList();
   ImFont *GetFont(uint32_t _FontIndex_U32);
-  ImFont *LoadFont(const char *_pFontFileTtf_c, uint32_t _FontSizeInPixel_U32, uint32_t *_pFontIndex_U32, uint32_t *_pNbFontLoaded_U32);
+  ImFont *LoadFont(const char *_pFontFileTtf_c, uint32_t _FontSizeInPixel_U32);
   BOF::BOF_SIZE<uint32_t> GetTextSize(const char *_pText_c);
 
 protected:

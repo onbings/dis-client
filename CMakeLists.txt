@@ -1,8 +1,10 @@
 #see README.md
-#cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe -G Ninja 
+#cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe -G Ninja
+#cmake -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe
+#cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug  -DHELLOIMGUI_USE_SDL_OPENGL3=ON -SC:/pro/github/dis-client -BC:/bld/dis-client-win
 #https://github.com/microsoft/vcpkg/discussions/36049
 #https://github.com/microsoft/vcpkg/discussions/30108#top
-
+#/opt/evs/evs-gbio/bin/dis_service --DisServer=ws://10.129.171.112:8080
 cmake_minimum_required(VERSION 3.28)
 
 # Paranoid check : in-source generation is forbidden
@@ -73,7 +75,7 @@ if (EMSCRIPTEN)
 
 #https://decovar.dev/blog/2023/11/20/webassembly-with-pthreads/
   set(HELLOIMGUI_EMSCRIPTEN_PTHREAD ON)
-  set(HELLOIMGUI_EMSCRIPTEN_PTHREAD_ALLOW_MEMORY_GROWTH ON)
+  set(HELLOIMGUI_EMSCRIPTEN_PTHREAD_ALLOW_MEMORY_GROWTH OFF)
 
   if (EMSCRIPTEN_GEN_HTML)
     message("===EMSCRIPTEN=== Add .html to .wasm and .js files")
@@ -257,6 +259,7 @@ endif()
 
 # Build your app
 # ==============
+if (EMSCRIPTEN)
 hello_imgui_add_app(dis-client 
    main.cpp 
 
@@ -265,9 +268,32 @@ hello_imgui_add_app(dis-client
    src/bof_imgui_internal.cpp
    src/bof_imgui_internal.h
 
-  include/dis_client.h
+   include/dis_client.h
    src/dis_client.cpp
 )
+else()
+hello_imgui_add_app(dis-client 
+   main.cpp 
+
+   src/bof_imgui.cpp
+   include/bof_imgui.h
+   src/bof_imgui_internal.cpp
+   src/bof_imgui_internal.h
+
+   include/dis_client.h
+   src/dis_client.cpp
+   include/dis_client_websocket.h
+   src/dis_client_websocket.cpp
+
+   webrpc/lib/include/webrpc/grpc.h
+   webrpc/lib/src/grpc.cpp
+   webrpc/lib/include/webrpc/webrpc.h
+   webrpc/lib/include/webrpc/websocket.h
+   webrpc/lib/src/websocket.cpp
+
+   webrpc/lib/include/webrpc/webrpcversioninfo.h.in
+)
+endif()
 
 # hello_imgui_add_app is a helper function, similar to cmake's "add_executable"
 # Usage:
@@ -302,6 +328,14 @@ if (EMSCRIPTEN)
     PRIVATE
       "-lwebsocket.js"
   )
+else()
+  target_link_libraries(dis-client 
+    PRIVATE
+	websockets
+    $<IF:$<TARGET_EXISTS:uv_a>,uv_a,uv>
+    protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite
+    gRPC::gpr gRPC::grpc gRPC::grpc++ gRPC::grpc++_alts	
+  )
 endif()
 
 if (MSVC)
@@ -321,11 +355,13 @@ target_include_directories(dis-client
     ####$<BUILD_INTERFACE:${dis-client_SOURCE_DIR}/lib/include> #for #include <dis-client/dis-client.h> when we do not link with dis-client
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> 
     $<BUILD_INTERFACE:${HELLOIMGUI_IMGUI_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/webrpc/lib/include>  #TDO TBD
 )
 target_link_libraries(dis-client
   PRIVATE
     nlohmann_json::nlohmann_json
     ONBINGS::bofstd
+
 )
 if(DISCLIENT_BUILD_TESTS)
   add_subdirectory(tests)
