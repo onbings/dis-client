@@ -1,0 +1,16 @@
+"name": "$[0]",
+"preLaunchTask": "$[1]",
+"type": "chrome",
+"request": "launch",
+"url": "http://$[5]:$[6]/$[2]",
+"webRoot": "$[7]",
+"trace": true,
+"sourceMaps": true,
+"sourceMapPathOverrides": {
+    "wasm:///": "${workspaceFolder}"
+},
+"userDataDir": "$[7]/chrome",
+"pathMapping": {
+    "/": "$[7]"
+}
+
