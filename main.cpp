@@ -128,13 +128,9 @@ int main(int _Argc_i, char *_pArgv[])
     DisClientParam_X.FontSize_U32 = 14;
     DisClientParam_X.ConsoleWidth_U32 = 80;
     DisClientParam_X.ConsoleHeight_U32 = 25;
-    DisClientParam_X.Label_S = "Xt ip bha";
-    DisClientParam_X.DisServerEndpoint_S = "ws ://10.129.171.112:8080";
-    DisClientParam_X.Page_U32 = 800;
-    DisClientParam_X.SubPage_U32 = 0;
-    DisClientParam_X.RxBufferSize_U32 = 0x100000;
-    DisClientParam_X.NbMaxBufferEntry_U32 = 128;
-    DisClientParam_X.ImguiParam_X.AppName_S = APP_NAME;
+    //DisClientParam_X.TargetName_S = "Xt ip bha";
+    DisClientParam_X.DisServerEndpoint_S = "ws://10.129.171.112:8080";
+    DisClientParam_X.ImguiParam_X.WindowTitle_S = "Dis-Client";
     DisClientParam_X.ImguiParam_X.Size_X = BOF::BOF_SIZE<uint32_t>(1600, 900);  // 800, 600);
     DisClientParam_X.ImguiParam_X.TheLogger = DisClient::S_Log;
     DisClientParam_X.ImguiParam_X.ShowDemoWindow_B = true;

@@ -1,0 +1,26 @@
+if(WIN32)
+add_library(vld SHARED IMPORTED) # or STATIC instead of SHARED
+set_target_properties(vld PROPERTIES 
+  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/vld/Win64/vld_x64.dll"		#Win32/vld_x86.dll for 32 bits
+  IMPORTED_IMPLIB	"${CMAKE_SOURCE_DIR}/vld/Win64/vld.lib"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/vld/include"
+)
+## Error wil be displayed in visual studio immediate windows (use ctrl-alt-i to make it appears) and in c:\tmp\vld.txt (see default vld.ini)
+get_target_property(VldDllPath vld IMPORTED_LOCATION)
+get_filename_component(VldDllDir ${VldDllPath} DIRECTORY)
+
+add_custom_command(TARGET @CMAKE_VLD_TARGET@ POST_BUILD    
+    #COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan \"=VldDllPath================>\"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${VldDllPath}  $<TARGET_FILE_DIR:@CMAKE_VLD_TARGET@>
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${VldDllDir}/dbghelp.dll $<TARGET_FILE_DIR:@CMAKE_VLD_TARGET@>
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${VldDllDir}/Microsoft.DTfW.DHL.manifest $<TARGET_FILE_DIR:@CMAKE_VLD_TARGET@>
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${VldDllDir}/../vld.ini $<TARGET_FILE_DIR:@CMAKE_VLD_TARGET@>
+)   
+target_link_libraries(@CMAKE_VLD_TARGET@
+  PRIVATE
+#	$<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/../lib/third/vld/lib/Win64/vld.lib>
+#	$<$<AND:$<BOOL:${WIN32}>,$<CONFIG:Debug>>:${CMAKE_CURRENT_SOURCE_DIR}/../lib/third/vld/lib/Win64/vld.lib>
+	$<$<AND:$<BOOL:${WIN32}>,$<CONFIG:Debug>>:vld>
+)
+endif()
+

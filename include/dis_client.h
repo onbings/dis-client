@@ -28,14 +28,15 @@ EM_BOOL WebSocket_OnMessage(int _Event_i, const EmscriptenWebSocketMessageEvent 
 class DisClientWebSocket;
 #endif
 
-constexpr const char *APP_NAME = "DisClient";
+constexpr int32_t DIS_CLIENT_INVALID_INDEX = -1;
 
 enum class DIS_CLIENT_STATE : uint32_t
 {
   DIS_CLIENT_STATE_IDLE = 0,
+  DIS_CLIENT_STATE_CREATE_WS,
   DIS_CLIENT_STATE_OPEN_WS,
   DIS_CLIENT_STATE_CONNECT,
-  DIS_CLIENT_STATE_GET_DEBUG_SERVICE_ROUTE,
+  DIS_CLIENT_STATE_GET_DIS_SERVICE,
   DIS_CLIENT_STATE_GET_DEBUG_PAGE_LAYOUT,
   DIS_CLIENT_STATE_GET_DEBUG_PAGE_INFO,
   DIS_CLIENT_STATE_MAX,
@@ -46,13 +47,9 @@ struct DIS_CLIENT_PARAM
   uint32_t FontSize_U32;
   uint32_t ConsoleWidth_U32;
   uint32_t ConsoleHeight_U32;
-  std::string Label_S;
+//  std::string TargetName_S;
   std::string DisServerEndpoint_S;
-  uint32_t Page_U32;
-  uint32_t SubPage_U32;
 
-  uint32_t RxBufferSize_U32;
-  uint32_t NbMaxBufferEntry_U32;
   BOF::BOF_IMGUI_PARAM ImguiParam_X;
 
   DIS_CLIENT_PARAM()
@@ -65,12 +62,8 @@ struct DIS_CLIENT_PARAM
     FontSize_U32 = 0;
     ConsoleWidth_U32 = 0;
     ConsoleHeight_U32 = 0;
-    Label_S = "";
+//    TargetName_S = "";
     DisServerEndpoint_S = "";
-    Page_U32 = 0;
-    SubPage_U32 = 0;
-    RxBufferSize_U32 = 0;
-    NbMaxBufferEntry_U32 = 0;
     ImguiParam_X.Reset();
   }
 };
@@ -90,25 +83,11 @@ enum DIS_KEY_FLAG : uint32_t
   DIS_KEY_FLAG_ALT = 0x00000004,
 };
 
-struct DIS_DBG_ROUTE
-{
-  std::string Name_S;
-  std::string IpAddress_S;
-  DIS_DBG_ROUTE()
-  {
-    Reset();
-  }
-  void Reset()
-  {
-    Name_S = "";
-    IpAddress_S = "";
-  }
-};
-struct DIS_DBG_SUB_PAGE
+struct DIS_DBG_SUB_PAGE_LAYOUT
 {
   std::string Label_S;
   std::string Help_S;
-  DIS_DBG_SUB_PAGE()
+  DIS_DBG_SUB_PAGE_LAYOUT()
   {
     Reset();
   }
@@ -118,13 +97,13 @@ struct DIS_DBG_SUB_PAGE
     Help_S = "";
   }
 };
-struct DIS_DBG_PAGE
+struct DIS_DBG_PAGE_LAYOUT
 {
   std::string Label_S;
   uint32_t Page_U32;
   uint32_t MaxChannel_U32;
-  std::vector<DIS_DBG_SUB_PAGE> DisDbgSubPageCollection;
-  DIS_DBG_PAGE()
+  std::vector<DIS_DBG_SUB_PAGE_LAYOUT> DisDbgSubPageCollection;
+  DIS_DBG_PAGE_LAYOUT()
   {
     Reset();
   }
@@ -150,6 +129,115 @@ struct DIS_DBG_PAGE_PARAM
     SubPageIndex_U32 = 0;
   }
 };
+class DisClient;
+struct DIS_DBG_SERVICE;
+struct WS_CALLBBACK_PARAM
+{
+  DisClient *pDisClient;
+  DIS_DBG_SERVICE *pDisService_X;
+
+  WS_CALLBBACK_PARAM()
+  {
+    Reset();
+  }
+  void Reset()
+  {
+    pDisClient = nullptr;
+    pDisService_X = nullptr;
+  }
+};
+struct DIS_DBG_SERVICE
+{
+  std::string Name_S;
+  std::string IpAddress_S;   //ws://10.129.171.112:8080
+//WebSocket
+#if defined(__EMSCRIPTEN__)
+  EMSCRIPTEN_WEBSOCKET_T Ws;
+#else
+  std::unique_ptr<DisClientWebSocket> puDisClientWebSocket;
+  uint32_t Ws;
+#endif
+  uint32_t StateTimer_U32;
+  uint32_t LastCmdSentTimeoutInMs_U32;
+  uint32_t WaitForReplyId_U32;
+  std::string LastWebSocketMessage_S;
+  uint32_t LastCmdSentTimer_U32;
+  bool IsWebSocketConnected_B;
+  std::unique_ptr<BOF::BofRawCircularBuffer> puRxBufferCollection;
+  WS_CALLBBACK_PARAM WsCbParam_X;
+
+//State machine
+  DIS_CLIENT_STATE DisClientState_E;
+  DIS_CLIENT_STATE DisClientLastState_E;
+
+  //Page Layout
+  nlohmann::json PageLayoutJsonData;
+  bool IsPageLayoutVisible_B;
+
+  std::vector<DIS_DBG_PAGE_LAYOUT> PageLayoutCollection;
+  int32_t PageLayoutIndex_S32;
+  int32_t SubPageLayoutIndex_S32;
+
+  //Page Info
+  uint32_t PageInfoTimer_U32;
+  nlohmann::json PageInfoBackJsonData;
+  nlohmann::json PageInfoForeJsonData;
+  bool IsPageInfoVisible_B;
+  ImVec4 PageInfoBackColor_X;
+
+  std::vector<DIS_DBG_PAGE_PARAM> PageParamCollection; // Same size than DisDbgPageCollection with dynamic param (user selection)
+
+  uint32_t CtrlFlag_U32;
+  uint32_t FctKeyFlag_U32;
+  std::string UserInput_S;
+
+  DIS_DBG_SERVICE()
+  {
+    Reset();
+  }
+  void Reset()
+  {
+#if defined(__EMSCRIPTEN__)
+    Ws = -1;
+#else
+    puDisClientWebSocket = nullptr;
+    Ws = -1;
+#endif
+    StateTimer_U32 = 0;
+    LastCmdSentTimeoutInMs_U32 = 0;
+    WaitForReplyId_U32 = 0;
+    LastWebSocketMessage_S="";
+    LastCmdSentTimer_U32 = 0;
+    IsWebSocketConnected_B = false;
+    puRxBufferCollection = nullptr;
+    WsCbParam_X.Reset();
+
+    DisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_MAX;
+    DisClientLastState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_MAX;
+
+    Name_S = "";
+    IpAddress_S = "";
+
+    PageLayoutJsonData.clear();
+    IsPageLayoutVisible_B = false;
+
+    PageLayoutCollection.clear();
+    PageLayoutIndex_S32 = DIS_CLIENT_INVALID_INDEX;
+    SubPageLayoutIndex_S32 = DIS_CLIENT_INVALID_INDEX;
+
+    PageInfoTimer_U32 = 0;
+    PageInfoBackJsonData.clear();
+    PageInfoForeJsonData.clear();
+    IsPageInfoVisible_B = false;
+    PageInfoBackColor_X = ImVec4();
+    PageParamCollection.clear();
+
+    CtrlFlag_U32 = DIS_CTRL_FLAG_NONE;
+    FctKeyFlag_U32 = DIS_KEY_FLAG_NONE;
+    UserInput_S="";
+  }
+};
+
 class DisClient : public BOF::Bof_ImGui
 {
 public:
@@ -166,85 +254,48 @@ private:
 
   nlohmann::json ToJson() const;
   void FromJson(const nlohmann::json &_rJson);
-  void DisplayServiceRoute(int32_t _x_U32, int32_t _y_U32, bool &_rIsServiceRouteVisible_B, const nlohmann::json &_rServiceRouteJsonData, int32_t &_rDisDbgRouteIndex_S32);
-  void DisplayPageLayout(int32_t _x_U32, int32_t _y_U32, bool &_rIsPageLayoutVisible_B, const nlohmann::json &_rPageLayoutJsonData, int32_t &_rPageIndex_S32, int32_t &_rSubPageIndex_S32);
-  void DisplayPageInfo(int32_t _x_U32, int32_t _y_U32, bool &_rIsPageInfoVisible_B, bool _IsBackground_B, const nlohmann::json &_rPageInfoJsonData);
+  void DisplayDisService(int32_t _x_U32, int32_t _y_U32, bool &_rIsDisServiceVisible_B, const nlohmann::json &_rDisServiceJsonData, int32_t &_rDisServiceIndex_S32);
+  void DisplayPageLayout(int32_t _x_U32, int32_t _y_U32, DIS_DBG_SERVICE &_rDisService_X, int32_t &_rPageIndex_S32, int32_t &_rSubPageIndex_S32);
+  void UpdateConsoleMenubar(DIS_DBG_SERVICE &_rDisService_X);
+  void DisplayPageInfo(int32_t _x_U32, int32_t _y_U32, DIS_DBG_SERVICE &_rDisService_X);
+
 
 private:
-  bool IsWebSocketConnected();
-  bool IsCommandRunning();
-  BOFERR OpenWebSocket();
-  BOFERR CloseWebSocket();
-  BOFERR WriteWebSocket(const char *_pData_c);
-  BOFERR ReadWebSocket(uint32_t &_rMaxSize_U32, char *_pData_c);
-  BOFERR SendCommand(uint32_t _TimeoutInMsForReply_U32, const std::string &_rCmd_S);
-  BOFERR CheckForCommandReply(std::string &_rReply_S);
-  DIS_CLIENT_STATE mDisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_MAX;
-  DIS_CLIENT_STATE mDisClientLastState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_MAX;
   static ImColor S_HexaColor(const std::string &_rHexaColor_S);
   BOFERR PrintAt(uint32_t _x_U32, uint32_t _y_U32, const std::string &_rHexaForeColor_S, const std::string &_rHexaBackColor_S, const std::string &_rText_S);
+
+  bool IsCommandRunning(DIS_DBG_SERVICE *_pDisService_X);
+  BOFERR OpenWebSocket(DIS_DBG_SERVICE *_pDisService_X);
+  BOFERR CloseWebSocket(DIS_DBG_SERVICE *_pDisService_X);
+  BOFERR WriteWebSocket(DIS_DBG_SERVICE *_pDisService_X, const char *_pData_c);
+  BOFERR ReadWebSocket(DIS_DBG_SERVICE *_pDisService_X, uint32_t &_rMaxSize_U32, char *_pData_c);
+  BOFERR SendCommand(DIS_DBG_SERVICE *_pDisService_X, uint32_t _TimeoutInMsForReply_U32, const std::string &_rCmd_S);
+  BOFERR CheckForCommandReply(DIS_DBG_SERVICE *_pDisService_X, std::string &_rReply_S);
 #if defined(__EMSCRIPTEN__)
 public:
-  BOFERR
-  OnWebSocketOpenEvent(const EmscriptenWebSocketOpenEvent *_pWebsocketEvent_X);
-  BOFERR OnWebSocketErrorEvent(const EmscriptenWebSocketErrorEvent *_pWebsocketEvent_X);
-  BOFERR OnWebSocketCloseEvent(const EmscriptenWebSocketCloseEvent *_pWebsocketEvent_X);
-  BOFERR OnWebSocketMessageEvent(const EmscriptenWebSocketMessageEvent *_pWebsocketEvent_X);
+  BOFERR OnWebSocketOpenEvent(void *_pWsCbParam, const EmscriptenWebSocketOpenEvent *_pWebsocketEvent_X);
+  BOFERR OnWebSocketErrorEvent(void *_pWsCbParam, const EmscriptenWebSocketErrorEvent *_pWebsocketEvent_X);
+  BOFERR OnWebSocketCloseEvent(void *_pWsCbParam, const EmscriptenWebSocketCloseEvent *_pWebsocketEvent_X);
+  BOFERR OnWebSocketMessageEvent(void *_pWsCbParam, const EmscriptenWebSocketMessageEvent *_pWebsocketEvent_X);
 #else
 private:
-  BOFERR OnWebSocketOpenEvent(void *_pId);
-  BOFERR OnWebSocketErrorEvent(void *_pId, BOFERR _Sts_E);
-  BOFERR OnWebSocketCloseEvent(void *_pId);
-  BOFERR OnWebSocketMessageEvent(void *_pId, uint32_t _Nb_U32, uint8_t *_pData_U8, BOF::BOF_BUFFER &_rReply_X);
+  BOFERR OnWebSocketOpenEvent(void *_pWsCbParam);
+  BOFERR OnWebSocketErrorEvent(void *_pWsCbParam, BOFERR _Sts_E);
+  BOFERR OnWebSocketCloseEvent(void *_pWsCbParam);
+  BOFERR OnWebSocketMessageEvent(void *_pWsCbParam, uint32_t _Nb_U32, uint8_t *_pData_U8, BOF::BOF_BUFFER &_rReply_X);
 #endif
 
 private:
   static uint32_t S_mSeqId_U32;
-  uint32_t mWsConnectTimer_U32 = 0;
-  uint32_t mLastCmdSentTimeoutInMs_U32 = 0;
-  uint32_t mWaitForReplyId_U32 = 0;
-  std::string mLastWebSocketMessage_S;
-  uint32_t mLastCmdSentTimer_U32 = 0;
-  bool mWsConnected_B = false;
-  bool mVisible_B = true;
+  uint32_t mIdleTimer_U32 = 0;
   ImFont *mpConsoleFont_X = nullptr;
   BOF::BOF_SIZE<uint32_t> mConsoleCharSize_X;
 
-  uint32_t mPollTimer_U32 = 0;
-  nlohmann::json mServiceRouteJsonData;
-  bool mIsServiceRouteVisible_B = true;
-  int32_t mServiceRouteGuiSelected_S32 = -1; // Idem to mDisDbgRouteIndex_S32
-
-  nlohmann::json mPageLayoutJsonData;
-  bool mIsPageLayoutVisible_B = true;
-  int32_t mPageLayoutGuiSelected_S32 = -1; // NOT Idem to mDisDbgPageIndex_S32/mDisDbgSubPageIndex_S32
-
-  nlohmann::json mPageInfoBackJsonData;
-  nlohmann::json mPageInfoForeJsonData;
-  bool mIsPageInfoVisible_B = true;
-  ImVec4 mPageInfoBackColor_X;
-
-  //"GET /Gbe/DebugPageInfo/800/0/?chnl=0&flag=3&key=0&user_input=");
-  std::vector<DIS_DBG_ROUTE> mDisDbgRouteCollection;
-  int32_t mDisDbgRouteIndex_S32 = -1;
-
-  std::vector<DIS_DBG_PAGE> mDisDbgPageCollection;
-  int32_t mDisDbgPageIndex_S32 = -1;
-  int32_t mDisDbgSubPageIndex_S32 = -1;
-
-  std::vector<DIS_DBG_PAGE_PARAM> mDisDbgPageParamCollection; // Same size than mDisDbgPageCollection with dynamic param (use selection)
-
-  uint32_t mCtrlFlag_U32 = DIS_CTRL_FLAG_NONE;
-  uint32_t mFctKeyFlag_U32 = DIS_KEY_FLAG_NONE;
-  std::string mUserInput_S;
+//Dis Service
+  nlohmann::json mDisServiceJsonData;
+  bool mIsDisServiceVisible_B = true;
+  std::vector<DIS_DBG_SERVICE> mDisServiceCollection;
+  int32_t mDisServiceIndex_S32 = -1;
 
   DIS_CLIENT_PARAM mDisClientParam_X;
-  std::unique_ptr<BOF::BofRawCircularBuffer> mpuRxBufferCollection = nullptr;
-
-#if defined(__EMSCRIPTEN__)
-  EMSCRIPTEN_WEBSOCKET_T mWs = -1;
-#else
-  std::unique_ptr<DisClientWebSocket> mpuDisClientWebSocket = nullptr;
-  uint32_t mWs = -1;
-#endif
 };

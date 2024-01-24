@@ -8,7 +8,7 @@
     {
       "kind": "git",
       "repository": "git@github.com:onbings/onbings-vcpkg-registry.git",
-      "baseline": "e2de96074d6cb103978b87afa22da09e43eadaa8",
+      "baseline": "2a8cea0fd9eab34b65b999b38b6c3fddbe8d9118",
       "packages": [
         "bofstd"
       ]

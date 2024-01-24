@@ -1,0 +1,22 @@
+{
+  "name": "webrpc",
+  "version": "1.0.0.0",
+  "description": "The onbings c++ web rpc Multiplatform library",
+  "dependencies": [
+    { 
+		"name": "bofstd" 
+	},
+    {
+      "name": "libwebsockets"
+    },
+    {
+      "name": "libuv"
+    },
+    {
+      "name": "protobuf"
+    },
+    {
+      "name": "grpc"
+    }
+  ]
+}

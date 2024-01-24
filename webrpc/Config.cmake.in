@@ -1,0 +1,17 @@
+@PACKAGE_INIT@
+
+# Safety check
+if(NOT TARGET @INTERNAL_NAMESPACE@::@PROJECT_NAME@)
+
+  # Load the dependencies
+  set(FROM_CONFIG_FILE ON)
+  include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME_LOWER@-dependencies.cmake")
+  unset(FROM_CONFIG_FILE)
+
+  # Load our targets
+  include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME_LOWER@-targets.cmake")
+
+  check_required_components(@PROJECT_NAME@)
+
+endif()
+

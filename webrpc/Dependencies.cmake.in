@@ -1,0 +1,58 @@
+include(CMakeFindDependencyMacro)
+
+macro(find_package_dependency)
+
+  # When loading the *Config.cmake we should
+  # call find_dependency which is just a wrapper
+  # around find_package to display better
+  # messages to the user. When directly dealing
+  # with our CMakeLists.txt, we should call
+  # find_package directly
+  if(FROM_CONFIG_FILE)
+     find_dependency(${ARGN})
+  else()
+     find_package(${ARGN})
+  endif()
+
+endmacro()
+
+# =========================
+# == PUBLIC DEPENDENCIES ==
+# =========================
+
+# if(NOT TARGET ONBINGS::onbings-somelib)
+#   find_package_dependency(onbings-somelib REQUIRED)
+# endif()
+
+# ==========================
+# == PRIVATE DEPENDENCIES ==
+# ==========================
+
+#find_package_dependency(Qt5 REQUIRED Core Gui Widgets)
+
+# if(NOT TARGET ONBINGS::onbings-anotherlib)
+#   find_package_dependency(onbings-anotherlib REQUIRED)
+# endif()
+
+if(NOT TARGET jsoncpp_object)
+  find_package_dependency(jsoncpp REQUIRED)
+
+  if(TARGET jsoncpp_lib)
+    add_library(jsoncpp::jsoncpp ALIAS jsoncpp_lib)
+  elseif(TARGET jsoncpp_static)
+    add_library(jsoncpp::jsoncpp ALIAS jsoncpp_static)
+  else()
+    message(FATAL_ERROR "Unknown target for jsoncpp")
+  endif()
+endif()
+
+#just above find_package_dependency(jsoncpp REQUIRED)
+
+find_package_dependency(spdlog REQUIRED)
+find_package_dependency(fmt REQUIRED)
+find_package_dependency(date REQUIRED)
+find_package(libwebsockets CONFIG REQUIRED)
+find_package(libuv CONFIG REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
+find_package(gRPC CONFIG REQUIRED)
+

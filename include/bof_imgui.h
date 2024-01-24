@@ -53,7 +53,7 @@ using Logger = std::function<void(const char *)>;
 
 struct BOF_IMGUI_PARAM
 {
-  std::string AppName_S;
+  std::string WindowTitle_S;  //Used also as user setting save and load op id
   BOF::BOF_SIZE<uint32_t> Size_X;
   bool ShowDemoWindow_B;
   Logger TheLogger;
@@ -64,7 +64,7 @@ struct BOF_IMGUI_PARAM
   }
   void Reset()
   {
-    AppName_S = "";
+    WindowTitle_S = "";
     Size_X.Reset();
     ShowDemoWindow_B = false;
     TheLogger = nullptr;

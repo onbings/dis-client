@@ -190,7 +190,7 @@ BOFERR Bof_ImGui::MainLoop()
     RunnerParam_X.callbacks.BeforeExit_PostCleanup = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_BeforeExit_PostCleanup);
     RunnerParam_X.callbacks.RegisterTests = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_RegisterTests);
 
-    RunnerParam_X.appWindowParams.windowTitle = mImguiParam_X.AppName_S;
+    RunnerParam_X.appWindowParams.windowTitle = mImguiParam_X.WindowTitle_S;
     RunnerParam_X.appWindowParams.windowGeometry.size[0] = mImguiParam_X.Size_X.Width;
     RunnerParam_X.appWindowParams.windowGeometry.size[1] = mImguiParam_X.Size_X.Height;
     // If true, adapt the app window size to the presented widgets. This is done at startup
@@ -232,7 +232,7 @@ BOFERR Bof_ImGui::MainLoop()
     RunnerParam_X.imGuiWindowParams.rememberStatusBarSettings = true;
     RunnerParam_X.imGuiWindowParams.configWindowsMoveFromTitleBarOnly = false;
     RunnerParam_X.imGuiWindowParams.enableViewports = true;
-    RunnerParam_X.imGuiWindowParams.menuAppTitle = mImguiParam_X.AppName_S;
+    RunnerParam_X.imGuiWindowParams.menuAppTitle = mImguiParam_X.WindowTitle_S;
     RunnerParam_X.imGuiWindowParams.tweakedTheme.Theme = ImGuiTheme::ImGuiTheme_DarculaDarker;
 
     // Common rounding for widgets. If < 0, this is ignored.
