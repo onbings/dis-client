@@ -15,8 +15,8 @@
  * See data flow in comment at the end of this file
  *
  */
-#include <bofstd/boffs.h>
 #include "dis_client.h"
+#include <bofstd/boffs.h>
 
 #include <bofstd/bofenum.h>
 #include <bofstd/bofhttprequest.h>
@@ -29,9 +29,9 @@
 uint32_t DisClient::S_mSeqId_U32 = 1;
 
 #define IMGUI_WINDOW_TITLEBAR_HEIGHT 20
-#define DIS_CLIENT_MAIN_LOOP_IDLE_TIME 100                             //100ms We no state machine action during this time (keep imgui main loop cpu friendly)
-#define DIS_CLIENT_WS_TIMEOUT (DIS_CLIENT_MAIN_LOOP_IDLE_TIME * 10)    //1000ms Timeout fo ws connect, read or write op
-#define DIS_CLIENT_STATE_TIMEOUT (DIS_CLIENT_WS_TIMEOUT * 3)           //3000ms Maximum time in a given state before returning to DIS_CLIENT_STATE_OPEN_WS
+#define DIS_CLIENT_MAIN_LOOP_IDLE_TIME 100                          // 100ms We no state machine action during this time (keep imgui main loop cpu friendly)
+#define DIS_CLIENT_WS_TIMEOUT (DIS_CLIENT_MAIN_LOOP_IDLE_TIME * 10) // 1000ms Timeout fo ws connect, read or write op
+#define DIS_CLIENT_STATE_TIMEOUT (DIS_CLIENT_WS_TIMEOUT * 3)        // 3000ms Maximum time in a given state before returning to DIS_CLIENT_STATE_OPEN_WS
 static_assert(DIS_CLIENT_WS_TIMEOUT >= (DIS_CLIENT_MAIN_LOOP_IDLE_TIME * 10), "DIS_CLIENT_WS_TIMEOUT must be >= (DIS_CLIENT_MAIN_LOOP_IDLE_TIME * 10)");
 static_assert(DIS_CLIENT_STATE_TIMEOUT >= (DIS_CLIENT_WS_TIMEOUT * 3), "DIS_CLIENT_STATE_TIMEOUT must be >= (DIS_CLIENT_WS_TIMEOUT * 3 )");
 #define DIS_CLIENT_RX_BUFFER_SIZE 0x100000
@@ -53,8 +53,8 @@ static BOF::BofEnum<DIS_CLIENT_STATE> S_DisClientStateTypeEnumConverter(
     },
     DIS_CLIENT_STATE::DIS_CLIENT_STATE_MAX);
 
-#define DIS_CLIENT_END_OF_COMMAND(pDisService)  \
-  {                                  \
+#define DIS_CLIENT_END_OF_COMMAND(pDisService)     \
+  {                                                \
     (pDisService)->LastCmdSentTimeoutInMs_U32 = 0; \
     (pDisService)->WaitForReplyId_U32 = 0;         \
   }
@@ -64,6 +64,7 @@ EM_BOOL WebSocket_OnOpen(int _Event_i, const EmscriptenWebSocketOpenEvent *_pWeb
 {
   EM_BOOL Rts_B = EM_FALSE;
   WS_CALLBBACK_PARAM *pWsCallbackParam_X = (WS_CALLBBACK_PARAM *)_pUserData;
+
   if ((pWsCallbackParam_X) && (pWsCallbackParam_X->pDisClient))
   {
     Rts_B = (pWsCallbackParam_X->pDisClient->OnWebSocketOpenEvent(pWsCallbackParam_X->pDisService_X, _pWebsocketEvent_X) == BOF_ERR_NO_ERROR) ? EM_TRUE : EM_FALSE;
@@ -75,12 +76,14 @@ EM_BOOL WebSocket_OnError(int _Event_i, const EmscriptenWebSocketErrorEvent *_pW
 {
   EM_BOOL Rts_B = EM_FALSE;
   WS_CALLBBACK_PARAM *pWsCallbackParam_X = (WS_CALLBBACK_PARAM *)_pUserData;
+
   if ((pWsCallbackParam_X) && (pWsCallbackParam_X->pDisClient))
   {
-    Rts_B = pWsCallbackParam_X->pDisClient->OnWebSocketErrorEvent(pWsCallbackParam_X->pDisService_X, _pWebsocketEvent_X) == BOF_ERR_NO_ERROR) ? EM_TRUE : EM_FALSE;
+    Rts_B = (pWsCallbackParam_X->pDisClient->OnWebSocketErrorEvent(pWsCallbackParam_X->pDisService_X, _pWebsocketEvent_X) == BOF_ERR_NO_ERROR) ? EM_TRUE : EM_FALSE;
   }
   return Rts_B;
 }
+
 EM_BOOL WebSocket_OnClose(int _Event_i, const EmscriptenWebSocketCloseEvent *_pWebsocketEvent_X, void *_pUserData)
 {
   EM_BOOL Rts_B = EM_FALSE;
@@ -108,12 +111,12 @@ DisClient::DisClient(const DIS_CLIENT_PARAM &_rDisClientParam_X)
     : BOF::Bof_ImGui(_rDisClientParam_X.ImguiParam_X)
 {
   mDisClientParam_X = _rDisClientParam_X;
-  //mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
-  mDisServiceCollection.emplace_back();  //because we must do: rDisDbgService_X.WsCbParam_X.pDisService_X = &rDisDbgService_X
+  // mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
+  mDisServiceCollection.emplace_back(); // because we must do: rDisDbgService_X.WsCbParam_X.pDisService_X = &rDisDbgService_X
   DIS_DBG_SERVICE &rDisDbgService_X = mDisServiceCollection.back();
   rDisDbgService_X.Reset();
   rDisDbgService_X.Name_S = "Dis_Client_Master_Ws";
-  rDisDbgService_X.IpAddress_S = mDisClientParam_X.DisServerEndpoint_S;  //ws://10.129.171.112:8080
+  rDisDbgService_X.IpAddress_S = mDisClientParam_X.DisServerEndpoint_S; // ws://10.129.171.112:8080
   rDisDbgService_X.StateTimer_U32 = BOF::Bof_GetMsTickCount();
   rDisDbgService_X.DisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_IDLE;
   rDisDbgService_X.WsCbParam_X.pDisClient = this;
@@ -154,10 +157,10 @@ nlohmann::json DisClient::ToJson() const
     Rts["FontSize"] = mDisClientParam_X.FontSize_U32;
     Rts["ConsoleWidth"] = mDisClientParam_X.ConsoleWidth_U32;
     Rts["ConsoleHeight"] = mDisClientParam_X.ConsoleHeight_U32;
-    //Rts["TargetName"] = mDisClientParam_X.TargetName_S;
+    // Rts["TargetName"] = mDisClientParam_X.TargetName_S;
 
     Rts["DisServerEndpoint"] = mDisClientParam_X.DisServerEndpoint_S;
-    //Rts["ImguiParam.AppName"] = mDisClientParam_X.ImguiParam_X.AppName_S;
+    // Rts["ImguiParam.AppName"] = mDisClientParam_X.ImguiParam_X.AppName_S;
     Rts["ImguiParam.Size.Width"] = mDisClientParam_X.ImguiParam_X.Size_X.Width;
     Rts["ImguiParam.Size.Height"] = mDisClientParam_X.ImguiParam_X.Size_X.Height;
     // Rts["ImguiParam.TheLogger"] = mDisClientParam_X.ImguiParam_X.TheLogger;
@@ -182,15 +185,15 @@ void DisClient::FromJson(const nlohmann::json &_rJson)
   try
   {
     mDisClientParam_X.PollTimeInMs_U32 = _rJson.value("PollTimeInMs", 1000);
-    mDisClientParam_X.FontSize_U32 = _rJson.value("FontSize",14);
-    mDisClientParam_X.ConsoleWidth_U32 = _rJson.value("ConsoleWidth",80);
+    mDisClientParam_X.FontSize_U32 = _rJson.value("FontSize", 14);
+    mDisClientParam_X.ConsoleWidth_U32 = _rJson.value("ConsoleWidth", 80);
     mDisClientParam_X.ConsoleHeight_U32 = _rJson.value("ConsoleHeight", 25);
-    //mDisClientParam_X.TargetName_S = _rJson.value("TargetName", "???");
-    mDisClientParam_X.DisServerEndpoint_S = _rJson.value("DisServerEndpoint","ws ://0.0.0.0:8080");
+    // mDisClientParam_X.TargetName_S = _rJson.value("TargetName", "???");
+    mDisClientParam_X.DisServerEndpoint_S = _rJson.value("DisServerEndpoint", "ws ://0.0.0.0:8080");
 
-//    mDisClientParam_X.ImguiParam_X.AppName_S = _rJson.value("ImguiParam.AppName","???");
-    mDisClientParam_X.ImguiParam_X.Size_X.Width = _rJson.value("ImguiParam.Size.Width",800);
-    mDisClientParam_X.ImguiParam_X.Size_X.Height = _rJson.value("ImguiParam.Size.Height",600);
+    //    mDisClientParam_X.ImguiParam_X.AppName_S = _rJson.value("ImguiParam.AppName","???");
+    mDisClientParam_X.ImguiParam_X.Size_X.Width = _rJson.value("ImguiParam.Size.Width", 800);
+    mDisClientParam_X.ImguiParam_X.Size_X.Height = _rJson.value("ImguiParam.Size.Height", 600);
     // mDisClientParam_X.ImguiParam_X.TheLogger = _rJson.value("ImguiParam.TheLogger"].get<uint32_t>();
     mDisClientParam_X.ImguiParam_X.ShowDemoWindow_B = _rJson.value("ImguiParam.ShowDemoWindow", false);
 #if 0
@@ -269,8 +272,8 @@ void DisClient::V_LoadAdditionalFonts()
     },
 */
 
-void DisClient::DisplayDisService(int32_t _x_U32, int32_t _y_U32, bool &_rIsDisServiceVisible_B, 
-                                    const nlohmann::json &_rDisServiceJsonData, int32_t &_rDisServiceIndex_S32)
+void DisClient::DisplayDisService(int32_t _x_U32, int32_t _y_U32, bool &_rIsDisServiceVisible_B,
+                                  const nlohmann::json &_rDisServiceJsonData, int32_t &_rDisServiceIndex_S32)
 {
   ImGuiTreeNodeFlags NodeFlag = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanAllColumns;
   ImGuiTreeNodeFlags LeafFlag = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanAllColumns;
@@ -280,7 +283,7 @@ void DisClient::DisplayDisService(int32_t _x_U32, int32_t _y_U32, bool &_rIsDisS
   bool IsNodeOpen_B;
   ;
 
-  mDisServiceCollection.resize(1);  //mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
+  mDisServiceCollection.resize(1); // mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
   DisServiceIndexClicked_S32 = DIS_CLIENT_INVALID_INDEX;
 
   try
@@ -294,11 +297,11 @@ void DisClient::DisplayDisService(int32_t _x_U32, int32_t _y_U32, bool &_rIsDisS
       auto DisServiceRouteIterator = _rDisServiceJsonData.find("route");
       if ((DisServiceRouteIterator != _rDisServiceJsonData.end()) && (DisServiceRouteIterator->is_array()))
       {
-        i_U32 = 1;  //mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
+        i_U32 = 1; // mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
         for (const auto &rRoute : *DisServiceRouteIterator)
         {
-          mDisServiceCollection.emplace_back();  //because we must do: rDisDbgService_X.WsCbParam_X.pDisService_X = &rDisDbgService_X
-          DIS_DBG_SERVICE &rDisDbgService_X =mDisServiceCollection.back();
+          mDisServiceCollection.emplace_back(); // because we must do: rDisDbgService_X.WsCbParam_X.pDisService_X = &rDisDbgService_X
+          DIS_DBG_SERVICE &rDisDbgService_X = mDisServiceCollection.back();
           rDisDbgService_X.Reset();
           rDisDbgService_X.Name_S = rRoute.value("name", "Unknown");
           rDisDbgService_X.IpAddress_S = rRoute.value("ip", "0.0.0.0:0");
@@ -481,8 +484,8 @@ void DisClient::DisplayPageLayout(int32_t _x_U32, int32_t _y_U32, DIS_DBG_SERVIC
           }
           else // Depending on selection behavior you want, may want to preserve selection when clicking on item that is part of the selection
           {
-            _rPageIndex_S32= PageLayoutPageIndexClicked_S32;
-            _rSubPageIndex_S32= PageLayoutSubPageIndexClicked_S32;
+            _rPageIndex_S32 = PageLayoutPageIndexClicked_S32;
+            _rSubPageIndex_S32 = PageLayoutSubPageIndexClicked_S32;
             // selection_mask = (1 6<< mPageLayoutLeafIdSelected_U32); // Click to single-select
           }
         }
@@ -562,7 +565,7 @@ void DisClient::UpdateConsoleMenubar(DIS_DBG_SERVICE &_rDisService_X)
   }
   MenuBar_S.replace(0, Text_S.size(), Text_S);
   PrintAt(0, 0, "#FFFFFF", "#0000FF", MenuBar_S);
-  PrintAt(0, mDisClientParam_X.ConsoleHeight_U32-1, "#FFFFFF", "#0000FF", "Pg:[PgUp/PgDw]  SubPg:[Up/Dw]  Rst:[R]  Chnl:[+/-]  Inp:[!]  Hlp:[?]            ");
+  PrintAt(0, mDisClientParam_X.ConsoleHeight_U32 - 1, "#FFFFFF", "#0000FF", "Pg:[PgUp/PgDw]  SubPg:[Up/Dw]  Rst:[R]  Chnl:[+/-]  Inp:[!]  Hlp:[?]            ");
 }
 /*
 {
@@ -612,13 +615,13 @@ void DisClient::DisplayPageInfo(int32_t _x_U32, int32_t _y_U32, DIS_DBG_SERVICE 
       Height_f = (mDisClientParam_X.ConsoleHeight_U32 * mConsoleCharSize_X.Height) + IMGUI_WINDOW_TITLEBAR_HEIGHT;
       // ImGui::SetNextWindowSize(ImVec2(Width_f, Height_f));
       // ImGui::SetNextWindowSizeConstraints(ImVec2(Width_f, Height_f), ImVec2(Width_f, Height_f));
-      ImGui::PushStyleColor(ImGuiCol_WindowBg, _rDisService_X.PageInfoBackColor_X);  //Clear all
+      ImGui::PushStyleColor(ImGuiCol_WindowBg, _rDisService_X.PageInfoBackColor_X); // Clear all
       ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoScrollbar);
       ImGui::SetWindowPos(ImVec2(_x_U32, _y_U32), ImGuiCond_FirstUseEver);
       ImGui::SetWindowSize(ImVec2(Width_f, Height_f), ImGuiCond_FirstUseEver);
 
-//Screen
-      for (i_U32 = 0; i_U32 < 2; i_U32++)  //i_U32==0: Draw background i_U32==1: Draw foreground 
+      // Screen
+      for (i_U32 = 0; i_U32 < 2; i_U32++) // i_U32==0: Draw background i_U32==1: Draw foreground
       {
         if (i_U32 == 0)
         {
@@ -640,7 +643,7 @@ void DisClient::DisplayPageInfo(int32_t _x_U32, int32_t _y_U32, DIS_DBG_SERVICE 
           PrintAt(x_U32, y_U32, ForeColor_S, BackColor_S, Text_S);
         }
       }
-//Keyboard
+      // Keyboard
       std::string KeyState_S = S_GetKeyboardState();
       static std::string S_LastKeyState_S;
       if (KeyState_S != "")
@@ -674,7 +677,7 @@ void DisClient::V_PreNewFrame()
   if (DeltaIdle_U32 > DIS_CLIENT_MAIN_LOOP_IDLE_TIME)
   {
     mIdleTimer_U32 = BOF::Bof_GetMsTickCount();
-    i_U32 = 0;   //mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
+    i_U32 = 0; // mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
     BOF_ASSERT(mDisServiceCollection.size());
     for (DIS_DBG_SERVICE &rDisService_X : mDisServiceCollection)
     {
@@ -686,7 +689,7 @@ void DisClient::V_PreNewFrame()
         StsCmd_E = BOF_ERR_NO;
         if (rDisService_X.DisClientState_E != rDisService_X.DisClientLastState_E)
         {
-          DisClient::S_Log("[%u] ENTER: %s Sz %zd State change %s->%s: %s\n", BOF::Bof_GetMsTickCount(), rDisService_X.Name_S.c_str(), mDisServiceCollection.size(), 
+          DisClient::S_Log("[%u] ENTER: %s Sz %zd State change %s->%s: %s\n", BOF::Bof_GetMsTickCount(), rDisService_X.Name_S.c_str(), mDisServiceCollection.size(),
                            S_DisClientStateTypeEnumConverter.ToString(rDisService_X.DisClientLastState_E).c_str(),
                            S_DisClientStateTypeEnumConverter.ToString(rDisService_X.DisClientState_E).c_str(), rDisService_X.IsWebSocketConnected_B ? "Connected" : "Disconnected");
           rDisService_X.DisClientLastState_E = rDisService_X.DisClientState_E;
@@ -779,7 +782,7 @@ void DisClient::V_PreNewFrame()
           case DIS_CLIENT_STATE::DIS_CLIENT_STATE_CONNECT:
             if (rDisService_X.IsWebSocketConnected_B)
             {
-              if (i_U32==0)  //mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
+              if (i_U32 == 0) // mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
               {
                 rDisService_X.DisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_GET_DIS_SERVICE;
               }
@@ -854,11 +857,7 @@ void DisClient::V_PreNewFrame()
                 {
                   rDisService_X.PageInfoTimer_U32 = BOF::Bof_GetMsTickCount();
                   //"GET /Gbe/DebugPageInfo/800/0/?chnl=0&flag=3&key=0&user_input=");
-                  Sts_E = SendCommand(&rDisService_X, DIS_CLIENT_WS_TIMEOUT, "GET " + mDisServiceCollection[mDisServiceIndex_S32].Name_S + "DebugPageInfo/" +
-                                      std::to_string(rDisService_X.PageLayoutCollection[rDisService_X.PageLayoutIndex_S32].Page_U32) + "/" +
-                                      std::to_string(rDisService_X.PageParamCollection[rDisService_X.PageLayoutIndex_S32].SubPageIndex_U32) +
-                                      "/?" + "chnl=" + std::to_string(rDisService_X.PageParamCollection[rDisService_X.PageLayoutIndex_S32].Channel_U32) +
-                                      "&flag=" + std::to_string(rDisService_X.CtrlFlag_U32) + "&key=" + std::to_string(rDisService_X.FctKeyFlag_U32) + "&user_input=" + rDisService_X.UserInput_S);
+                  Sts_E = SendCommand(&rDisService_X, DIS_CLIENT_WS_TIMEOUT, "GET " + mDisServiceCollection[mDisServiceIndex_S32].Name_S + "DebugPageInfo/" + std::to_string(rDisService_X.PageLayoutCollection[rDisService_X.PageLayoutIndex_S32].Page_U32) + "/" + std::to_string(rDisService_X.PageParamCollection[rDisService_X.PageLayoutIndex_S32].SubPageIndex_U32) + "/?" + "chnl=" + std::to_string(rDisService_X.PageParamCollection[rDisService_X.PageLayoutIndex_S32].Channel_U32) + "&flag=" + std::to_string(rDisService_X.CtrlFlag_U32) + "&key=" + std::to_string(rDisService_X.FctKeyFlag_U32) + "&user_input=" + rDisService_X.UserInput_S);
                   if (Sts_E != BOF_ERR_NO_ERROR)
                   {
                     rDisService_X.DisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_OPEN_WS;
@@ -869,7 +868,7 @@ void DisClient::V_PreNewFrame()
               {
                 if (StsCmd_E == BOF_ERR_NO_ERROR)
                 {
-                  rDisService_X.StateTimer_U32 = BOF::Bof_GetMsTickCount();  //Reset state timer as all is ok
+                  rDisService_X.StateTimer_U32 = BOF::Bof_GetMsTickCount(); // Reset state timer as all is ok
 
                   if ((rDisService_X.CtrlFlag_U32 & (DIS_CTRL_FLAG_BACK | DIS_CTRL_FLAG_FORE)) == (DIS_CTRL_FLAG_BACK | DIS_CTRL_FLAG_FORE))
                   {
@@ -908,7 +907,7 @@ void DisClient::V_PreNewFrame()
 
         if (rDisService_X.DisClientState_E != rDisService_X.DisClientLastState_E)
         {
-          DisClient::S_Log("[%u] LEAVE: %s Sz %zd State change %s->%s: %s\n", BOF::Bof_GetMsTickCount(), rDisService_X.Name_S.c_str(), mDisServiceCollection.size(), 
+          DisClient::S_Log("[%u] LEAVE: %s Sz %zd State change %s->%s: %s\n", BOF::Bof_GetMsTickCount(), rDisService_X.Name_S.c_str(), mDisServiceCollection.size(),
                            S_DisClientStateTypeEnumConverter.ToString(rDisService_X.DisClientLastState_E).c_str(),
                            S_DisClientStateTypeEnumConverter.ToString(rDisService_X.DisClientState_E).c_str(), rDisService_X.IsWebSocketConnected_B ? "Connected" : "Disconnected");
           rDisService_X.DisClientLastState_E = rDisService_X.DisClientState_E;
@@ -917,7 +916,7 @@ void DisClient::V_PreNewFrame()
         if (DeltaState_U32 > DIS_CLIENT_STATE_TIMEOUT)
         {
           rDisService_X.DisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_OPEN_WS;
-          DisClient::S_Log("[%u] ERROR: %s Sz %zd State timeout (%d/%d)  %s->%s: %s\n", BOF::Bof_GetMsTickCount(), rDisService_X.Name_S.c_str(), mDisServiceCollection.size(), 
+          DisClient::S_Log("[%u] ERROR: %s Sz %zd State timeout (%d/%d)  %s->%s: %s\n", BOF::Bof_GetMsTickCount(), rDisService_X.Name_S.c_str(), mDisServiceCollection.size(),
                            DeltaState_U32, DIS_CLIENT_STATE_TIMEOUT, S_DisClientStateTypeEnumConverter.ToString(rDisService_X.DisClientLastState_E).c_str(),
                            S_DisClientStateTypeEnumConverter.ToString(rDisService_X.DisClientState_E).c_str(), rDisService_X.IsWebSocketConnected_B ? "Connected" : "Disconnected");
           DIS_CLIENT_END_OF_COMMAND(&rDisService_X);
@@ -930,7 +929,7 @@ void DisClient::V_PreNewFrame()
       {
         DisClient::S_Log("[%u] V_PreNewFrame: %s %zd exception caught '%s'\n", BOF::Bof_GetMsTickCount(), rDisService_X.Name_S.c_str(), mDisServiceCollection.size(), re.what());
       }
-    } //for (DIS_DBG_SERVICE &rDisService_X : mDisServiceCollection)
+    } // for (DIS_DBG_SERVICE &rDisService_X : mDisServiceCollection)
   }
 }
 
@@ -953,7 +952,7 @@ BOFERR DisClient::V_RefreshGui()
     if (mDisServiceIndex_S32 == DIS_CLIENT_INVALID_INDEX)
     {
       mDisServiceCollection[0].DisClientState_E = DIS_CLIENT_STATE::DIS_CLIENT_STATE_OPEN_WS; // mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
-      mIdleTimer_U32 = 0; //Start asap
+      mIdleTimer_U32 = 0;                                                                     // Start asap
     }
   }
   if (IS_DIS_SERVICE_VALID())
@@ -961,7 +960,7 @@ BOFERR DisClient::V_RefreshGui()
     i_U32 = 0;
     for (DIS_DBG_SERVICE &rDisService_X : mDisServiceCollection)
     {
-      if (i_U32)  // mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
+      if (i_U32) // mDisServiceCollection entry 0 is reserved to create a ws and get DIS_DBG_SERVICE list
       {
         if (rDisService_X.PageLayoutJsonData.is_null())
         {
@@ -980,7 +979,7 @@ BOFERR DisClient::V_RefreshGui()
             if (IS_PAGE_SUBPAGE_LAYOUT_VALID(&rDisService_X))
             {
               rDisService_X.CtrlFlag_U32 = (DIS_CTRL_FLAG_BACK | DIS_CTRL_FLAG_FORE);
-              mIdleTimer_U32 = 0; //Start asap
+              mIdleTimer_U32 = 0; // Start asap
             }
           }
         }
@@ -1144,7 +1143,7 @@ BOFERR DisClient::CheckForCommandReply(DIS_DBG_SERVICE *_pDisService_X, std::str
         catch (nlohmann::json::exception &re)
         {
           Rts_E = BOF_ERR_INVALID_ANSWER;
-          DisClient::S_Log("[%u] CheckForCommandReply: %s exception caught '%s'\n", BOF::Bof_GetMsTickCount(), _pDisService_X ? _pDisService_X->Name_S.c_str():"", re.what());
+          DisClient::S_Log("[%u] CheckForCommandReply: %s exception caught '%s'\n", BOF::Bof_GetMsTickCount(), _pDisService_X ? _pDisService_X->Name_S.c_str() : "", re.what());
         }
       }
     }
@@ -1153,7 +1152,7 @@ BOFERR DisClient::CheckForCommandReply(DIS_DBG_SERVICE *_pDisService_X, std::str
 }
 BOFERR DisClient::ReadWebSocket(DIS_DBG_SERVICE *_pDisService_X, uint32_t &_rMaxSize_U32, char *_pData_c)
 {
-  BOFERR Rts_E=BOF_ERR_INTERNAL;
+  BOFERR Rts_E = BOF_ERR_INTERNAL;
 
   if (_pDisService_X)
   {
@@ -1166,62 +1165,75 @@ BOFERR DisClient::ReadWebSocket(DIS_DBG_SERVICE *_pDisService_X, uint32_t &_rMax
 
 BOFERR DisClient::OpenWebSocket(DIS_DBG_SERVICE *_pDisService_X)
 {
-  BOFERR Rts_E = BOF_ERR_NOT_SUPPORTED;
+  BOFERR Rts_E = BOF_ERR_INTERNAL;
   // EmscriptenWebSocketCreateAttributes WebSocketCreateAttribute_X = {"wss://echo.websocket.org", nullptr, EM_TRUE};
-  //EmscriptenWebSocketCreateAttributes WebSocketCreateAttribute_X = {"ws://10.129.171.112:8080", nullptr, EM_TRUE};
-  EmscriptenWebSocketCreateAttributes WebSocketCreateAttribute_X = {_rDisService_X.IpAddress_S.c_str(), nullptr, EM_TRUE};
-
-  if (emscripten_websocket_is_supported())
+  // EmscriptenWebSocketCreateAttributes WebSocketCreateAttribute_X = {"ws://10.129.171.112:8080", nullptr, EM_TRUE};
+  if (_pDisService_X)
   {
-    CloseWebSocket();
-    _rDisService_X.Ws = emscripten_websocket_new(&WebSocketCreateAttribute_X);
+    Rts_E = BOF_ERR_NOT_SUPPORTED;
+    EmscriptenWebSocketCreateAttributes WebSocketCreateAttribute_X = {_pDisService_X->IpAddress_S.c_str(), nullptr, EM_TRUE};
 
-    DisClient::S_Log("CREATE Ws %d\n", mWs);
-    if (_rDisService_X.Ws > 0)
+    if (emscripten_websocket_is_supported())
     {
-      emscripten_websocket_set_onopen_callback(_rDisService_X.Ws, &_rDisService_X.WsCbParam_X, WebSocket_OnOpen);
-      emscripten_websocket_set_onerror_callback(_rDisService_X.Ws, &_rDisService_X.WsCbParam_X, WebSocket_OnError);
-      emscripten_websocket_set_onclose_callback(_rDisService_X.Ws, &_rDisService_X.WsCbParam_X, WebSocket_OnClose);
-      emscripten_websocket_set_onmessage_callback(_rDisService_X.Ws, &_rDisService_X.WsCbParam_X, WebSocket_OnMessage);
-      Rts_E = BOF_ERR_NO_ERROR;
+      CloseWebSocket(_pDisService_X);
+      _pDisService_X->Ws = emscripten_websocket_new(&WebSocketCreateAttribute_X);
+
+      DisClient::S_Log("CREATE Ws %d\n", _pDisService_X->Ws);
+      if (_pDisService_X->Ws > 0)
+      {
+        emscripten_websocket_set_onopen_callback(_pDisService_X->Ws, &_pDisService_X->WsCbParam_X, WebSocket_OnOpen);
+        emscripten_websocket_set_onerror_callback(_pDisService_X->Ws, &_pDisService_X->WsCbParam_X, WebSocket_OnError);
+        emscripten_websocket_set_onclose_callback(_pDisService_X->Ws, &_pDisService_X->WsCbParam_X, WebSocket_OnClose);
+        emscripten_websocket_set_onmessage_callback(_pDisService_X->Ws, &_pDisService_X->WsCbParam_X, WebSocket_OnMessage);
+        Rts_E = BOF_ERR_NO_ERROR;
+      }
     }
   }
   return Rts_E;
 }
 BOFERR DisClient::CloseWebSocket(DIS_DBG_SERVICE *_pDisService_X)
 {
-  BOFERR Rts_E = BOF_ERR_CLOSE;
+  BOFERR Rts_E = BOF_ERR_INTERNAL;
   EMSCRIPTEN_RESULT Sts;
 
-  _rDisService_X.puRxBufferCollection->Reset();
-/*
-Here are some of the standard WebSocket close codes defined by the WebSocket protocol (RFC 6455):
-
-1000 (NORMAL_CLOSURE): Normal closure; the connection successfully completed its purpose.
-1001 (GOING_AWAY): The endpoint is going away, such as a server going down or a browser navigating away from the page.
-1002 (PROTOCOL_ERROR): The endpoint received an invalid or inconsistent WebSocket protocol data.
-1003 (UNSUPPORTED_DATA): The received data violates the WebSocket protocol.
-1005 (NO_STATUS_RECEIVED): Indicates that no status code was actually present in the close frame.
-1006 (ABNORMAL_CLOSURE): The connection was closed abnormally (without sending or receiving a close frame).
-*/
-  Sts = emscripten_websocket_close(_rDisService_X.Ws, 1000, "CloseWebSocket");
-  DisClient::S_Log("STOP Ws %d code %d res %d\n", _rDisService_X.Ws, 1000, Sts);
-  // NO if (Sts == 0)
+  if (_pDisService_X)
   {
-    _rDisService_X.Ws = -1;
-    _rDisService_X.WsConnected_B = false;
-    Rts_E = BOF_ERR_NO_ERROR;
+    Rts_E = BOF_ERR_CLOSE;
+    _pDisService_X->puRxBufferCollection->Reset();
+    /*
+    Here are some of the standard WebSocket close codes defined by the WebSocket protocol (RFC 6455):
+
+    1000 (NORMAL_CLOSURE): Normal closure; the connection successfully completed its purpose.
+    1001 (GOING_AWAY): The endpoint is going away, such as a server going down or a browser navigating away from the page.
+    1002 (PROTOCOL_ERROR): The endpoint received an invalid or inconsistent WebSocket protocol data.
+    1003 (UNSUPPORTED_DATA): The received data violates the WebSocket protocol.
+    1005 (NO_STATUS_RECEIVED): Indicates that no status code was actually present in the close frame.
+    1006 (ABNORMAL_CLOSURE): The connection was closed abnormally (without sending or receiving a close frame).
+    */
+    Sts = emscripten_websocket_close(_pDisService_X->Ws, 1000, "CloseWebSocket");
+    DisClient::S_Log("STOP Ws %d code %d res %d\n", _pDisService_X->Ws, 1000, Sts);
+    // NO if (Sts == 0)
+    {
+      _pDisService_X->Ws = -1;
+      _pDisService_X->IsWebSocketConnected_B = false;
+      Rts_E = BOF_ERR_NO_ERROR;
+    }
   }
   return Rts_E;
 }
 BOFERR DisClient::WriteWebSocket(DIS_DBG_SERVICE *_pDisService_X, const char *_pData_c)
 {
-  BOFERR Rts_E = BOF_ERR_WRITE;
+  BOFERR Rts_E = BOF_ERR_INTERNAL;
   EMSCRIPTEN_RESULT Sts;
-  Sts = emscripten_websocket_send_utf8_text(_rDisService_X.Ws, _pData_c);
-  if (Sts == 0)
+
+  if ((_pDisService_X) && (_pData_c))
   {
-    Rts_E = BOF_ERR_NO_ERROR;
+    Rts_E = BOF_ERR_WRITE;
+    Sts = emscripten_websocket_send_utf8_text(_pDisService_X->Ws, _pData_c);
+    if (Sts == 0)
+    {
+      Rts_E = BOF_ERR_NO_ERROR;
+    }
   }
   return Rts_E;
 }
@@ -1229,65 +1241,64 @@ BOFERR DisClient::WriteWebSocket(DIS_DBG_SERVICE *_pDisService_X, const char *_p
 BOFERR DisClient::OnWebSocketOpenEvent(void *_pWsCbParam, const EmscriptenWebSocketOpenEvent *_pWebsocketEvent_X)
 {
   BOFERR Rts_E = BOF_ERR_EINVAL;
-  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pDisService;
+  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
 
-  if ((pDisService_X) && (_pWebsocketEvent_X))
+  if ((pWsCbParam_X) && (pWsCbParam_X->pDisClient) && (pWsCbParam_X->pDisService_X) && (_pWebsocketEvent_X))
   {
-    pDisService_X->IsWebSocketConnected_B = true;
+    pWsCbParam_X->pDisService_X->IsWebSocketConnected_B = true;
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
 }
 BOFERR DisClient::OnWebSocketErrorEvent(void *_pWsCbParam, const EmscriptenWebSocketErrorEvent *_pWebsocketEvent_X)
 {
-  BOFERR Rts_E = BOF_ERR_EINVAL;
-  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pDisService;
+  BOFERR Rts_E = BOF_ERR_INTERNAL;
+  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
 
-  if ((pDisService_X) && (_pWebsocketEvent_X))
+  if ((pWsCbParam_X) && (pWsCbParam_X->pDisClient) && (pWsCbParam_X->pDisService_X) && (_pWebsocketEvent_X))
   {
-    Rts_E = CloseWebSocket(pDisService_X);
+    Rts_E = CloseWebSocket(pWsCbParam_X->pDisService_X);
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
 }
 BOFERR DisClient::OnWebSocketCloseEvent(void *_pWsCbParam, const EmscriptenWebSocketCloseEvent *_pWebsocketEvent_X)
 {
-  BOFERR Rts_E = BOF_ERR_EINVAL;
-  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pDisService;
+  BOFERR Rts_E = BOF_ERR_INTERNAL;
+  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
 
-  if ((pDisService_X) && (_pWebsocketEvent_X))
+  if ((pWsCbParam_X) && (pWsCbParam_X->pDisClient) && (pWsCbParam_X->pDisService_X) && (_pWebsocketEvent_X))
   {
-    pDisService_X->IsWebSocketConnected_B = false;
-    pDisService_X->Ws = -1;
-    DIS_CLIENT_END_OF_COMMAND();
+    pWsCbParam_X->pDisService_X->IsWebSocketConnected_B = false;
+    pWsCbParam_X->pDisService_X->Ws = -1;
+    DIS_CLIENT_END_OF_COMMAND(pWsCbParam_X->pDisService_X);
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
 }
 BOFERR DisClient::OnWebSocketMessageEvent(void *_pWsCbParam, const EmscriptenWebSocketMessageEvent *_pWebsocketEvent_X)
 {
-  BOFERR Rts_E = BOF_ERR_EINVAL;
-  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pDisService;
-
+  BOFERR Rts_E = BOF_ERR_INTERNAL;
+  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
   EMSCRIPTEN_RESULT Sts;
   BOF::BOF_RAW_BUFFER *pRawBuffer_X;
   bool FinalFragment_B;
 
-  if ((pDisService_X) && (_pWebsocketEvent_X))
+  if ((pWsCbParam_X) && (pWsCbParam_X->pDisClient) && (pWsCbParam_X->pDisService_X) && (_pWebsocketEvent_X))
   {
     if (_pWebsocketEvent_X->isText)
     {
       // For only ascii chars.
       // DisClient::S_Log("----------------->TXT message from %d: %d:%s\n", _pWebsocketEvent_X->socket, _pWebsocketEvent_X->numBytes, _pWebsocketEvent_X->data);
     }
-    pDisService_X->puRxBufferCollection->SetAppendMode(0, true, nullptr); // By default we append
+    pWsCbParam_X->pDisService_X->puRxBufferCollection->SetAppendMode(0, true, nullptr); // By default we append
     FinalFragment_B = true;
-    Rts_E = pDisService_X->puRxBufferCollection->PushBuffer(0, _pWebsocketEvent_X->numBytes, (const uint8_t *)_pWebsocketEvent_X->data, &pRawBuffer_X);
-    pDisService_X->puRxBufferCollection->SetAppendMode(0, !FinalFragment_B, &pRawBuffer_X); // If it was the final one, we stop append->Result is pushed and committed
+    Rts_E = pWsCbParam_X->pDisService_X->puRxBufferCollection->PushBuffer(0, _pWebsocketEvent_X->numBytes, (const uint8_t *)_pWebsocketEvent_X->data, &pRawBuffer_X);
+    pWsCbParam_X->pDisService_X->puRxBufferCollection->SetAppendMode(0, !FinalFragment_B, &pRawBuffer_X); // If it was the final one, we stop append->Result is pushed and committed
     // DisClient::S_Log("err %d data %d:%p Rts:indx %d slot %x 1: %x:%p 2: %x:%p\n", Rts_E, _pWebsocketEvent_X->numBytes, (const uint8_t *)_pWebsocketEvent_X->data, pRawBuffer_X->IndexInBuffer_U32, pRawBuffer_X->SlotEmpySpace_U32, pRawBuffer_X->Size1_U32, pRawBuffer_X->pData1_U8, pRawBuffer_X->Size2_U32, pRawBuffer_X->pData2_U8);
     if (Rts_E != BOF_ERR_NO_ERROR)
     {
-      CloseWebSocket();
+      CloseWebSocket(pWsCbParam_X->pDisService_X);
     }
   }
   return Rts_E;
@@ -1328,65 +1339,62 @@ BOFERR DisClient::WriteWebSocket(DIS_DBG_SERVICE *_pDisService_X, const char *_p
   }
   return Rts_E;
 }
-BOFERR DisClient::OnWebSocketOpenEvent(void *_pDisService)
+BOFERR DisClient::OnWebSocketOpenEvent(void *_pWsCbParam)
 {
-  BOFERR Rts_E = BOF_ERR_EINVAL;
-  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pDisService;
+  BOFERR Rts_E = BOF_ERR_INTERNAL;
+  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
 
-  if (pDisService_X)
+  if ((pWsCbParam_X) && (pWsCbParam_X->pDisClient) && (pWsCbParam_X->pDisService_X))
   {
-    pDisService_X->IsWebSocketConnected_B = true;
+    pWsCbParam_X->pDisService_X->IsWebSocketConnected_B = true;
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
 }
 BOFERR DisClient::OnWebSocketErrorEvent(void *_pWsCbParam, BOFERR _Sts_E)
 {
-  BOFERR Rts_E = BOF_ERR_EINVAL;
-  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pDisService;
+  BOFERR Rts_E = BOF_ERR_INTERNAL;
+  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
 
-  if (pDisService_X)
+  if ((pWsCbParam_X) && (pWsCbParam_X->pDisClient) && (pWsCbParam_X->pDisService_X))
   {
-    Rts_E = CloseWebSocket(pDisService_X);
-    pDisService_X->Ws = reinterpret_cast<uintptr_t>(pDisService_X);
+    Rts_E = CloseWebSocket(pWsCbParam_X->pDisService_X);
+    pWsCbParam_X->pDisService_X->Ws = reinterpret_cast<uintptr_t>(pWsCbParam_X->pDisService_X);
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
 }
-BOFERR DisClient::OnWebSocketCloseEvent(void *_pDisService)
+BOFERR DisClient::OnWebSocketCloseEvent(void *_pWsCbParam)
 {
-  BOFERR Rts_E = BOF_ERR_EINVAL;
-  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pDisService;
+  BOFERR Rts_E = BOF_ERR_INTERNAL;
+  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
 
-  if (pDisService_X)
+  if ((pWsCbParam_X) && (pWsCbParam_X->pDisClient) && (pWsCbParam_X->pDisService_X))
   {
-    pDisService_X->IsWebSocketConnected_B = false;
-    pDisService_X->Ws = -1;
-    DIS_CLIENT_END_OF_COMMAND(pDisService_X);
+    pWsCbParam_X->pDisService_X->IsWebSocketConnected_B = false;
+    pWsCbParam_X->pDisService_X->Ws = -1;
+    DIS_CLIENT_END_OF_COMMAND(pWsCbParam_X->pDisService_X);
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
 }
 BOFERR DisClient::OnWebSocketMessageEvent(void *_pWsCbParam, uint32_t _Nb_U32, uint8_t *_pData_U8, BOF::BOF_BUFFER &_rReply_X)
 {
-  BOFERR Rts_E = BOF_ERR_EINVAL;
-
-  replace with WS_CALLBBACK_PARAM and adapt...
-
-  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pDisService;
+  BOFERR Rts_E = BOF_ERR_INTERNAL;
+  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
   BOF::BOF_RAW_BUFFER *pRawBuffer_X;
   bool FinalFragment_B;
 
-  if ((pDisService_X) && (_pData_U8))
+  if ((pWsCbParam_X) && (pWsCbParam_X->pDisClient) && (pWsCbParam_X->pDisService_X) && (_pData_U8))
   {
-    pDisService_X->puRxBufferCollection->SetAppendMode(0, true, nullptr); // By default we append
+    pWsCbParam_X->pDisService_X->puRxBufferCollection->SetAppendMode(0, true, nullptr); // By default we append
     FinalFragment_B = true;
-    Rts_E = pDisService_X->puRxBufferCollection->PushBuffer(0, _Nb_U32, _pData_U8, &pRawBuffer_X);
-    pDisService_X->puRxBufferCollection->SetAppendMode(0, !FinalFragment_B, &pRawBuffer_X); // If it was the final one, we stop append->Result is pushed and committed
+    Rts_E = pWsCbParam_X->pDisService_X->puRxBufferCollection->PushBuffer(0, _Nb_U32, _pData_U8, &pRawBuffer_X);
+    pWsCbParam_X->pDisService_X->puRxBufferCollection->SetAppendMode(0, !FinalFragment_B, &pRawBuffer_X); // If it was the final one, we stop append->Result is pushed and committed
     // DisClient::S_Log("err %d data %d:%p Rts:indx %d slot %x 1: %x:%p 2: %x:%p\n", Rts_E, _Nb_U32, _pData_U8, pRawBuffer_X->IndexInBuffer_U32, pRawBuffer_X->SlotEmpySpace_U32, pRawBuffer_X->Size1_U32, pRawBuffer_X->pData1_U8, pRawBuffer_X->Size2_U32, pRawBuffer_X->pData2_U8);
     if (Rts_E != BOF_ERR_NO_ERROR)
     {
-      CloseWebSocket(pDisService_X);
+      CloseWebSocket(pWsCbParam_X->pDisService_X);
     }
   }
   return Rts_E;
