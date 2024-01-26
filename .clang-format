@@ -153,7 +153,7 @@ RemoveBracesLLVM: false
 RequiresClausePosition: OwnLine
 SeparateDefinitionBlocks: Leave
 ShortNamespaceLines: 1
-SortIncludes:    CaseSensitive
+SortIncludes:    false
 SortJavaStaticImport: Before
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false

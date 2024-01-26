@@ -270,6 +270,12 @@ hello_imgui_add_app(dis-client
 
    include/dis_client.h
    src/dis_client.cpp
+   include/dis_discovery.h
+   src/dis_discovery.cpp
+    include/dis_service.h
+   src/dis_service.cpp
+   include/dis_client_websocket.h
+   src/dis_client_websocket.cpp
 )
 else()
 hello_imgui_add_app(dis-client 
@@ -282,6 +288,10 @@ hello_imgui_add_app(dis-client
 
    include/dis_client.h
    src/dis_client.cpp
+   include/dis_discovery.h
+   src/dis_discovery.cpp
+    include/dis_service.h
+   src/dis_service.cpp
    include/dis_client_websocket.h
    src/dis_client_websocket.cpp
 
