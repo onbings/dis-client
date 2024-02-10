@@ -32,11 +32,11 @@ struct DIS_DISCOVERY_PARAM
   }
 };
 
-struct DIS_SERVICE_DISCOVERED
+struct DIS_DEVICE
 {
   std::string Name_S;
   std::string IpAddress_S;
-  DIS_SERVICE_DISCOVERED()
+  DIS_DEVICE()
   {
     Reset();
   }
@@ -55,7 +55,7 @@ public:
 
   BOFERR Run();
   BOFERR Stop();
-  const std::map<BOF::BofGuid, DIS_SERVICE_DISCOVERED> GetDisDiscoveryServiceCollection();
+  std::map<BOF::BofGuid, DIS_DEVICE> GetDisDeviceCollection();  //Return a COPY of the discovered devices
 
 private:
   BOFERR V_OnProcessing() override;
@@ -63,6 +63,6 @@ private:
 private:
   DIS_DISCOVERY_PARAM mDisDiscoveryParam_X;
 
-  std::mutex mDisDiscoveryServiceCollectionMtx;
-  std::map<BOF::BofGuid,DIS_SERVICE_DISCOVERED> mDisDiscoveryServiceCollection;
+  std::mutex mDisDeviceCollectionMtx;
+  std::map<BOF::BofGuid,DIS_DEVICE> mDisDeviceCollection;
 };

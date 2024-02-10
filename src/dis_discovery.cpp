@@ -20,19 +20,19 @@ DisDiscovery::DisDiscovery(const DIS_DISCOVERY_PARAM &_rDisDiscoveryParam_X)
   mDisDiscoveryParam_X = _rDisDiscoveryParam_X;
 #if defined(NDEBUG) // We are in Release compil
 #else
-  DIS_SERVICE_DISCOVERED DisServiceDiscovered_X;
+  DIS_DEVICE DisDevice_X;
 
-  DisServiceDiscovered_X.IpAddress_S = "10.129.171.112";
-  DisServiceDiscovered_X.Name_S = "Xt1_DisService";
-  mDisDiscoveryServiceCollection[BOF::BofGuid()] =  DisServiceDiscovered_X;
-/* TODO inc et dec mDisDiscoveryServiceCollection content to test
-  DisServiceDiscovered_X.IpAddress_S = "10.129.171.112";
-  DisServiceDiscovered_X.Name_S = "Xt2_DisService";
-  mDisDiscoveryServiceCollection[BOF::BofGuid()] =  DisServiceDiscovered_X;
+  DisDevice_X.IpAddress_S = "10.129.171.112";
+  DisDevice_X.Name_S = "Xt1_DisDevice";
+  mDisDeviceCollection[BOF::BofGuid()] =  DisDevice_X;
+/* TODO inc et dec mDisDeviceCollection content to test
+  DisDevice_X.IpAddress_S = "10.129.171.112";
+  DisDevice_X.Name_S = "Xt2_DisDevice";
+  mDisDeviceCollection[BOF::BofGuid()] =  DisDevice_X;
 
-  DisServiceDiscovered_X.IpAddress_S = "10.129.171.112";
-  DisServiceDiscovered_X.Name_S = "Xt3_DisService";
-  mDisDiscoveryServiceCollection[BOF::BofGuid()] =  DisServiceDiscovered_X;
+  DisDevice_X.IpAddress_S = "10.129.171.112";
+  DisDevice_X.Name_S = "Xt3_DisDevice";
+  mDisDeviceCollection[BOF::BofGuid()] =  DisDevice_X;
   */
 #endif
 }
@@ -42,10 +42,11 @@ DisDiscovery::~DisDiscovery()
   Stop();
 }
 
-const std::map<BOF::BofGuid, DIS_SERVICE_DISCOVERED> DisDiscovery::GetDisDiscoveryServiceCollection()
+//No return a COPY and not a ref const std::map<BOF::BofGuid, DIS_DEVICE> &DisDiscovery::GetDisDeviceCollection()
+std::map<BOF::BofGuid, DIS_DEVICE> DisDiscovery::GetDisDeviceCollection()
 {
-  std::lock_guard Lock(mDisDiscoveryServiceCollectionMtx);
-  return mDisDiscoveryServiceCollection;
+  std::lock_guard Lock(mDisDeviceCollectionMtx);
+  return mDisDeviceCollection;
 }
 
 BOFERR DisDiscovery::Run()
@@ -68,7 +69,7 @@ BOFERR DisDiscovery::V_OnProcessing()
 {
   BOFERR Rts_E = BOF_ERR_NO_ERROR;
 //Periodic thread in  LaunchBofProcessingThread do
-  std::lock_guard Lock(mDisDiscoveryServiceCollectionMtx);
+  std::lock_guard Lock(mDisDeviceCollectionMtx);
   {
     //Do discover
   }

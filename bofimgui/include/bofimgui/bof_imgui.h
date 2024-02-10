@@ -55,7 +55,10 @@ struct BOF_IMGUI_PARAM
 {
   std::string WindowTitle_S;  //Used also as user setting save and load op id
   BOF::BOF_SIZE<uint32_t> Size_X;
+  std::string BackgroudHexaColor_S;  //if not set use V_CustomBackground callback
   bool ShowDemoWindow_B;
+  bool ShowMenuBar_B;
+  bool ShowStatusBar_B;
   Logger TheLogger;
 
   BOF_IMGUI_PARAM()
@@ -66,7 +69,10 @@ struct BOF_IMGUI_PARAM
   {
     WindowTitle_S = "";
     Size_X.Reset();
+    BackgroudHexaColor_S = "";
     ShowDemoWindow_B = false;
+    ShowMenuBar_B = false;
+    ShowStatusBar_B = false;
     TheLogger = nullptr;
   }
 };
@@ -275,16 +281,15 @@ public:
   ImFont *GetFont(uint32_t _FontIndex_U32);
   ImFont *LoadFont(const char *_pFontFileTtf_c, uint32_t _FontSizeInPixel_U32);
   BOF::BOF_SIZE<uint32_t> GetTextSize(const char *_pText_c);
+  static bool S_HexaColor(const std::string &_rHexaColor_S, uint8_t(&_rColor_U8)[4]); //#RRGGBB or #RRGGBBAA
 
 protected:
   virtual BOFERR V_ReadSettings() = 0;
   virtual BOFERR V_SaveSettings() = 0;
   virtual BOFERR V_RefreshGui() = 0;
   static void S_BuildHelpMarker(const char *_pHelp_c);
-  static std::string S_GetKeyboardState();
+  virtual void V_OnKeyboardPress(char _Ch_c, const std::string &_rKeyState_S);
 
-private:
-  void HandleComputerKeyboard();
   virtual void V_SetupImGuiConfig();
   virtual void V_SetupImGuiStyle();
   virtual void V_PostInit();
@@ -301,6 +306,11 @@ private:
   virtual void V_BeforeExit();
   virtual void V_BeforeExit_PostCleanup();
   virtual void V_RegisterTests();
+  static std::string S_GetKeyboardState();
+
+private:
+  void HandleComputerKeyboard();
+ 
 
 private:
   BOF_IMGUI_PARAM mImguiParam_X;

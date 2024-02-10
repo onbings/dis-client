@@ -101,6 +101,8 @@ EM_BOOL WebSocket_OnMessage(int _Event_i, const EmscriptenWebSocketMessageEvent 
 DisService::DisService(const DIS_SERVICE_PARAM &_rDisServiceParam_X)
 {
   mDisServiceParam_X = _rDisServiceParam_X;
+  mDisService_X.Name_S = mDisServiceParam_X.DisDevice_X.Name_S;
+  mDisService_X.IpAddress_S = mDisServiceParam_X.DisDevice_X.IpAddress_S;
 }
 
 DisService::~DisService()
@@ -112,6 +114,25 @@ const DIS_DBG_SERVICE &DisService::GetDbgDisService()
   return mDisService_X;
 }
 
+BOFERR DisService::Run()
+{
+  BOFERR Rts_E = BOF_ERR_INVALID_STATE;
+
+  if (mDisService_X.DisClientState_E == DIS_SERVICE_STATE::DIS_SERVICE_STATE_MAX)
+  {
+    Rts_E = BOF_ERR_NO_ERROR;
+    mDisService_X.DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_IDLE;
+  }
+  return Rts_E;
+}
+
+BOFERR DisService::Stop()
+{
+  BOFERR Rts_E = BOF_ERR_NO_ERROR;
+
+  mDisService_X.DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_MAX;
+  return Rts_E;
+}
 /*
 {
   "version": "1.0.0",
@@ -166,17 +187,15 @@ BOFERR DisService::DecodeDisService(const nlohmann::json &_rDisServiceJsonData)
         },
 */
 
-BOFERR DisService::DecodePageLayout(const nlohmann::json &_rPageLayoutJsonData, const std::string &_rName_S, const std::string &_rIpAddress_S)
+BOFERR DisService::DecodePageLayout(const nlohmann::json &_rPageLayoutJsonData, DIS_DBG_SERVICE_ITEM &_rDisDbgServiceItem)
 {
   BOFERR Rts_E = BOF_ERR_NO_ERROR;
   uint32_t i_U32, j_U32;
-  DIS_DBG_SERVICE_ITEM DisDbgServiceItem_X;
   DIS_DBG_PAGE_LAYOUT DisDbgPage_X;
   DIS_DBG_SUB_PAGE_LAYOUT DisDbgSubPage_X;
   try
   {
-    DisDbgServiceItem_X.Name_S = _rName_S;
-    DisDbgServiceItem_X.IpAddress_S = _rIpAddress_S;
+    _rDisDbgServiceItem.DisDbgPageLayoutCollection.clear();
     // Check if "page" exists and is an array
     auto PageIterator = _rPageLayoutJsonData.find("page");
     if ((PageIterator != _rPageLayoutJsonData.end()) && (PageIterator->is_array()))
@@ -195,19 +214,20 @@ BOFERR DisService::DecodePageLayout(const nlohmann::json &_rPageLayoutJsonData, 
         if ((SubPageIterator != CrtPage.end()) && (SubPageIterator->is_array()))
         {
           const auto &SubPageCollection = *SubPageIterator;
+          //DisClient::S_Log("SubPage JSON: %s", SubPageCollection.dump(2).c_str());
           for (j_U32 = 0; j_U32 < SubPageCollection.size(); j_U32++)
           {
             const auto &CrtSubPage = SubPageCollection[j_U32];
+            //DisClient::S_Log("SubPage[%d] JSON: %s", j_U32, CrtSubPage.dump(2).c_str());
             DisDbgSubPage_X.Reset();
-            DisDbgSubPage_X.Label_S = CrtPage.value("label", "Label_NotFound_" + std::to_string(j_U32)) + '[' + std::to_string(DisDbgPage_X.MaxChannel_U32) + ']';
-            DisDbgSubPage_X.Help_S = CrtPage.value("help", "Help_NotFound_" + std::to_string(j_U32));
+            DisDbgSubPage_X.Label_S = CrtSubPage.value("label", "Label_NotFound_" + std::to_string(j_U32)) + '[' + std::to_string(DisDbgPage_X.MaxChannel_U32) + ']';
+            DisDbgSubPage_X.Help_S = CrtSubPage.value("help", "Help_NotFound_" + std::to_string(j_U32));
             DisDbgPage_X.DisDbgSubPageCollection.push_back(DisDbgSubPage_X);
           }
         } // if ((SubPageIterator != CrtPage.end()) && (SubPageIterator->is_array()))
-        DisDbgServiceItem_X.DisDbgPageLayoutCollection.push_back(DisDbgPage_X);
+        _rDisDbgServiceItem.DisDbgPageLayoutCollection.push_back(DisDbgPage_X);
       } // for (i = 0; i < pages.size(); ++i)
     }   // if ((PageIterator != _rPageLayoutJsonData.end()) && (PageIterator->is_array()))
-    mDisService_X.DisDbgServiceItemCollection.push_back(DisDbgServiceItem_X);
   }
   catch (nlohmann::json::exception &re)
   {
@@ -304,10 +324,6 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
 
   try
   {
-    DeltaState_U32 = BOF::Bof_ElapsedMsTime(mDisService_X.StateTimer_U32);
-    DeltaPageInfo_U32 = BOF::Bof_ElapsedMsTime(mDisService_X.PageInfoTimer_U32);
-    Sts_E = BOF_ERR_NO_ERROR;
-    StsCmd_E = BOF_ERR_NO;
     if (mDisService_X.DisClientState_E != mDisService_X.DisClientLastState_E)
     {
       DisClient::S_Log("[%u] ENTER: %s Sz %zd State change %s->%s: %s\n", BOF::Bof_GetMsTickCount(), mDisService_X.Name_S.c_str(), mDisService_X.DisDbgServiceItemCollection.size(),
@@ -316,6 +332,11 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
       mDisService_X.DisClientLastState_E = mDisService_X.DisClientState_E;
       mDisService_X.StateTimer_U32 = BOF::Bof_GetMsTickCount();
     }
+    DeltaState_U32 = BOF::Bof_ElapsedMsTime(mDisService_X.StateTimer_U32);
+    DeltaPageInfo_U32 = BOF::Bof_ElapsedMsTime(mDisService_X.PageInfoTimer_U32);
+    Sts_E = BOF_ERR_NO_ERROR;
+    StsCmd_E = BOF_ERR_NO;
+
     if (mDisService_X.IsWebSocketConnected_B)
     {
       StsCmd_E = IsCommandRunning(&mDisService_X) ? CheckForCommandReply(&mDisService_X, mDisService_X.LastWebSocketMessage_S) : BOF_ERR_NO;
@@ -435,23 +456,29 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
         break;
 
       case DIS_SERVICE_STATE::DIS_SERVICE_STATE_GET_DEBUG_PAGE_LAYOUT:
+        //DisClient::S_Log("DIS_SERVICE_STATE_GET_DEBUG_PAGE_LAYOUT %d/%d\n",mDisService_X.DisDbgServicePageLayoutIndex_U32,mDisService_X.DisDbgServiceItemCollection.size());
         if (mDisService_X.DisDbgServicePageLayoutIndex_U32 < mDisService_X.DisDbgServiceItemCollection.size())
         {
           if (StsCmd_E == BOF_ERR_NO)
           {
-            // TODO faire une loop sur toutes les possibilites
-            Sts_E = SendCommand(&mDisService_X, DIS_CLIENT_WS_TIMEOUT, "GET " + _rStateMachine_X.DisService_S + "DebugPageLayout");
-            if (Sts_E != BOF_ERR_NO_ERROR)
+            if (_rStateMachine_X.DisService_S == "")
             {
-              mDisService_X.DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_OPEN_WS;
+              mDisService_X.StateTimer_U32 = BOF::Bof_GetMsTickCount(); // Reset state timer as all is ok, we just wait for user selection
+            }
+            else
+            {
+              Sts_E = SendCommand(&mDisService_X, DIS_CLIENT_WS_TIMEOUT, "GET " + _rStateMachine_X.DisService_S + "DebugPageLayout");
+              if (Sts_E != BOF_ERR_NO_ERROR)
+              {
+                mDisService_X.DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_OPEN_WS;
+              }
             }
           }
           else
           {
             if (StsCmd_E == BOF_ERR_NO_ERROR)
             {
-              Sts_E = DecodePageLayout(nlohmann::json::parse(mDisService_X.LastWebSocketMessage_S), mDisService_X.DisDbgServiceItemCollection[mDisService_X.DisDbgServicePageLayoutIndex_U32].Name_S,
-                                       mDisService_X.DisDbgServiceItemCollection[mDisService_X.DisDbgServicePageLayoutIndex_U32].IpAddress_S);
+              Sts_E = DecodePageLayout(nlohmann::json::parse(mDisService_X.LastWebSocketMessage_S), mDisService_X.DisDbgServiceItemCollection[mDisService_X.DisDbgServicePageLayoutIndex_U32]);
               if (Sts_E == BOF_ERR_NO_ERROR)
               {
                 mDisService_X.DisDbgServicePageLayoutIndex_U32++;
@@ -460,6 +487,7 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
               {
                 mDisService_X.DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_OPEN_WS;
               }
+              //DisClient::S_Log("DIS_SERVICE_STATE_GET_DEBUG_PAGE_LAYOUT %d/%d Sts %d\n", mDisService_X.DisDbgServicePageLayoutIndex_U32, mDisService_X.DisDbgServiceItemCollection.size(), Sts_E);
             }
           }
         }
@@ -470,16 +498,27 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
         break;
 
       case DIS_SERVICE_STATE::DIS_SERVICE_STATE_GET_DEBUG_PAGE_INFO:
+        if (DeltaState_U32 > 1500)
+        {
+          printf("jj");
+        }
         if (StsCmd_E == BOF_ERR_NO)
         {
-          if (DeltaPageInfo_U32 > mDisServiceParam_X.PollTimeInMs_U32)
+          if (DeltaPageInfo_U32 > mDisServiceParam_X.QueryServerPollTimeInMs_U32)
           {
-            mDisService_X.PageInfoTimer_U32 = BOF::Bof_GetMsTickCount();
-            //"GET /Gbe/DebugPageInfo/800/0/?chnl=0&flag=3&key=0&user_input=");
-            Sts_E = SendCommand(&mDisService_X, DIS_CLIENT_WS_TIMEOUT, "GET " + _rStateMachine_X.DisService_S + "DebugPageInfo/" + std::to_string(_rStateMachine_X.Page_U32) + "/" + std::to_string(_rStateMachine_X.SubPage_U32) + "/?" + "chnl=" + std::to_string(_rStateMachine_X.Channel_U32) + "&flag=" + std::to_string(_rStateMachine_X.CtrlFlag_U32) + "&key=" + std::to_string(_rStateMachine_X.FctKeyFlag_U32) + "&user_input=" + _rStateMachine_X.UserInput_S);
-            if (Sts_E != BOF_ERR_NO_ERROR)
+            if ((_rStateMachine_X.Page_U32 == -1) && (_rStateMachine_X.SubPage_U32 == -1))
             {
-              mDisService_X.DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_OPEN_WS;
+              mDisService_X.StateTimer_U32 = BOF::Bof_GetMsTickCount(); // Reset state timer as all is ok, we just wait for user selection
+            }
+            else
+            {
+              mDisService_X.PageInfoTimer_U32 = BOF::Bof_GetMsTickCount();
+              //"GET /Gbe/DebugPageInfo/800/0/?chnl=0&flag=3&key=0&user_input=");
+              Sts_E = SendCommand(&mDisService_X, DIS_CLIENT_WS_TIMEOUT, "GET " + _rStateMachine_X.DisService_S + "DebugPageInfo/" + std::to_string(_rStateMachine_X.Page_U32) + "/" + std::to_string(_rStateMachine_X.SubPage_U32) + "/?" + "chnl=" + std::to_string(_rStateMachine_X.Channel_U32) + "&flag=" + std::to_string(_rStateMachine_X.CtrlFlag_U32) + "&key=" + std::to_string(_rStateMachine_X.FctKeyFlag_U32) + "&user_input=" + _rStateMachine_X.UserInput_S);
+              if (Sts_E != BOF_ERR_NO_ERROR)
+              {
+                mDisService_X.DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_OPEN_WS;
+              }
             }
           }
         }
@@ -487,11 +526,13 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
         {
           if (StsCmd_E == BOF_ERR_NO_ERROR)
           {
-            mDisService_X.StateTimer_U32 = BOF::Bof_GetMsTickCount(); // Reset state timer as all is ok
+            mDisService_X.StateTimer_U32 = BOF::Bof_GetMsTickCount(); // Reset state timer as all is ok, we just receive an answer
 
             if ((_rStateMachine_X.CtrlFlag_U32 & (DIS_CTRL_FLAG_BACK | DIS_CTRL_FLAG_FORE)) == (DIS_CTRL_FLAG_BACK | DIS_CTRL_FLAG_FORE))
             {
               Sts_E = DecodePageInfo(nlohmann::json::parse(mDisService_X.LastWebSocketMessage_S));
+              //DisClient::S_Log("[%u] NewPageData Sts %d\n%s\n", BOF::Bof_GetMsTickCount(), Sts_E, mDisService_X.LastWebSocketMessage_S.c_str());
+
               if (Sts_E == BOF_ERR_NO_ERROR)
               {
                 mDisService_X.DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_GET_DEBUG_PAGE_INFO;
@@ -580,6 +621,7 @@ BOFERR DisService::SendCommand(DIS_DBG_SERVICE *_pDisService_X, uint32_t _Timeou
       }
       _pDisService_X->LastCmdSentTimer_U32 = BOF::Bof_GetMsTickCount();
       Rts_E = WriteWebSocket(_pDisService_X, Command_S.c_str());
+      //DisClient::S_Log("==>Send '%s' sts %s\n", Command_S.c_str(), BOF::Bof_ErrorCode(Rts_E));
       if (Rts_E == BOF_ERR_NO_ERROR)
       {
         _pDisService_X->LastCmdSentTimeoutInMs_U32 = _TimeoutInMsForReply_U32;

@@ -124,14 +124,18 @@ int main(int _Argc_i, char *_pArgv[])
     // BOF::Bof_GetCurrentDirectory(Cwd_S);
     printf("\nPwd %s\nRunning BofStd V %s on %s under %s\n", Cwd_S.c_str(), StdParam_X.Version_S.c_str(), StdParam_X.ComputerName_S.c_str(), StdParam_X.OsName_S.c_str());
 
-    DisClientParam_X.PollTimeInMs_U32 = 1000;
+    DisClientParam_X.DiscoverPollTimeInMs_U32 = 2000;
+    DisClientParam_X.DisServerPollTimeInMs_U32 = 1000;
     DisClientParam_X.FontSize_U32 = 14;
     DisClientParam_X.ConsoleWidth_U32 = 80;
     DisClientParam_X.ConsoleHeight_U32 = 25;
     DisClientParam_X.ImguiParam_X.WindowTitle_S = "Dis-Client";
     DisClientParam_X.ImguiParam_X.Size_X = BOF::BOF_SIZE<uint32_t>(1600, 900);  // 800, 600);
+    //DisClientParam_X.ImguiParam_X.BackgroudHexaColor_S = "#00FF0050";
     DisClientParam_X.ImguiParam_X.TheLogger = DisClient::S_Log;
-    DisClientParam_X.ImguiParam_X.ShowDemoWindow_B = true;
+    //DisClientParam_X.ImguiParam_X.ShowDemoWindow_B = true;
+    DisClientParam_X.ImguiParam_X.ShowMenuBar_B = false;
+    DisClientParam_X.ImguiParam_X.ShowStatusBar_B = false;
     std::unique_ptr<DisClient> puDisClient = std::make_unique<DisClient>(DisClientParam_X);
     Rts_i = (int)puDisClient->MainLoop();
     BOF::Bof_Shutdown();

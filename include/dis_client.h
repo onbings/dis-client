@@ -16,15 +16,18 @@
 
 #include <bofstd/bofrawcircularbuffer.h>
 #include <bofstd/bofthread.h>
-#include "bof_imgui.h"
+#include <bofstd/bofgraph.h>
+#include "bofimgui/bof_imgui.h"
 #include "dis_service.h"
 #include "dis_discovery.h"
+// NODE
+#include "bofimgui/imnodes.h"
 
 constexpr int32_t DIS_CLIENT_INVALID_INDEX = -1;
 struct DIS_CLIENT_PARAM
 {
-  uint32_t PollTimeInMs_U32;
-  uint32_t DisServerPollTimeInMs_U32;
+  uint32_t DiscoverPollTimeInMs_U32;              //Poll time to query discovered device
+  uint32_t DisServerPollTimeInMs_U32;     //Poll time to ask debug info to Dis Server
 
   uint32_t FontSize_U32;
   uint32_t ConsoleWidth_U32;
@@ -37,7 +40,7 @@ struct DIS_CLIENT_PARAM
   }
   void Reset()
   {
-    PollTimeInMs_U32 = 0;
+    DiscoverPollTimeInMs_U32 = 0;
     DisServerPollTimeInMs_U32 = 0;
 
     FontSize_U32 = 0;
@@ -51,6 +54,7 @@ struct DIS_CLIENT_DBG_SERVICE
 {
   bool IsVisisble_B;
   std::unique_ptr<DisService> puDisService;
+  int32_t ServiceIndex_S32;
   int32_t PageIndex_S32;
   int32_t SubPageIndex_S32;
   DIS_CLIENT_DBG_SERVICE()
@@ -60,11 +64,36 @@ struct DIS_CLIENT_DBG_SERVICE
   void Reset()
   {
     IsVisisble_B = false;
-    puDisService = nullptr;;
+    puDisService = nullptr;
+    ServiceIndex_S32 = DIS_CLIENT_INVALID_INDEX;
     PageIndex_S32 = DIS_CLIENT_INVALID_INDEX;
     SubPageIndex_S32 = DIS_CLIENT_INVALID_INDEX;
   }
 };
+
+struct DIS_CLIENT_NODE
+{
+  uint32_t NodeId_U32;
+  float x_f;
+  float y_f;
+
+  //bool Input_B;
+  float Value_f;
+
+  DIS_CLIENT_NODE()
+  {
+    Reset();
+  }
+  void Reset()
+  {
+    NodeId_U32 = 0;
+    x_f = 0.0f;
+    y_f = 0.0f;
+//    Input_B = false;
+    Value_f = 0.0f;
+  }
+};
+
 class DisClient : public BOF::Bof_ImGui, public BOF::BofThread
 {
 public:
@@ -79,6 +108,8 @@ private:
   void V_LoadAdditionalFonts() override;
   void V_PreNewFrame() override;
   BOFERR V_RefreshGui() override;
+  void V_PostInit() override;
+  void V_BeforeExit() override;
 
   BOFERR Run();
   BOFERR Stop();
@@ -90,7 +121,6 @@ private:
   void UpdateConsoleMenubar(DIS_CLIENT_DBG_SERVICE &_rDisClientDbgService_X);
 
 private:
-  static void S_HexaColor(const std::string &_rHexaColor_S, uint8_t (&_rColor_U8)[4]);
   BOFERR PrintAt(uint32_t _x_U32, uint32_t _y_U32, const std::string &_rHexaForeColor_S, const std::string &_rHexaBackColor_S, const std::string &_rText_S);
 
 private:
@@ -100,10 +130,14 @@ private:
   BOF::BOF_SIZE<uint32_t> mConsoleCharSize_X;
 
   std::unique_ptr<DisDiscovery> mpuDisDiscovery = nullptr;
-  std::mutex mDisDiscoveryServiceCollectionMtx;
-  std::map<BOF::BofGuid, DIS_SERVICE_DISCOVERED> mDisDiscoveryServiceCollection;
+  std::mutex mDisDeviceCollectionMtx;
+  std::map<BOF::BofGuid, DIS_DEVICE> mDisDeviceCollection;
 
   std::mutex mDisClientDbgServiceCollectionMtx;
   std::map<BOF::BofGuid, DIS_CLIENT_DBG_SERVICE> mDisClientDbgServiceCollection;
-  int32_t mDisServiceIndex_S32 = DIS_CLIENT_INVALID_INDEX;
+
+  //uint32_t mNodeId_U32 = 1;
+  std::unique_ptr<BOF::BofDirGraph<DIS_CLIENT_NODE>> mpuNodeGraph = nullptr;
+  std::vector<std::pair<uint32_t, uint32_t>> mLinkCollection;
+  ImNodesMiniMapLocation mMinimapLocation = ImNodesMiniMapLocation_BottomRight;
 };

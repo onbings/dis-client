@@ -7,6 +7,14 @@
       "name": "nlohmann-json"
     },
     {
+      "name": "freetype",
+	  "platform": "windows"	  
+    },	
+    {
+      "name": "sdl2",
+	  "platform": "windows"	  
+    },	
+    {
       "name": "bofstd"
     },
     {

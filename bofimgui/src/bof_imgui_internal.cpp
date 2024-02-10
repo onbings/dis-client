@@ -14,7 +14,7 @@
  *
  * V 1.00  Dec 24 2023  Bernard HARMEL: onbings@gmail.com : Initial release
  */
-#include "bof_imgui_internal.h"
+#include "bofimgui/bof_imgui_internal.h"
 
 /*
 The following lib is extracted from https://github.com/ForrestFeng/imgui/tree/Text_Customization

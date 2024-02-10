@@ -57,8 +57,8 @@ class DisClientWebSocket;
   struct DIS_SERVICE_PARAM
   {
     std::string DisServerEndpoint_S;
-    uint32_t PollTimeInMs_U32;
-    DIS_SERVICE_DISCOVERED DisService_X;
+    uint32_t QueryServerPollTimeInMs_U32;
+    DIS_DEVICE DisDevice_X;
 
     DIS_SERVICE_PARAM()
     {
@@ -67,8 +67,8 @@ class DisClientWebSocket;
     void Reset()
     {
       DisServerEndpoint_S = "";
-      PollTimeInMs_U32 = 0;
-      DisService_X.Reset();
+      QueryServerPollTimeInMs_U32 = 0;
+      DisDevice_X.Reset();
     }
   };
 /*
@@ -314,9 +314,11 @@ class DisClientWebSocket;
     ~DisService();
     DIS_SERVICE_STATE StateMachine(const DIS_DBG_STATE_MACHINE &_rStateMachine_X);
     const DIS_DBG_SERVICE &GetDbgDisService();
+    BOFERR Run();
+    BOFERR Stop();
   private:
     BOFERR DecodeDisService(const nlohmann::json &_rDisServiceJsonData);
-    BOFERR DecodePageLayout(const nlohmann::json &_rPageLayoutJsonData, const std::string &_rName_S, const std::string &_rIpAddress_S);
+    BOFERR DecodePageLayout(const nlohmann::json &_rPageLayoutJsonData, DIS_DBG_SERVICE_ITEM  &_rDisDbgServiceItem);
     BOFERR DecodePageInfo(const nlohmann::json &_rPageInfoJsonData);
 
     bool IsCommandRunning(DIS_DBG_SERVICE *_pDisService_X);

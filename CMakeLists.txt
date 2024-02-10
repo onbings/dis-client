@@ -1,10 +1,17 @@
 #see README.md
 #cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe -G Ninja
 #cmake -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe
-#cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug  -DHELLOIMGUI_USE_SDL_OPENGL3=ON -SC:/pro/github/dis-client -BC:/bld/dis-client-win
+
+#cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug  -DHELLOIMGUI_USE_SDL2=ON -DHELLOIMGUI_HAS_OPENGL3=ON -SC:/pro/github/dis-client -BC:/bld/dis-client-win
+
 #https://github.com/microsoft/vcpkg/discussions/36049
 #https://github.com/microsoft/vcpkg/discussions/30108#top
 #/opt/evs/evs-gbio/bin/dis_service --DisServer=ws://10.129.171.112:8080
+
+#https://github.com/Nelarius/imnodes
+#https://github.com/rokups/ImNodes/
+#https://github.com/Fattorino/ImNodeFlow?tab=readme-ov-file
+#https://github.com/ocornut/imgui/issues/306
 cmake_minimum_required(VERSION 3.28)
 
 # Paranoid check : in-source generation is forbidden
@@ -37,16 +44,11 @@ option(DISCLIENT_FORCE_EXPORT_ALL  "Force exporting all symbols of dis-client li
 #EMSCRIPTEN
 option(EMSCRIPTEN_GEN_HTML "EMSCRIPTEN generateq .wasm and .js file. If you set this option to ON we also generate an html container" OFF)
 set(DISCLIENT_EMSCRIPTEN_MEMORY 256MB CACHE STRING "Specify emscripten default memory size")
-message("emscripten default memory size: ${DISCLIENT_EMSCRIPTEN_MEMORY}")
 set(DISCLIENT_EMSCRIPTEN_STACK 4MB CACHE STRING "Specify emscripten default stack size")
-message("emscripten default stack size: ${DISCLIENT_EMSCRIPTEN_STACK}")
 set(DISCLIENT_EMSCRIPTEN_THREAD_POOL 4 CACHE STRING "Specify emscripten default thread pool size")
-message("emscripten default thread pool size: ${DISCLIENT_EMSCRIPTEN_THREAD_POOL}")
 #set(DISCLIENT_EMSCRIPTEN_FS_SRC_ROOT_DIR ${CMAKE_BINARY_DIR}/binaries/bin/data CACHE STRING "Specify emscripten fs source dir")
 set(DISCLIENT_EMSCRIPTEN_FS_SRC_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/assets CACHE STRING "Specify emscripten preload file dir")
-message("emscripten fs source file directory: ${DISCLIENT_EMSCRIPTEN_FS_SRC_ROOT_DIR}")
 set(DISCLIENT_EMSCRIPTEN_FS_DST_ROOT_DIR assets CACHE STRING "Specify emscripten fs destination dir")
-message("emscripten fs destination file directory: ${DISCLIENT_EMSCRIPTEN_FS_DST_ROOT_DIR}") 
 #em++: error: 'C:\pro\emsdk\upstream\emscripten\tools\file_packager.bat binaries\bin\dis-client.data --from-emcc --preload C:/bld/dis-client-web/binaries/bin/data' failed (returned 1)
 # ===============================
 # == NON TRANSITIVE PROPERTIES ==
@@ -67,6 +69,11 @@ SET(CMAKE_VERBOSE_MAKEFILE ON)
 # set(CMAKE_DEBUG_POSTFIX _d)
 
 if (EMSCRIPTEN)
+message("emscripten default memory size: ${DISCLIENT_EMSCRIPTEN_MEMORY}")
+message("emscripten default stack size: ${DISCLIENT_EMSCRIPTEN_STACK}")
+message("emscripten default thread pool size: ${DISCLIENT_EMSCRIPTEN_THREAD_POOL}")
+message("emscripten fs source file directory: ${DISCLIENT_EMSCRIPTEN_FS_SRC_ROOT_DIR}")
+message("emscripten fs destination file directory: ${DISCLIENT_EMSCRIPTEN_FS_DST_ROOT_DIR}") 
 
 #sometime it cannot find pthread. If i force it in C:\Program Files\CMake\share\cmake-3.28\Modules\FindThreads.cmake it works...
 #macro(_threads_check_libc)
@@ -224,11 +231,11 @@ endif()
 # depend on pthread lib. These one are get using the fetch_vcpkg_library function as
 # they must be built with a strict control of options which is not possible with vcpkg 
 # build in manifest mode 
-message("==============================================start fetch=========================")
+message("==============================================Start fetch=========================")
 #fetch_external_library_add(googletest "${LIST_OF_LIB}" https://github.com/google/googletest release-1.12.1)
 #fetch_external_library_add(spdlog "${LIST_OF_LIB}" https://github.com/gabime/spdlog v1.12.0)
 #make_external_library_available("${LIST_OF_LIB}")
-message("==============================================END fetch=========================")
+message("==============================================End fetch===========================")
 include(Dependencies.cmake)
 
 find_package(Doxygen)
@@ -243,58 +250,39 @@ endif()
 #)
 
 
+
 # Build hello_imgui
 # =================
 # 1/  Option 1: if you added hello_imgui as a subfolder, you can add it to your project with:
-#     add_subdirectory(external/hello_imgui)
+if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/hello_imgui)
+    message(STATUS "Found ${CMAKE_CURRENT_SOURCE_DIR}/external/hello_imgui, add it to the project")
+    add_subdirectory(external/hello_imgui)
+endif()
 
 # 2/  Option 2: simply fetch hello_imgui during the build
 if (NOT TARGET hello_imgui)
-    message(STATUS "Fetching hello_imgui")
+    message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}/external/hello_imgui NOT found, fetch it from github")
     include(FetchContent)
     FetchContent_Declare(hello_imgui GIT_REPOSITORY https://github.com/pthom/hello_imgui.git GIT_TAG master)
     FetchContent_MakeAvailable(hello_imgui)
 endif()
 
+#remove_definitions(-DIMGUI_ENABLE_FREETYPE_LUNASVG)
+message("-----------------------> Undefine UIMGUI_ENABLE_FREETYPE_LUNASVG as something is broken")
+target_compile_options(imgui PRIVATE -UIMGUI_ENABLE_FREETYPE_LUNASVG)
 
-# Build your app
-# ==============
-if (EMSCRIPTEN)
-hello_imgui_add_app(dis-client 
-   main.cpp 
+set(bofimgui
+   ./bofimgui/src/bof_imgui.cpp
+   ./bofimgui/include/bofimgui/bof_imgui.h
+   ./bofimgui/src/bof_imgui_internal.cpp
+   ./bofimgui/include/bofimgui/bof_imgui_internal.h
 
-   src/bof_imgui.cpp
-   include/bof_imgui.h
-   src/bof_imgui_internal.cpp
-   src/bof_imgui_internal.h
+   ./bofimgui/include/bofimgui/imnodes.h 
+   ./bofimgui/include/bofimgui/imnodes_internal.h 
 
-   include/dis_client.h
-   src/dis_client.cpp
-   include/dis_discovery.h
-   src/dis_discovery.cpp
-    include/dis_service.h
-   src/dis_service.cpp
-   include/dis_client_websocket.h
-   src/dis_client_websocket.cpp
+   ./bofimgui/src/imnodes.cpp
 )
-else()
-hello_imgui_add_app(dis-client 
-   main.cpp 
-
-   src/bof_imgui.cpp
-   include/bof_imgui.h
-   src/bof_imgui_internal.cpp
-   src/bof_imgui_internal.h
-
-   include/dis_client.h
-   src/dis_client.cpp
-   include/dis_discovery.h
-   src/dis_discovery.cpp
-    include/dis_service.h
-   src/dis_service.cpp
-   include/dis_client_websocket.h
-   src/dis_client_websocket.cpp
-
+set(webrpc 
    webrpc/lib/include/webrpc/grpc.h
    webrpc/lib/src/grpc.cpp
    webrpc/lib/include/webrpc/webrpc.h
@@ -302,6 +290,32 @@ hello_imgui_add_app(dis-client
    webrpc/lib/src/websocket.cpp
 
    webrpc/lib/include/webrpc/webrpcversioninfo.h.in
+)
+set(dis-client-srv
+   main.cpp 
+
+   ./include/dis_client.h
+   ./src/dis_client.cpp
+   ./include/dis_discovery.h
+   ./src/dis_discovery.cpp
+   ./ include/dis_service.h
+   ./src/dis_service.cpp
+   ./include/dis_client_websocket.h
+   ./src/dis_client_websocket.cpp
+)
+
+# Build your app
+# ==============
+if (EMSCRIPTEN)
+hello_imgui_add_app(dis-client 
+   ${bofimgui}
+   ${dis-client-srv}
+)
+else()
+hello_imgui_add_app(dis-client 
+   ${bofimgui}
+   ${webrpc}
+   ${dis-client-srv}
 )
 endif()
 
@@ -357,7 +371,7 @@ endif()
 
 target_compile_definitions(dis-client
   PRIVATE
-    -Dbha=1	
+    -Dbha=1
 )
 target_include_directories(dis-client
   PUBLIC
@@ -366,12 +380,13 @@ target_include_directories(dis-client
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> 
     $<BUILD_INTERFACE:${HELLOIMGUI_IMGUI_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/webrpc/lib/include>  #TDO TBD
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bofimgui/include> 
 )
 target_link_libraries(dis-client
   PRIVATE
     nlohmann_json::nlohmann_json
     ONBINGS::bofstd
-
+    #hello-imgui::hello_imgui
 )
 if(DISCLIENT_BUILD_TESTS)
   add_subdirectory(tests)
@@ -538,3 +553,8 @@ install(FILES
   DESTINATION ${CMAKE_INSTALL_DATADIR}
   COMPONENT   dis-client-devel
 )
+
+#get_cmake_property(_variableNames VARIABLES)
+#foreach(_variableName ${_variableNames})
+#    message(STATUS "CMake variable: ${_variableName}=${${_variableName}}")
+#endforeach()

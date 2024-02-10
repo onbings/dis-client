@@ -12,8 +12,9 @@
  *
  * V 1.00  Dec 24 2023  Bernard HARMEL: onbings@gmail.com : Initial release
  */
-#include "bof_imgui.h"
-#include "bof_imgui_internal.h"
+#include "bofimgui/bof_imgui.h"
+#include "bofimgui/bof_imgui_internal.h"
+#include <bofstd/bofstring.h>
 
 #if defined(_WIN32)
 #include <ShellScalingApi.h>
@@ -153,6 +154,7 @@ BOFERR Bof_ImGui::MainLoop()
 {
   BOFERR Rts_E = mLastError_E;
   HelloImGui::RunnerParams RunnerParam_X;
+  uint8_t pColor_U8[4];
 
   if (Rts_E == BOF_ERR_NO_ERROR)
   {
@@ -176,8 +178,15 @@ BOFERR Bof_ImGui::MainLoop()
     RunnerParam_X.callbacks.PostInit = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_PostInit);
     RunnerParam_X.callbacks.LoadAdditionalFonts = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_LoadAdditionalFonts);
     RunnerParam_X.callbacks.PreNewFrame = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_PreNewFrame);
-    // If callback not defined, call Impl_Frame_3D_ClearColor();
-    // RunnerParam_X.callbacks.CustomBackground = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_CustomBackground);
+    // If callback not defined, call Impl_Frame_3D_ClearColor(); with RunnerParam_X.imGuiWindowParams.backgroundColor (BackgroudHexaColor_S)
+    if (S_HexaColor(mImguiParam_X.BackgroudHexaColor_S, pColor_U8))
+    {
+      RunnerParam_X.imGuiWindowParams.backgroundColor = ImVec4((float)pColor_U8[0]/255.0f, (float)pColor_U8[1] / 255.0f, (float)pColor_U8[2] / 255.0f, (float)pColor_U8[3] / 255.0f);
+    }
+    else
+    {
+      RunnerParam_X.callbacks.CustomBackground = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_CustomBackground);
+    }
     RunnerParam_X.callbacks.CustomBackground = nullptr;
     RunnerParam_X.callbacks.ShowMenus = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_ShowMenus);
     RunnerParam_X.callbacks.ShowStatus = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_ShowStatus);
@@ -219,17 +228,17 @@ BOFERR Bof_ImGui::MainLoop()
     RunnerParam_X.appWindowParams.handleEdgeInsets = true;
 
     RunnerParam_X.imGuiWindowParams.defaultImGuiWindowType = HelloImGui::DefaultImGuiWindowType::ProvideFullScreenDockSpace;
-    RunnerParam_X.imGuiWindowParams.backgroundColor = ImVec4(1.f, 0.f, 0.f, 0.f);
+    //Above at if (S_HexaColor(mImguiParam_X.BackgroudHexaColor_S, pColor_U8)):  RunnerParam_X.imGuiWindowParams.backgroundColor = ImVec4(1.f, 0.f, 0.f, 0.f);
     // In order to fully customize the menu, set showMenuBar to true, and set showMenu_App and showMenu_View params to false.Then, implement the
     // callback `RunnerParams.callbacks.ShowMenus` which can optionally call `HelloImGui::ShowViewMenu` and `HelloImGui::ShowAppMenu`.
-    RunnerParam_X.imGuiWindowParams.showMenuBar = true;
-    RunnerParam_X.imGuiWindowParams.showMenu_App = true;
-    RunnerParam_X.imGuiWindowParams.showMenu_View = true;
+    RunnerParam_X.imGuiWindowParams.showMenuBar = mImguiParam_X.ShowMenuBar_B;
+    RunnerParam_X.imGuiWindowParams.showMenu_App = false;
+    RunnerParam_X.imGuiWindowParams.showMenu_View = false;
     // Set this to false if you intend to provide your own quit callback with possible user confirmation(and implement it inside RunnerCallbacks.ShowAppMenuItems)
     RunnerParam_X.imGuiWindowParams.showMenu_App_Quit = true;
-    RunnerParam_X.imGuiWindowParams.showStatusBar = true;
+    RunnerParam_X.imGuiWindowParams.showStatusBar = mImguiParam_X.ShowStatusBar_B;
     RunnerParam_X.imGuiWindowParams.showStatus_Fps = true;
-    RunnerParam_X.imGuiWindowParams.rememberStatusBarSettings = true;
+    RunnerParam_X.imGuiWindowParams.rememberStatusBarSettings = false;
     RunnerParam_X.imGuiWindowParams.configWindowsMoveFromTitleBarOnly = false;
     RunnerParam_X.imGuiWindowParams.enableViewports = true;
     RunnerParam_X.imGuiWindowParams.menuAppTitle = mImguiParam_X.WindowTitle_S;
@@ -268,7 +277,7 @@ BOFERR Bof_ImGui::MainLoop()
     //  RunnerParam_X.dockingParams.dockableWindowOfName(const std::string &name);
     //  RunnerParam_X.dockingParams.focusDockableWindow(const std::string &windowName);
     //  RunnerParam_X.dockingParams.dockSpaceIdFromName(const std::string &dockSpaceName);
-    RunnerParam_X.rememberSelectedAlternativeLayout = true;
+    RunnerParam_X.rememberSelectedAlternativeLayout = false;
 
     // These pointers will be filled when the application starts, and you can use them to customize your application behavior using the selected backend.
     // RunnerParam_X.backendPointers;
@@ -359,36 +368,75 @@ BOF::BOF_SIZE<uint32_t> Bof_ImGui::GetTextSize(const char *_pText_c)
   }
   return Rts_X;
 }
+bool Bof_ImGui::S_HexaColor(const std::string &_rHexaColor_S, uint8_t(&_rColor_U8)[4])
+{
+  bool Rts_B = false;
+  uint32_t Rgba_U32;
 
+  if (_rHexaColor_S[0] == '#')
+  {
+    if (_rHexaColor_S.size() == (1 + 6))
+    {
+      Rgba_U32 = (uint32_t)BOF::Bof_StrToBin(16, _rHexaColor_S.substr(1).c_str());
+      _rColor_U8[0] = (uint8_t)(Rgba_U32 >> 16);
+      _rColor_U8[1] = (uint8_t)(Rgba_U32 >> 8);
+      _rColor_U8[2] = (uint8_t)(Rgba_U32);
+      _rColor_U8[3] = 255;
+      Rts_B = true;
+    }
+    else if (_rHexaColor_S.size() == (1 + 8))
+    {
+      Rgba_U32 = (uint32_t)BOF::Bof_StrToBin(16, _rHexaColor_S.substr(1).c_str());
+      _rColor_U8[0] = (uint8_t)(Rgba_U32 >> 24);
+      _rColor_U8[1] = (uint8_t)(Rgba_U32 >> 16);
+      _rColor_U8[2] = (uint8_t)(Rgba_U32 >> 8);
+      _rColor_U8[3] = (uint8_t)(Rgba_U32);
+      Rts_B = true;
+    }
+  }
+  return Rts_B;
+}
 void Bof_ImGui::HandleComputerKeyboard()
 {
+  uint32_t i_U32;
+  ImWchar Ch;
+  char Ch_c;
+  std::string KeyState_S;
+
+  KeyState_S = S_GetKeyboardState();
   if (!ImGui::IsAnyItemFocused() && !ImGui::IsAnyItemActive())
   {
     ImGui::SetKeyboardFocusHere();
   }
   ImGui::Dummy(ImVec2(0, 0)); // This is needed to make the input text field capture keyboard input
 
-  auto &io = ImGui::GetIO();
-  io.WantCaptureKeyboard = true;
-  if (io.InputQueueCharacters.Size > 0)
+  auto &rIo = ImGui::GetIO();
+  rIo.WantCaptureKeyboard = true;
+  if (rIo.InputQueueCharacters.Size > 0)
   {
-    for (int n = 0; n < io.InputQueueCharacters.Size; n++)
+    for (i_U32 = 0; i_U32 < rIo.InputQueueCharacters.Size; i_U32++)
     {
-      ImWchar c = io.InputQueueCharacters[n];
-      char asChar = static_cast<char>(c);
-      // calculatorState.OnComputerKey(asChar);
+      Ch = rIo.InputQueueCharacters[i_U32];
+      Ch_c = static_cast<char>(Ch);
+      V_OnKeyboardPress(Ch_c, KeyState_S);
     }
     // Consume characters
-    io.InputQueueCharacters.resize(0);
+    rIo.InputQueueCharacters.resize(0);
   }
+#if 0
   if (ImGui::IsKeyPressed(ImGuiKey_Backspace))
   {
     // calculatorState.OnComputerKey('\b');
   }
-  if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeyPadEnter))
+  if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_Enter))
   {
     // calculatorState.OnComputerKey('\n');
   }
+#endif
+}
+void Bof_ImGui::V_OnKeyboardPress(char _Ch_c, const std::string &_rKeyState_S)
+{
+  DBG_LOG("V_OnKeyboardPress ch %02X St %s\n", _Ch_c, _rKeyState_S.c_str());
 }
 
 void Bof_ImGui::V_SetupImGuiConfig()
@@ -410,7 +458,7 @@ void Bof_ImGui::V_PostInit()
   // because, in the case of glfw ImGui_ImplGlfw_InstallCallbacks
   // will chain the user callbacks with ImGui callbacks; and PostInit()
   // is a good place for the user to install callbacks
-  DBG_LOG("V_PostInit\n", 0);
+  DBG_LOG("V_PostInit Dear ImGui version: %s\n", ImGui::GetVersion());
   V_ReadSettings();
 }
 void Bof_ImGui::V_LoadAdditionalFonts()
@@ -425,7 +473,7 @@ void Bof_ImGui::V_PreNewFrame()
 void Bof_ImGui::V_CustomBackground()
 {
   DBG_LOG("V_CustomBackground\n", 0);
-  // If callback not defined, call Impl_Frame_3D_ClearColor();
+  // If callback not defined, call Impl_Frame_3D_ClearColor(); with RunnerParam_X.imGuiWindowParams.backgroundColor (BackgroudHexaColor_S)
 }
 void Bof_ImGui::V_ShowMenus()
 {
@@ -438,7 +486,7 @@ void Bof_ImGui::V_ShowStatus()
 void Bof_ImGui::V_ShowGui()
 {
   // DBG_LOG("V_ShowGui\n", 0);
-  HandleComputerKeyboard();
+  //HandleComputerKeyboard();
 
   // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
   if (mImguiParam_X.ShowDemoWindow_B)
