@@ -1134,7 +1134,7 @@ int WebSocket::LwsCallback(struct lws *_pWsi_X, enum lws_callback_reasons _LwsRe
         OutputDebugString((char *)_pInput);
 #endif
         // Data is NOT encoded/masked/compressed
-        // BOF_LOG_TO_DBG("%-24.24s FinalRx wsi %p %x:%p Data Masked\n", S_LwsCallbackReasonEnumConverter.ToString(_LwsReason_E).c_str(), _pWsi_X, pRawBuffer_X->Size1_U32, pRawBuffer_X->pData1_U8);
+        //BOF_LOG_TO_DBG("%-24.24s FinalRx wsi %p %x:%p Data Masked\n", S_LwsCallbackReasonEnumConverter.ToString(_LwsReason_E).c_str(), _pWsi_X, pRawBuffer_X->Size1_U32, pRawBuffer_X->pData1_U8);
         BOF_ASSERT(pRawBuffer_X->Size2_U32 == 0);
         BOF_ASSERT(pRawBuffer_X->pData2_U8 == nullptr);
         DoReleaseBuffer_B = false;

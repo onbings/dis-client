@@ -28,8 +28,8 @@ uint32_t DisService::S_mSeqId_U32 = 1;
 #define DIS_SERVICE_STATE_TIMEOUT (DIS_CLIENT_WS_TIMEOUT * 3)       // 3000ms Maximum time in a given state before returning to DIS_SERVICE_STATE_OPEN_WS
 static_assert(DIS_CLIENT_WS_TIMEOUT >= (DIS_CLIENT_MAIN_LOOP_IDLE_TIME * 10), "DIS_CLIENT_WS_TIMEOUT must be >= (DIS_CLIENT_MAIN_LOOP_IDLE_TIME * 10)");
 static_assert(DIS_SERVICE_STATE_TIMEOUT >= (DIS_CLIENT_WS_TIMEOUT * 3), "DIS_SERVICE_STATE_TIMEOUT must be >= (DIS_CLIENT_WS_TIMEOUT * 3 )");
-#define DIS_CLIENT_RX_BUFFER_SIZE 0x100000
-#define DIS_CLIENT_NB_MAX_BUFFER_ENTRY 128
+#define DIS_CLIENT_RX_BUFFER_SIZE 0x40000
+#define DIS_CLIENT_NB_MAX_BUFFER_ENTRY 32
 
 static BOF::BofEnum<DIS_SERVICE_STATE> S_DisClientStateTypeEnumConverter(
     {
@@ -112,6 +112,10 @@ DisService::~DisService()
 const DIS_DBG_SERVICE &DisService::GetDbgDisService()
 {
   return mDisService_X;
+}
+void DisService::ResetPageInfoTimer()
+{
+  mDisService_X.PageInfoTimer_U32 = 0;
 }
 
 BOFERR DisService::Run()
@@ -280,10 +284,12 @@ BOFERR DisService::DecodePageInfo(const nlohmann::json &_rPageInfoJsonData)
       if (i_U32 == 0)
       {
         pLineInfoJsonData = &_rPageInfoJsonData["background"]["line"];
+        mDisService_X.PageInfo_X.BackPageInfoLineCollection.clear();
       }
       else
       {
         pLineInfoJsonData = &_rPageInfoJsonData["foreground"]["line"];
+        mDisService_X.PageInfo_X.ForePageInfoLineCollection.clear();
       }
       for (const auto &rLine : (*pLineInfoJsonData))
       {
@@ -368,8 +374,8 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
         DisClient::S_Log("ptr mDisServiceCollection %p pDisClient %p pDisService_X %p\n", WebSocketParam_X.pUser, mDisService_X.WsCbParam_X.pDisService, mDisService_X.WsCbParam_X.pDisService_X);
 
         WebSocketParam_X.NbMaxOperationPending_U32 = 4;
-        WebSocketParam_X.RxBufferSize_U32 = 0x10000;
-        WebSocketParam_X.NbMaxBufferEntry_U32 = 128;
+        WebSocketParam_X.RxBufferSize_U32 = DIS_CLIENT_RX_BUFFER_SIZE;
+        WebSocketParam_X.NbMaxBufferEntry_U32 = DIS_CLIENT_NB_MAX_BUFFER_ENTRY;
         WebSocketParam_X.OnOperation = nullptr;
         WebSocketParam_X.OnOpen = BOF_BIND_1_ARG_TO_METHOD(this, DisService::OnWebSocketOpenEvent);
         WebSocketParam_X.OnClose = BOF_BIND_1_ARG_TO_METHOD(this, DisService::OnWebSocketCloseEvent);
@@ -498,10 +504,6 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
         break;
 
       case DIS_SERVICE_STATE::DIS_SERVICE_STATE_GET_DEBUG_PAGE_INFO:
-        if (DeltaState_U32 > 1500)
-        {
-          printf("jj");
-        }
         if (StsCmd_E == BOF_ERR_NO)
         {
           if (DeltaPageInfo_U32 > mDisServiceParam_X.QueryServerPollTimeInMs_U32)
@@ -621,7 +623,7 @@ BOFERR DisService::SendCommand(DIS_DBG_SERVICE *_pDisService_X, uint32_t _Timeou
       }
       _pDisService_X->LastCmdSentTimer_U32 = BOF::Bof_GetMsTickCount();
       Rts_E = WriteWebSocket(_pDisService_X, Command_S.c_str());
-      //DisClient::S_Log("==>Send '%s' sts %s\n", Command_S.c_str(), BOF::Bof_ErrorCode(Rts_E));
+      DisClient::S_Log("%u ==>Send '%s' sts %s\n", BOF::Bof_GetMsTickCount(), Command_S.c_str(), BOF::Bof_ErrorCode(Rts_E));
       if (Rts_E == BOF_ERR_NO_ERROR)
       {
         _pDisService_X->LastCmdSentTimeoutInMs_U32 = _TimeoutInMsForReply_U32;
@@ -646,6 +648,7 @@ BOFERR DisService::CheckForCommandReply(DIS_DBG_SERVICE *_pDisService_X, std::st
   {
     MaxSize_U32 = sizeof(pData_c) - 1;
     Rts_E = ReadWebSocket(_pDisService_X, MaxSize_U32, pData_c);
+    //DisClient::S_Log("%u =1=>Chk Sts %s Max %d\n", BOF::Bof_GetMsTickCount(), BOF::Bof_ErrorCode(Rts_E), MaxSize_U32);
     if (Rts_E == BOF_ERR_NO_ERROR)
     {
       Rts_E = BOF_ERR_EMPTY;
@@ -655,7 +658,8 @@ BOFERR DisService::CheckForCommandReply(DIS_DBG_SERVICE *_pDisService_X, std::st
         Rts_E = BOF_ERR_EBADF;
         try
         {
-          // DisClient::S_Log("===================>b\n%s\n", pData_c);
+          DisClient::S_Log("%u =2=>Chk\n%s\n", BOF::Bof_GetMsTickCount(), pData_c);
+          //DisClient::S_Log("%u =2=>Chk DataOk\n", BOF::Bof_GetMsTickCount());
           CommandJsonData = nlohmann::json::parse(pData_c);
           auto It = CommandJsonData.find("protocolInfo");
           if (It != CommandJsonData.end())

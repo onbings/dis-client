@@ -314,6 +314,7 @@ class DisClientWebSocket;
     ~DisService();
     DIS_SERVICE_STATE StateMachine(const DIS_DBG_STATE_MACHINE &_rStateMachine_X);
     const DIS_DBG_SERVICE &GetDbgDisService();
+    void ResetPageInfoTimer();
     BOFERR Run();
     BOFERR Stop();
   private:

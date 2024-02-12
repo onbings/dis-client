@@ -24,9 +24,23 @@
 
 #define IMGUI_WINDOW_TITLEBAR_HEIGHT 20
 #define IS_DIS_SERVICE_VALID(DisClientDbgService) (((DisClientDbgService).ServiceIndex_S32 >= 0) && ((DisClientDbgService).ServiceIndex_S32 < (DisClientDbgService).puDisService->GetDbgDisService().DisDbgServiceItemCollection.size()))
-#define IS_PAGE_SUBPAGE_LAYOUT_VALID(DisClientDbgService) ((IS_DIS_SERVICE_VALID(DisClientDbgService)) && ((DisClientDbgService).PageIndex_S32 >= 0) && ((DisClientDbgService).PageIndex_S32 < (DisClientDbgService).puDisService->GetDbgDisService().DisDbgServiceItemCollection[(DisClientDbgService).ServiceIndex_S32].DisDbgPageLayoutCollection.size()) && ((DisClientDbgService).SubPageIndex_S32 >= 0) && ((DisClientDbgService).SubPageIndex_S32 < (DisClientDbgService).puDisService->GetDbgDisService().DisDbgServiceItemCollection[(DisClientDbgService).ServiceIndex_S32].DisDbgPageLayoutCollection[(DisClientDbgService).SubPageIndex_S32].DisDbgSubPageCollection.size()))
-#define IS_PAGE_INFO_VALID(DisClientDbgService) (((DisClientDbgService).puDisService->GetDbgDisService().PageInfo_X.BackColor_S != "") && ((DisClientDbgService).puDisService->GetDbgDisService().PageInfo_X.BackPageInfoLineCollection.size()) &&((DisClientDbgService).puDisService->GetDbgDisService().PageInfo_X.ForePageInfoLineCollection.size()))
+#define IS_PAGE_SUBPAGE_LAYOUT_VALID(DisClientDbgService) ((IS_DIS_SERVICE_VALID(DisClientDbgService)) && ((DisClientDbgService).PageIndex_S32 >= 0) && ((DisClientDbgService).PageIndex_S32 < (DisClientDbgService).puDisService->GetDbgDisService().DisDbgServiceItemCollection[(DisClientDbgService).ServiceIndex_S32].DisDbgPageLayoutCollection.size()) && ((DisClientDbgService).SubPageIndex_S32 >= 0) && ((DisClientDbgService).SubPageIndex_S32 < (DisClientDbgService).puDisService->GetDbgDisService().DisDbgServiceItemCollection[(DisClientDbgService).ServiceIndex_S32].DisDbgPageLayoutCollection[(DisClientDbgService).PageIndex_S32].DisDbgSubPageCollection.size()))
+//#define IS_PAGE_INFO_VALID(DisClientDbgService) (((DisClientDbgService).puDisService->GetDbgDisService().PageInfo_X.BackColor_S != "") && ((DisClientDbgService).puDisService->GetDbgDisService().PageInfo_X.BackPageInfoLineCollection.size()) &&((DisClientDbgService).puDisService->GetDbgDisService().PageInfo_X.ForePageInfoLineCollection.size()))
+#define IS_PAGE_INFO_VALID(DisClientDbgService) ((DisClientDbgService).puDisService->GetDbgDisService().PageInfo_X.BackColor_S != "") 
+ /*
+      if ((PageIndex_S32 == 4) && (SubPageIndex_S32 == 5))
+      {
+        const DIS_DBG_SERVICE &rDisDbgSrv_X = rDisClientDbgService_X.second.puDisService->GetDbgDisService();
+        const DIS_DBG_SERVICE_ITEM &rDisDbgSrvItem_X = rDisDbgSrv_X.DisDbgServiceItemCollection[rDisClientDbgService_X.second.ServiceIndex_S32];
 
+        S_Log("DIS_SERVICE %d < %zd ?\n", rDisClientDbgService_X.second.ServiceIndex_S32, rDisDbgSrv_X.DisDbgServiceItemCollection.size());
+        S_Log("PAGE_SUBPAGE Pg %d < %zd SubP %d < %zd\n", rDisClientDbgService_X.second.PageIndex_S32, rDisDbgSrvItem_X.DisDbgPageLayoutCollection.size(),
+               rDisClientDbgService_X.second.SubPageIndex_S32, rDisDbgSrvItem_X.DisDbgPageLayoutCollection[rDisClientDbgService_X.second.PageIndex_S32].DisDbgSubPageCollection.size());
+        S_Log("PAGE_INFO Bg '%s' NbLineBg %zd NbLineFg %zd\n", rDisDbgSrv_X.PageInfo_X.BackColor_S.c_str(), rDisDbgSrv_X.PageInfo_X.BackPageInfoLineCollection.size(), rDisDbgSrv_X.PageInfo_X.ForePageInfoLineCollection.size());
+
+        printf("jj");
+      }
+ */
 DisClient::DisClient(const DIS_CLIENT_PARAM &_rDisClientParam_X)
     : BOF::Bof_ImGui(_rDisClientParam_X.ImguiParam_X), BOF::BofThread()
 {
@@ -599,23 +613,41 @@ BOFERR DisClient::V_RefreshGui()
       DisServiceIndex_S32 = rDisClientDbgService_X.second.ServiceIndex_S32;
       PageIndex_S32 = rDisClientDbgService_X.second.PageIndex_S32;
       SubPageIndex_S32 = rDisClientDbgService_X.second.SubPageIndex_S32;
-
       DisplayDisService(x_U32, y_U32, rDisClientDbgService_X.second, DisServiceIndex_S32, PageIndex_S32, SubPageIndex_S32);
+
 //      DisClient::S_Log("V_RefreshGui: '%s' call DisplayDisService for %s\n", rDisClientDbgService_X.second.puDisService->GetDbgDisService().Name_S.c_str(), rDisClientDbgService_X.second.puDisService->GetDbgDisService().IpAddress_S.c_str());
 
       if (DisServiceIndex_S32 != rDisClientDbgService_X.second.ServiceIndex_S32)
       {
         rDisClientDbgService_X.second.ServiceIndex_S32 = DisServiceIndex_S32;
+        rDisClientDbgService_X.second.puDisService->ResetPageInfoTimer();  //To refresh asap
       }
       if (PageIndex_S32 != rDisClientDbgService_X.second.PageIndex_S32)
       {
         rDisClientDbgService_X.second.PageIndex_S32 = PageIndex_S32;
+        rDisClientDbgService_X.second.puDisService->ResetPageInfoTimer();  //To refresh asap
       }
       if (SubPageIndex_S32 != rDisClientDbgService_X.second.SubPageIndex_S32)
       {
         rDisClientDbgService_X.second.SubPageIndex_S32 = SubPageIndex_S32;
+        rDisClientDbgService_X.second.puDisService->ResetPageInfoTimer();  //To refresh asap
       }
       x_U32 += 300;
+
+      /*
+      if ((PageIndex_S32 == 4) && (SubPageIndex_S32 == 5))
+      {
+        const DIS_DBG_SERVICE &rDisDbgSrv_X = rDisClientDbgService_X.second.puDisService->GetDbgDisService();
+        const DIS_DBG_SERVICE_ITEM &rDisDbgSrvItem_X = rDisDbgSrv_X.DisDbgServiceItemCollection[rDisClientDbgService_X.second.ServiceIndex_S32];
+
+        S_Log("DIS_SERVICE %d < %zd ?\n", rDisClientDbgService_X.second.ServiceIndex_S32, rDisDbgSrv_X.DisDbgServiceItemCollection.size());
+        S_Log("PAGE_SUBPAGE Pg %d < %zd SubP %d < %zd\n", rDisClientDbgService_X.second.PageIndex_S32, rDisDbgSrvItem_X.DisDbgPageLayoutCollection.size(),
+               rDisClientDbgService_X.second.SubPageIndex_S32, rDisDbgSrvItem_X.DisDbgPageLayoutCollection[rDisClientDbgService_X.second.PageIndex_S32].DisDbgSubPageCollection.size());
+        S_Log("PAGE_INFO Bg '%s' NbLineBg %zd NbLineFg %zd\n", rDisDbgSrv_X.PageInfo_X.BackColor_S.c_str(), rDisDbgSrv_X.PageInfo_X.BackPageInfoLineCollection.size(), rDisDbgSrv_X.PageInfo_X.ForePageInfoLineCollection.size());
+
+        printf("jj");
+      }
+      */
       if (IS_PAGE_SUBPAGE_LAYOUT_VALID(rDisClientDbgService_X.second))
       {
         if (IS_PAGE_INFO_VALID(rDisClientDbgService_X.second))
