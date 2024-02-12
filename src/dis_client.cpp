@@ -22,7 +22,14 @@
 #include <Windows.h> //OutputDebugString
 #endif
 
-#define IMGUI_WINDOW_TITLEBAR_HEIGHT 20
+enum DIS_CLIENT_FONT
+{
+  DIS_CLIENT_FONT_CONSOLE = 0,
+  DIS_CLIENT_FONT_SERVICE,
+  DIS_CLIENT_FONT_EXTRA,
+  DIS_CLIENT_FONT_SIMULATOR,
+};
+#define IMGUI_WINDOW_TITLEBAR_HEIGHT (mDisClientParam_X.FontSize_U32+8)
 #define IS_DIS_SERVICE_VALID(DisClientDbgService) (((DisClientDbgService).ServiceIndex_S32 >= 0) && ((DisClientDbgService).ServiceIndex_S32 < (DisClientDbgService).puDisService->GetDbgDisService().DisDbgServiceItemCollection.size()))
 #define IS_PAGE_SUBPAGE_LAYOUT_VALID(DisClientDbgService) ((IS_DIS_SERVICE_VALID(DisClientDbgService)) && ((DisClientDbgService).PageIndex_S32 >= 0) && ((DisClientDbgService).PageIndex_S32 < (DisClientDbgService).puDisService->GetDbgDisService().DisDbgServiceItemCollection[(DisClientDbgService).ServiceIndex_S32].DisDbgPageLayoutCollection.size()) && ((DisClientDbgService).SubPageIndex_S32 >= 0) && ((DisClientDbgService).SubPageIndex_S32 < (DisClientDbgService).puDisService->GetDbgDisService().DisDbgServiceItemCollection[(DisClientDbgService).ServiceIndex_S32].DisDbgPageLayoutCollection[(DisClientDbgService).PageIndex_S32].DisDbgSubPageCollection.size()))
 //#define IS_PAGE_INFO_VALID(DisClientDbgService) (((DisClientDbgService).puDisService->GetDbgDisService().PageInfo_X.BackColor_S != "") && ((DisClientDbgService).puDisService->GetDbgDisService().PageInfo_X.BackPageInfoLineCollection.size()) &&((DisClientDbgService).puDisService->GetDbgDisService().PageInfo_X.ForePageInfoLineCollection.size()))
@@ -37,8 +44,6 @@
         S_Log("PAGE_SUBPAGE Pg %d < %zd SubP %d < %zd\n", rDisClientDbgService_X.second.PageIndex_S32, rDisDbgSrvItem_X.DisDbgPageLayoutCollection.size(),
                rDisClientDbgService_X.second.SubPageIndex_S32, rDisDbgSrvItem_X.DisDbgPageLayoutCollection[rDisClientDbgService_X.second.PageIndex_S32].DisDbgSubPageCollection.size());
         S_Log("PAGE_INFO Bg '%s' NbLineBg %zd NbLineFg %zd\n", rDisDbgSrv_X.PageInfo_X.BackColor_S.c_str(), rDisDbgSrv_X.PageInfo_X.BackPageInfoLineCollection.size(), rDisDbgSrv_X.PageInfo_X.ForePageInfoLineCollection.size());
-
-        printf("jj");
       }
  */
 DisClient::DisClient(const DIS_CLIENT_PARAM &_rDisClientParam_X)
@@ -46,8 +51,30 @@ DisClient::DisClient(const DIS_CLIENT_PARAM &_rDisClientParam_X)
 {
   DIS_DISCOVERY_PARAM DisDiscoveryParam_X;
   BOF::BOF_DIR_GRAPH_PARAM BofDirGraphParam_X;
+  SIMULATOR_ENTRY SimulatorEntry_X;
 
   mDisClientParam_X = _rDisClientParam_X;
+
+  SimulatorEntry_X.DevicePresent_B = false;
+  SimulatorEntry_X.DisDevice_X.Type_U32 = 1;
+  SimulatorEntry_X.DisDevice_X.Sn_U32 = 0x00010203;
+  SimulatorEntry_X.DisDevice_X.Name_S = "Xt1-DisDevice";
+  SimulatorEntry_X.DisDevice_X.IpAddress_S = "10.129.171.112";
+  mSimulatorEntryCollection.push_back(SimulatorEntry_X);
+
+  SimulatorEntry_X.DevicePresent_B = false;
+  SimulatorEntry_X.DisDevice_X.Type_U32 = 1;
+  SimulatorEntry_X.DisDevice_X.Sn_U32 = 0x00010204;  
+  SimulatorEntry_X.DisDevice_X.Name_S = "Xt2-DisDevice";
+  SimulatorEntry_X.DisDevice_X.IpAddress_S = "10.129.171.112";
+  mSimulatorEntryCollection.push_back(SimulatorEntry_X);
+
+  SimulatorEntry_X.DevicePresent_B = false;
+  SimulatorEntry_X.DisDevice_X.Type_U32 = 1;
+  SimulatorEntry_X.DisDevice_X.Sn_U32 = 0x00010205;
+  SimulatorEntry_X.DisDevice_X.Name_S = "Xt3-DisDevice";
+  SimulatorEntry_X.DisDevice_X.IpAddress_S = "10.129.171.112";
+  mSimulatorEntryCollection.push_back(SimulatorEntry_X);
 
   DisDiscoveryParam_X.PollTimeInMs_U32 = 2000;
   mpuDisDiscovery = std::make_unique<DisDiscovery>(DisDiscoveryParam_X);
@@ -212,14 +239,45 @@ void DisClient::V_BeforeExit()
 
 void DisClient::V_LoadAdditionalFonts()
 {
-  std::string FontFilename_S = "./assets/fonts/cour.ttf";
-  mpConsoleFont_X = LoadFont(FontFilename_S.c_str(), 16);
-  if (mpConsoleFont_X)
-  {
-  }
-  DisClient::S_Log("Try to load font %s ->ptr %p\n", FontFilename_S.c_str(), mpConsoleFont_X);
+  BOF_ASSERT(LoadFont("./assets/fonts/cour.ttf", mDisClientParam_X.FontSize_U32) != nullptr);  //DIS_CLIENT_FONT_CONSOLE
+  BOF_ASSERT(LoadFont("./assets/fonts/DroidSans.ttf", 18) != nullptr);                         //DIS_CLIENT_FONT_SERVICE
+  BOF_ASSERT(LoadFont("./assets/fonts/fontawesome-webfont.ttf", 18) != nullptr);               //DIS_CLIENT_FONT_EXTRA
+  BOF_ASSERT(LoadFont("./assets/fonts/scientific-calculator-lcd.ttf", 18) != nullptr);         //DIS_CLIENT_FONT_SIMULATOR
 }
 
+void DisClient::DisplaySimulator(int32_t _x_U32, int32_t _y_U32)
+{
+  DIS_DEVICE DisDevice_X;
+
+  ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[DIS_CLIENT_FONT_SIMULATOR]);
+  bool IsVisisble_B = true;
+  ImGui::Begin("Dis Discovery Simulator", &IsVisisble_B, ImGuiWindowFlags_None); 
+  // Set the window size to fit its contents
+  ImGui::SetWindowSize(ImVec2(0, 0)); // Width and height set to 0 to auto-size
+  ImGui::SetWindowPos(ImVec2(_x_U32, _y_U32), ImGuiCond_FirstUseEver);
+
+  for (SIMULATOR_ENTRY &rIt : mSimulatorEntryCollection)
+  {
+    ImGui::Checkbox(rIt.DisDevice_X.Name_S.c_str(), &rIt.DevicePresent_B);
+    //if (ImGui::IsItemActivated()) //initial uncheck, click gives 0 1 0  1
+    if (ImGui::IsItemDeactivated()) //initial uncheck, click gives1 0 1 0
+    //if (ImGui::IsItemEdited())    //initial uncheck, click gives 1 0 1 0
+    {
+      //S_Log("state %d\n", rIt.DevicePresent_B);
+      if (rIt.DevicePresent_B)
+      {
+        mpuDisDiscovery->Simul_AddDevice(rIt.DisDevice_X);
+      }
+      else
+      {
+        mpuDisDiscovery->Simul_RemoveDevice(rIt.DisDevice_X);
+      }
+    }
+  }
+
+  ImGui::End();
+  ImGui::PopFont();
+}
 /*
   Xt1_DisService
   |
@@ -272,6 +330,7 @@ void DisClient::DisplayDisService(int32_t _x_U32, int32_t _y_U32, DIS_CLIENT_DBG
   PageLayoutPageIndexClicked_S32 = DIS_CLIENT_INVALID_INDEX;
   SubPageLayoutPageIndexClicked_S32 = DIS_CLIENT_INVALID_INDEX;
 
+  ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[DIS_CLIENT_FONT_SERVICE]);
   ImGui::Begin("Dis Service", &_rDisClientDbgService_X.IsVisisble_B, ImGuiWindowFlags_None); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
   // Set the window size to fit its contents
   ImGui::SetWindowSize(ImVec2(0, 0)); // Width and height set to 0 to auto-size
@@ -388,6 +447,7 @@ void DisClient::DisplayDisService(int32_t _x_U32, int32_t _y_U32, DIS_CLIENT_DBG
     }
   } // if ((PageLayoutPageIndexClicked_S32 != DIS_CLIENT_INVALID_INDEX) && (SubPageLayoutPageIndexClicked_S32 != DIS_CLIENT_INVALID_INDEX))
   ImGui::End();
+  ImGui::PopFont();
 }
 
 void DisClient::UpdateConsoleMenubar(DIS_CLIENT_DBG_SERVICE &_rDisClientDbgService_X)
@@ -456,11 +516,10 @@ void DisClient::DisplayPageInfo(int32_t _x_U32, int32_t _y_U32, DIS_CLIENT_DBG_S
   char pTitle_c[128];
   const std::vector<DIS_SERVICE_PAGE_INFO_LINE> *pPageInfoLineCollection;
 
+  ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[DIS_CLIENT_FONT_CONSOLE]);
   if ((mConsoleCharSize_X.Width == 0) || (mConsoleCharSize_X.Height == 0))
   {
-    ImGui::PushFont(mpConsoleFont_X);
     mConsoleCharSize_X = GetTextSize("A");
-    ImGui::PopFont();
   }
   if ((mConsoleCharSize_X.Width) && (mConsoleCharSize_X.Height))
   {
@@ -510,6 +569,7 @@ void DisClient::DisplayPageInfo(int32_t _x_U32, int32_t _y_U32, DIS_CLIENT_DBG_S
     } // if (IS_PAGE_SUBPAGE_LAYOUT_VALID(_rDisClientDbgService_X))
     ImGui::PopStyleColor();
   }   // if ((mConsoleCharSize_X.Width) && (mConsoleCharSize_X.Height))
+  ImGui::PopFont();
 }
 
 void DisClient::V_PreNewFrame()
@@ -600,7 +660,6 @@ void DrawCircleWithText(ImDrawList *drawList, const ImVec2 &center, float radius
 BOFERR DisClient::V_RefreshGui()
 {
   BOFERR Rts_E = BOF_ERR_NO_ERROR;
-#if 1 // Disclient
   int32_t DisServiceIndex_S32, PageIndex_S32, SubPageIndex_S32;
   uint32_t i_U32, x_U32, y_U32;
 
@@ -608,6 +667,10 @@ BOFERR DisClient::V_RefreshGui()
   y_U32 = 0;
   std::lock_guard Lock(mDisDeviceCollectionMtx);
   {
+    if (mDisClientDbgServiceCollection.size() == 2)
+    {
+      printf("jj");
+    }
     for (auto &rDisClientDbgService_X : mDisClientDbgServiceCollection)
     {
       DisServiceIndex_S32 = rDisClientDbgService_X.second.ServiceIndex_S32;
@@ -632,32 +695,18 @@ BOFERR DisClient::V_RefreshGui()
         rDisClientDbgService_X.second.SubPageIndex_S32 = SubPageIndex_S32;
         rDisClientDbgService_X.second.puDisService->ResetPageInfoTimer();  //To refresh asap
       }
-      x_U32 += 300;
-
-      /*
-      if ((PageIndex_S32 == 4) && (SubPageIndex_S32 == 5))
-      {
-        const DIS_DBG_SERVICE &rDisDbgSrv_X = rDisClientDbgService_X.second.puDisService->GetDbgDisService();
-        const DIS_DBG_SERVICE_ITEM &rDisDbgSrvItem_X = rDisDbgSrv_X.DisDbgServiceItemCollection[rDisClientDbgService_X.second.ServiceIndex_S32];
-
-        S_Log("DIS_SERVICE %d < %zd ?\n", rDisClientDbgService_X.second.ServiceIndex_S32, rDisDbgSrv_X.DisDbgServiceItemCollection.size());
-        S_Log("PAGE_SUBPAGE Pg %d < %zd SubP %d < %zd\n", rDisClientDbgService_X.second.PageIndex_S32, rDisDbgSrvItem_X.DisDbgPageLayoutCollection.size(),
-               rDisClientDbgService_X.second.SubPageIndex_S32, rDisDbgSrvItem_X.DisDbgPageLayoutCollection[rDisClientDbgService_X.second.PageIndex_S32].DisDbgSubPageCollection.size());
-        S_Log("PAGE_INFO Bg '%s' NbLineBg %zd NbLineFg %zd\n", rDisDbgSrv_X.PageInfo_X.BackColor_S.c_str(), rDisDbgSrv_X.PageInfo_X.BackPageInfoLineCollection.size(), rDisDbgSrv_X.PageInfo_X.ForePageInfoLineCollection.size());
-
-        printf("jj");
-      }
-      */
       if (IS_PAGE_SUBPAGE_LAYOUT_VALID(rDisClientDbgService_X.second))
       {
         if (IS_PAGE_INFO_VALID(rDisClientDbgService_X.second))
         {
-          DisplayPageInfo(x_U32, y_U32, rDisClientDbgService_X.second);
+          DisplayPageInfo(x_U32+500, y_U32, rDisClientDbgService_X.second);
         }
       }
+      x_U32 += 50;
+      y_U32 += 50;
     }
   }
-#endif
+  DisplaySimulator(900, 500);
 
 #if 0 // Circle
   //NODE
@@ -843,12 +892,13 @@ BOFERR DisClient::V_OnProcessing()
 {
   BOFERR Rts_E = BOF_ERR_NO_ERROR;
   uint32_t i_U32;
-  std::map<BOF::BofGuid, DIS_DEVICE> DisDeviceCollection;
-  std::map<BOF::BofGuid, DIS_DEVICE> DisAddDeviceCollection;
-  std::map<BOF::BofGuid, DIS_DEVICE> DisDelDeviceCollection;
+  std::map<std::string, DIS_DEVICE> DisDeviceCollection;
+  std::map<std::string, DIS_DEVICE> DisAddDeviceCollection;
+  std::map<std::string, DIS_DEVICE> DisDelDeviceCollection;
   DIS_CLIENT_DBG_SERVICE DisClientDbgService_X;
   DIS_DEVICE DisDevice_X;
   DIS_SERVICE_PARAM DisServiceParam_X;
+  char pDeviceUniqueKey_c[256];
 
   // Periodic thread in  LaunchBofProcessingThread do
   std::lock_guard Lock(mDisDeviceCollectionMtx);
@@ -860,7 +910,13 @@ BOFERR DisClient::V_OnProcessing()
       const auto &rItem = DisDeviceCollection.find(rExistingItem.first);
       if (rItem == DisDeviceCollection.end())
       {
-        DisDelDeviceCollection[rExistingItem.first] = rExistingItem.second;
+        DIS_DEVICE_BUILD_UNIQUE_NAME(pDeviceUniqueKey_c, rExistingItem.second.Type_U32, rExistingItem.second.Sn_U32, rExistingItem.second.Name_S.c_str());
+        auto Iter = mDisClientDbgServiceCollection.find(pDeviceUniqueKey_c);
+        if (Iter != mDisClientDbgServiceCollection.end())
+        {
+          DisClientDbgService_X = std::move(Iter->second);
+          DisDelDeviceCollection[rExistingItem.first] = rExistingItem.second;
+        }
       }
     }
     // Check if new service have appeared

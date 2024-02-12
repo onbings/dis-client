@@ -322,7 +322,7 @@ private:
   ImVec4 mClearColor_X;
   float mClearColor_f = 0.0f;
   uint32_t mCounter_U32 = 0;
-
+  
   BOFERR ShowDemoSelectorWindow();
   BOFERR ShowDemoAnotherWindow();
   BOFERR ShowDemoSpecialTextWindow();

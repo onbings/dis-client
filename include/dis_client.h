@@ -94,6 +94,21 @@ struct DIS_CLIENT_NODE
   }
 };
 
+struct SIMULATOR_ENTRY
+{
+  bool DevicePresent_B;
+  DIS_DEVICE DisDevice_X;
+
+  SIMULATOR_ENTRY()
+  {
+    Reset();
+  }
+  void Reset()
+  {
+    DevicePresent_B = false;
+    DisDevice_X.Reset();
+  }
+};
 class DisClient : public BOF::Bof_ImGui, public BOF::BofThread
 {
 public:
@@ -114,11 +129,13 @@ private:
   BOFERR Run();
   BOFERR Stop();
 
+  private:
   nlohmann::json ToJson() const;
   void FromJson(const nlohmann::json &_rJson);
   void DisplayDisService(int32_t _x_U32, int32_t _y_U32, DIS_CLIENT_DBG_SERVICE &_rDisClientDbgService_X, int32_t &_rDisServiceIndex_S32, int32_t &_rPageIndex_S32, int32_t &_rSubPageIndex_S32);
   void DisplayPageInfo(int32_t _x_U32, int32_t _y_U32, DIS_CLIENT_DBG_SERVICE &_rDisClientDbgService_X);
   void UpdateConsoleMenubar(DIS_CLIENT_DBG_SERVICE &_rDisClientDbgService_X);
+  void DisplaySimulator(int32_t _x_U32, int32_t _y_U32);
 
 private:
   BOFERR PrintAt(uint32_t _x_U32, uint32_t _y_U32, const std::string &_rHexaForeColor_S, const std::string &_rHexaBackColor_S, const std::string &_rText_S);
@@ -126,17 +143,17 @@ private:
 private:
   DIS_CLIENT_PARAM mDisClientParam_X;
   uint32_t mIdleTimer_U32 = 0;
-  ImFont *mpConsoleFont_X = nullptr;
   BOF::BOF_SIZE<uint32_t> mConsoleCharSize_X;
+
+  std::vector<SIMULATOR_ENTRY> mSimulatorEntryCollection;
 
   std::unique_ptr<DisDiscovery> mpuDisDiscovery = nullptr;
   std::mutex mDisDeviceCollectionMtx;
-  std::map<BOF::BofGuid, DIS_DEVICE> mDisDeviceCollection;
+  std::map<std::string, DIS_DEVICE> mDisDeviceCollection;
 
   std::mutex mDisClientDbgServiceCollectionMtx;
-  std::map<BOF::BofGuid, DIS_CLIENT_DBG_SERVICE> mDisClientDbgServiceCollection;
+  std::map<std::string, DIS_CLIENT_DBG_SERVICE> mDisClientDbgServiceCollection;
 
-  //uint32_t mNodeId_U32 = 1;
   std::unique_ptr<BOF::BofDirGraph<DIS_CLIENT_NODE>> mpuNodeGraph = nullptr;
   std::vector<std::pair<uint32_t, uint32_t>> mLinkCollection;
   ImNodesMiniMapLocation mMinimapLocation = ImNodesMiniMapLocation_BottomRight;

@@ -126,7 +126,7 @@ int main(int _Argc_i, char *_pArgv[])
 
     DisClientParam_X.DiscoverPollTimeInMs_U32 = 2000;
     DisClientParam_X.DisServerPollTimeInMs_U32 = 1000;
-    DisClientParam_X.FontSize_U32 = 14;
+    DisClientParam_X.FontSize_U32 = 24;
     DisClientParam_X.ConsoleWidth_U32 = 80;
     DisClientParam_X.ConsoleHeight_U32 = 25;
     DisClientParam_X.ImguiParam_X.WindowTitle_S = "Dis-Client";
