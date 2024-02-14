@@ -10,17 +10,17 @@
   V 1.00  Sep 4 2023	  BHA : Initial release for Gige/ppc integration
 */
 #pragma once
-#include <webrpc/websocket.h>
+#include <bofwebrpc/bofwebsocket.h>
 
-class DisClientWebSocket : public WEBRPC::WebSocket
+class DisClientWebSocket : public BOFWEBRPC::BofWebSocket
 {
 public:
-  DisClientWebSocket(const WEBRPC::WEB_SOCKET_PARAM &_rWebSocketParam_X);
+  DisClientWebSocket(const BOFWEBRPC::BOF_WEB_SOCKET_PARAM &_rWebSocketParam_X);
   ~DisClientWebSocket();
 
 private:
-  //BOFERR V_WebSocketCallback(WEB_SOCKET_LWS_CALLBACK_REASON _Reason_E, uint32_t _Nb_U32, uint8_t *_pData_U8, BOF::BOF_BUFFER &_rReply_X) override;
+  //BOFERR V_WebSocketCallback(BOF_WEB_SOCKET_LWS_CALLBACK_REASON _Reason_E, uint32_t _Nb_U32, uint8_t *_pData_U8, BOF::BOF_BUFFER &_rReply_X) override;
 private:
-  WEBRPC::WEB_SOCKET_PARAM mWebSocketParam_X;
+  BOFWEBRPC::BOF_WEB_SOCKET_PARAM mWebSocketParam_X;
 };
 

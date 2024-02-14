@@ -14,7 +14,7 @@
 //-->https://github.com/grpc/grpc/blob/master/examples/cpp/helloworld/greeter_async_client2.cc
 //https://flatbuffers.dev/flatbuffers_grpc_guide_use_cpp.html
 
-#include "webrpc/webrpc.h"
+#include "bofwebrpc/bofwebrpc.h"
 #include <grpc++/grpc++.h>
 #include <grpcpp/grpcpp.h>
 

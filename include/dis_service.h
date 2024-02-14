@@ -25,7 +25,8 @@
 EM_BOOL WebSocket_OnMessage(int _Event_i, const EmscriptenWebSocketMessageEvent *_pWebsocketEvent_X, void *_pUserData);
 #else
 #include "dis_client_websocket.h"
-#include "webrpc/websocket.h"
+#include "bofwebrpc/bofwebsocket.h"
+
 class DisClientWebSocket;
 #endif
   enum class DIS_SERVICE_STATE : uint32_t
@@ -229,8 +230,7 @@ class DisClientWebSocket;
 */
   struct DIS_DBG_SERVICE
   {
-    std::string Name_S;
-    std::string IpAddress_S;   //ws://10.129.171.112:8080
+    DIS_DEVICE  DisDevice_X;
     DIS_SERVICE_STATE DisClientState_E;
     DIS_SERVICE_STATE DisClientLastState_E;
 
@@ -259,8 +259,7 @@ class DisClientWebSocket;
     }
     void Reset()
     {
-      Name_S = "";
-      IpAddress_S = "";
+      DisDevice_X.Reset();
       DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_MAX;
       DisClientLastState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_MAX;
 
@@ -285,6 +284,7 @@ class DisClientWebSocket;
   };
   struct DIS_DBG_STATE_MACHINE
   {
+    DIS_DEVICE DisDevice_X;
     std::string DisService_S;
     uint32_t Page_U32;
     uint32_t SubPage_U32;
@@ -298,6 +298,7 @@ class DisClientWebSocket;
     }
     void Reset()
     {
+      DisDevice_X.Reset();
       DisService_S = "";
       Page_U32 = 0;
       SubPage_U32 = 0;

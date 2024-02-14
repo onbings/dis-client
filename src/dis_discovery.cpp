@@ -33,22 +33,22 @@ std::map<std::string, DIS_DEVICE> DisDiscovery::GetDisDeviceCollection()
   return mDisDeviceCollection;
 }
 
-BOFERR DisDiscovery::Simul_AddDevice(const DIS_DEVICE &_rDevice_X)
+BOFERR DisDiscovery::Simul_AddDevice(DIS_DEVICE &_rDisDevice_X)
 {
   BOFERR Rts_E = BOF_ERR_EINVAL;
-  BOF::BOF_SOCKET_ADDRESS Ip_X(_rDevice_X.IpAddress_S);
+  BOF::BOF_SOCKET_ADDRESS Ip_X(_rDisDevice_X.IpAddress_S);
   char pDeviceUniqueKey_c[256];
 
-  if ((_rDevice_X.Type_U32) && (_rDevice_X.Sn_U32) && (_rDevice_X.Name_S != "") && (Ip_X.Valid_B))
+  if ((_rDisDevice_X.Type_U32) && (_rDisDevice_X.Sn_U32) && (_rDisDevice_X.Name_S != "") && (Ip_X.Valid_B))
   {
+    DIS_DEVICE_BUILD_UNIQUE_NAME(pDeviceUniqueKey_c, _rDisDevice_X.Type_U32, _rDisDevice_X.Sn_U32, _rDisDevice_X.Name_S.c_str());
     std::lock_guard Lock(mDisDeviceCollectionMtx);
-    DIS_DEVICE_BUILD_UNIQUE_NAME(pDeviceUniqueKey_c, _rDevice_X.Type_U32, _rDevice_X.Sn_U32, _rDevice_X.Name_S.c_str());
     // Error cannot happens but 'paranoid'
     // Forwe accept to have two times the same device ip address but with a different DIS_DEVICE_BUILD_UNIQUE_NAME and for the moment Name_S must also be unique...
     Rts_E = BOF_ERR_NO_ERROR;
     for (auto &rIt : mDisDeviceCollection)
     {
-      if ((rIt.first == pDeviceUniqueKey_c) || (rIt.second.Name_S == _rDevice_X.Name_S))
+      if ((rIt.first == pDeviceUniqueKey_c) || (rIt.second.Name_S == _rDisDevice_X.Name_S))
       {
         Rts_E = BOF_ERR_DUPLICATE;
         break;
@@ -56,19 +56,18 @@ BOFERR DisDiscovery::Simul_AddDevice(const DIS_DEVICE &_rDevice_X)
     }
     if (Rts_E == BOF_ERR_NO_ERROR)
     {
-      mDisDeviceCollection[pDeviceUniqueKey_c] = _rDevice_X;
+      _rDisDevice_X.DeviceUniqueKey_S = pDeviceUniqueKey_c;  //Put the key in data to avoid re-computation when we need it
+      mDisDeviceCollection[pDeviceUniqueKey_c] = _rDisDevice_X;
     }
   }
   return Rts_E;
 }
-BOFERR DisDiscovery::Simul_RemoveDevice(const DIS_DEVICE &_rDevice_X)
+BOFERR DisDiscovery::Simul_RemoveDevice(const DIS_DEVICE &_rDisDevice_X)
 {
   BOFERR Rts_E = BOF_ERR_INTERNAL;
-  char pDeviceUniqueKey_c[256];
 
-  DIS_DEVICE_BUILD_UNIQUE_NAME(pDeviceUniqueKey_c, _rDevice_X.Type_U32, _rDevice_X.Sn_U32, _rDevice_X.Name_S.c_str());
   std::lock_guard Lock(mDisDeviceCollectionMtx);
-  auto Iter = mDisDeviceCollection.find(pDeviceUniqueKey_c);
+  auto Iter = mDisDeviceCollection.find(_rDisDevice_X.DeviceUniqueKey_S);
   if (Iter != mDisDeviceCollection.end())
   {
     mDisDeviceCollection.erase(Iter);

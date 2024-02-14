@@ -11,8 +11,8 @@
 */
 #include "dis_client_websocket.h"
 
-DisClientWebSocket::DisClientWebSocket(const WEBRPC::WEB_SOCKET_PARAM &_rWebSocketParam_X)
-    : WEBRPC::WebSocket(_rWebSocketParam_X)
+DisClientWebSocket::DisClientWebSocket(const BOFWEBRPC::BOF_WEB_SOCKET_PARAM &_rWebSocketParam_X)
+    : BOFWEBRPC::BofWebSocket(_rWebSocketParam_X)
 {
   mWebSocketParam_X = _rWebSocketParam_X;
 }

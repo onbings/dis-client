@@ -331,14 +331,14 @@ void DisClient::DisplayDisService(int32_t _x_U32, int32_t _y_U32, DIS_CLIENT_DBG
   SubPageLayoutPageIndexClicked_S32 = DIS_CLIENT_INVALID_INDEX;
 
   ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[DIS_CLIENT_FONT_SERVICE]);
-  ImGui::Begin("Dis Service", &_rDisClientDbgService_X.IsVisisble_B, ImGuiWindowFlags_None); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+  ImGui::Begin(_rDisClientDbgService_X.puDisService->GetDbgDisService().DisDevice_X.DeviceUniqueKey_S.c_str(), &_rDisClientDbgService_X.IsVisisble_B, ImGuiWindowFlags_None); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
   // Set the window size to fit its contents
   ImGui::SetWindowSize(ImVec2(0, 0)); // Width and height set to 0 to auto-size
 
   ImGui::SetWindowPos(ImVec2(_x_U32, _y_U32), ImGuiCond_FirstUseEver);
-  IsNodeOpen_B = ImGui::TreeNodeEx("##rDisDbgService", NodeFlag, "%s-%s", rDisDbgService_X.Name_S.c_str(), rDisDbgService_X.IpAddress_S.c_str());
-  if (IsNodeOpen_B)
-  {
+  //IsNodeOpen_B = ImGui::TreeNodeEx("##rDisDbgService", NodeFlag, "%s-%s", rDisDbgService_X.Name_S.c_str(), rDisDbgService_X.IpAddress_S.c_str());
+  //if (IsNodeOpen_B)
+  //{
     S_BuildHelpMarker("This is the list of the different dis service avalaible on this device.\n"
                       "Click to select, CTRL+Click to toggle, click on arrows or double-click to open.");
     // for (DIS_DBG_SERVICE_ITEM &rDisDbgServiceItem : _rDisClientDbgService_X.puDisService->GetDbgDisService().DisDbgServiceItemCollection)
@@ -416,8 +416,8 @@ void DisClient::DisplayDisService(int32_t _x_U32, int32_t _y_U32, DIS_CLIENT_DBG
       } // if (IsNodeOpen_B)
       DisServiceIndex_U32++;
     } // for (const DIS_DBG_SERVICE_ITEM &rDisDbgServiceItem : rDisDbgService_X.DisDbgServiceItemCollection)
-    ImGui::TreePop();
-  } // if (IsNodeOpen_B)
+  //  ImGui::TreePop();
+  //} // if (IsNodeOpen_B)
 
   if (DisServiceIndexClicked_S32 != DIS_CLIENT_INVALID_INDEX)
   {
@@ -533,7 +533,7 @@ void DisClient::DisplayPageInfo(int32_t _x_U32, int32_t _y_U32, DIS_CLIENT_DBG_S
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(pColor_U8[0]/255.0f, pColor_U8[1] / 255.0f, pColor_U8[2] / 255.0f, pColor_U8[3] / 255.0f)); // Clear all
 
     //DisClient::S_Log("back is %s\n", _rDisClientDbgService_X.puDisService->GetDbgDisService().PageInfo_X.BackColor_S.c_str());
-    sprintf(pTitle_c,"Console on %s-%s", _rDisClientDbgService_X.puDisService->GetDbgDisService().Name_S.c_str(), _rDisClientDbgService_X.puDisService->GetDbgDisService().IpAddress_S.c_str());
+    sprintf(pTitle_c, "Console on %s", _rDisClientDbgService_X.puDisService->GetDbgDisService().DisDevice_X.DeviceUniqueKey_S.c_str());
     ImGui::Begin(pTitle_c, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoScrollbar);
     ImGui::SetWindowPos(ImVec2(_x_U32, _y_U32), ImGuiCond_FirstUseEver);
     ImGui::SetWindowSize(ImVec2(Width_f, Height_f), ImGuiCond_FirstUseEver);
@@ -579,6 +579,7 @@ void DisClient::V_PreNewFrame()
 
   for (auto &rDisClientDbgService_X : mDisClientDbgServiceCollection)
   {
+    StateMachine_X.DisDevice_X = rDisClientDbgService_X.second.puDisService->GetDbgDisService().DisDevice_X;
     StateMachine_X.Channel_U32 = 0;
     StateMachine_X.CtrlFlag_U32 = 0;
     if (IS_DIS_SERVICE_VALID(rDisClientDbgService_X.second))
@@ -898,7 +899,6 @@ BOFERR DisClient::V_OnProcessing()
   DIS_CLIENT_DBG_SERVICE DisClientDbgService_X;
   DIS_DEVICE DisDevice_X;
   DIS_SERVICE_PARAM DisServiceParam_X;
-  char pDeviceUniqueKey_c[256];
 
   // Periodic thread in  LaunchBofProcessingThread do
   std::lock_guard Lock(mDisDeviceCollectionMtx);
@@ -910,8 +910,7 @@ BOFERR DisClient::V_OnProcessing()
       const auto &rItem = DisDeviceCollection.find(rExistingItem.first);
       if (rItem == DisDeviceCollection.end())
       {
-        DIS_DEVICE_BUILD_UNIQUE_NAME(pDeviceUniqueKey_c, rExistingItem.second.Type_U32, rExistingItem.second.Sn_U32, rExistingItem.second.Name_S.c_str());
-        auto Iter = mDisClientDbgServiceCollection.find(pDeviceUniqueKey_c);
+        auto Iter = mDisClientDbgServiceCollection.find(rExistingItem.second.DeviceUniqueKey_S);
         if (Iter != mDisClientDbgServiceCollection.end())
         {
           DisClientDbgService_X = std::move(Iter->second);

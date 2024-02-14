@@ -277,19 +277,19 @@ set(bofimgui
    ./bofimgui/src/bof_imgui_internal.cpp
    ./bofimgui/include/bofimgui/bof_imgui_internal.h
 
-   ./bofimgui/include/bofimgui/imnodes.h 
-   ./bofimgui/include/bofimgui/imnodes_internal.h 
+   ./bofimgui/include/bofimgui/bof_imgui_imnodes.h 
+   ./bofimgui/include/bofimgui/bof_imgui_imnodes_internal.h 
 
-   ./bofimgui/src/imnodes.cpp
+   ./bofimgui/src/bof_imgui_imnodes.cpp
 )
-set(webrpc 
-   webrpc/lib/include/webrpc/grpc.h
-   webrpc/lib/src/grpc.cpp
-   webrpc/lib/include/webrpc/webrpc.h
-   webrpc/lib/include/webrpc/websocket.h
-   webrpc/lib/src/websocket.cpp
+set(bofwebrpc 
+   bofwebrpc/lib/include/bofwebrpc/bofgrpc.h
+   bofwebrpc/lib/src/bofgrpc.cpp
+   bofwebrpc/lib/include/bofwebrpc/bofwebrpc.h
+   bofwebrpc/lib/include/bofwebrpc/bofwebsocket.h
+   bofwebrpc/lib/src/bofwebsocket.cpp
 
-   webrpc/lib/include/webrpc/webrpcversioninfo.h.in
+   bofwebrpc/lib/include/bofwebrpc/bofwebrpcversioninfo.h.in
 )
 set(dis-client-srv
    main.cpp 
@@ -314,7 +314,7 @@ hello_imgui_add_app(dis-client
 else()
 hello_imgui_add_app(dis-client 
    ${bofimgui}
-   ${webrpc}
+   ${bofwebrpc}
    ${dis-client-srv}
 )
 endif()
@@ -379,7 +379,7 @@ target_include_directories(dis-client
     ####$<BUILD_INTERFACE:${dis-client_SOURCE_DIR}/lib/include> #for #include <dis-client/dis-client.h> when we do not link with dis-client
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> 
     $<BUILD_INTERFACE:${HELLOIMGUI_IMGUI_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/webrpc/lib/include>  #TDO TBD
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bofwebrpc/lib/include>  #TDO TBD
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bofimgui/include> 
 )
 target_link_libraries(dis-client

@@ -49,6 +49,7 @@ struct DIS_DEVICE
   uint32_t Sn_U32;
   std::string Name_S;
   std::string IpAddress_S;
+  std::string DeviceUniqueKey_S;
   DIS_DEVICE()
   {
     Reset();
@@ -59,6 +60,7 @@ struct DIS_DEVICE
     Sn_U32 = 0;
     Name_S = "";
     IpAddress_S = "";
+    DeviceUniqueKey_S = "";
   }
 };
 
@@ -72,8 +74,8 @@ public:
   BOFERR Stop();
   std::map<std::string, DIS_DEVICE> GetDisDeviceCollection(); // Return a COPY of the discovered devices
 
-  BOFERR Simul_AddDevice(const DIS_DEVICE &_rDevice_X);
-  BOFERR Simul_RemoveDevice(const DIS_DEVICE &_rDevice_X);
+  BOFERR Simul_AddDevice(DIS_DEVICE &_rdisDevice_X);
+  BOFERR Simul_RemoveDevice(const DIS_DEVICE &_rDisDevice_X);
 
 private:
   BOFERR V_OnProcessing() override;

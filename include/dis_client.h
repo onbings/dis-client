@@ -21,7 +21,7 @@
 #include "dis_service.h"
 #include "dis_discovery.h"
 // NODE
-#include "bofimgui/imnodes.h"
+#include "bofimgui/bof_imgui_imnodes.h"
 
 constexpr int32_t DIS_CLIENT_INVALID_INDEX = -1;
 struct DIS_CLIENT_PARAM

@@ -11,7 +11,7 @@
 */
 #include <bofstd/boffs.h>
 
-#include "webrpc/grpc.h"
+#include "bofwebrpc/bofgrpc.h"
 #include <grpcpp/impl/codegen/interceptor.h>
 
 
