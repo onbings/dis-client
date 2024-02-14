@@ -23,7 +23,7 @@ BEGIN_WEBRPC_NAMESPACE()
 constexpr const char *WS_CLT_KEY_ARG = "bof_ws_clt_key=";
 constexpr const char *WS_CLT_KEY_VAL_FMT = "BofWsClt_%08X";
 // #define WS_CLT_KEY_ARG "bof_ws_clt_key="
-#define DBG_PROTO
+//#define DBG_PROTO
 #if defined(_WIN32)
 #define BOF_LOG_TO_DBG(pFormat,...)  {std::string Dbg;Dbg=BOF::Bof_Sprintf(pFormat, __VA_ARGS__);OutputDebugString(Dbg.c_str());}
 #else
@@ -827,7 +827,6 @@ int BofWebSocket::LwsCallback(struct lws *_pWsi_X, enum lws_callback_reasons _Lw
     switch (_LwsReason_E)
     {
       case LWS_CALLBACK_EVENT_WAIT_CANCELLED:
-        printf("jj");
         break;
 
       case LWS_CALLBACK_SERVER_NEW_CLIENT_INSTANTIATED:
@@ -838,7 +837,6 @@ int BofWebSocket::LwsCallback(struct lws *_pWsi_X, enum lws_callback_reasons _Lw
         break;
 
       case LWS_CALLBACK_HTTP:
-        {
 #if 0
         // Get the HTTP method (GET, POST, etc.)
         const char *http_method = nullptr;
@@ -912,7 +910,6 @@ int BofWebSocket::LwsCallback(struct lws *_pWsi_X, enum lws_callback_reasons _Lw
           // ...
         }
 #endif
-        }
         break;
 
       case LWS_CALLBACK_ADD_HEADERS:
@@ -952,11 +949,6 @@ int BofWebSocket::LwsCallback(struct lws *_pWsi_X, enum lws_callback_reasons _Lw
           if (mWebSocketState_X.pWebSocket_X)
           {
             BOF_ASSERT(mWebSocketState_X.pWebSocket_X == _pWsi_X);
-          }
-
-          if (lws_get_urlarg_by_name(_pWsi_X, WS_CLT_KEY_ARG, pWsCltKey_c, sizeof(pWsCltKey_c)) <= 0)
-          {
-            snprintf(pWsCltKey_c, sizeof(pWsCltKey_c), WS_CLT_KEY_VAL_FMT, S_mWsCltId_U32++);
           }
           // BOF_LOG_TO_DBG("LWS_CALLBACK_ESTABLISHED WsCltKey %s Nb %zd/%d\n", pWsCltKey_c, mClientCollection.size(), mWebSocketParam_X.NbMaxClient_U32);
           mWebSocketState_X.pWebSocket_X = _pWsi_X;
@@ -1271,10 +1263,7 @@ BOFERR BofWebSocket::V_OnProcessing()
     if (mpLwsContext_X)
     {
       // Will exit if I call LWS_WAKEUP_SERVICE
-      BOF_LOG_TO_DBG("ENTER]]]this %p ENTER lws_service %p\n", this, mpLwsContext_X);
       Sts_i = lws_service(mpLwsContext_X, PollTimeout_U32); // Service the WebSocket context, the timeout arg is ignored and replaced by 30 sec
-      BOF_LOG_TO_DBG("LEAVE[[[this %p lws_service %p sts %d\n", this, mpLwsContext_X, Sts_i);
-
       Sts_E = mpuSocketOperationParamCollection->Pop(&mCurrentOp_X, 0, nullptr, nullptr);
     }
     else
@@ -1300,9 +1289,6 @@ BOFERR BofWebSocket::V_OnProcessing()
         mOperationPending_B = true; // can be resetted by canceled
         SendResult_B = true;
         Start_U32 = 0;
-#if defined(DBG_PROTO)
-        BOF_LOG_TO_DBG("V_OnProcessing Op %d\n", mCurrentOp_X.Operation_E);
-#endif
         switch (mCurrentOp_X.Operation_E)
         {
           case BOF_WEB_RPC_SOCKET_OPERATION::BOF_WEB_RPC_SOCKET_OPERATION_LISTEN:
@@ -1357,11 +1343,13 @@ BOFERR BofWebSocket::V_OnProcessing()
                 LwsCreationInfo_X.port = CONTEXT_PORT_NO_LISTEN;
                 LwsCreationInfo_X.gid = -1;
                 LwsCreationInfo_X.uid = -1;
+                
                 for (i_U32 = 0; i_U32 < BOF_NB_ELEM_IN_ARRAY(S_pLwsClientProtocol_X); i_U32++)
                 {
                   S_pLwsClientProtocol_X[i_U32].per_session_data_size = sizeof(BOF_WEB_SOCKET_DATA_PER_SESSION);
                   S_pLwsClientProtocol_X[i_U32].user = this;
                 }
+                
                 LwsCreationInfo_X.protocols = S_pLwsClientProtocol_X;
                 LwsCreationInfo_X.user = this;
                 // LwsCreationInfo_X.max_http_header_data = 16384; // Set the maximum header size
@@ -1376,19 +1364,21 @@ BOFERR BofWebSocket::V_OnProcessing()
                 else
                 {
                   Result_X.Sts_E = BOF_ERR_ENOTCONN;
-                  memset(&ClientConnectInfo_X, 0, sizeof(ClientConnectInfo_X));
-                  ClientConnectInfo_X.context = mpLwsContext_X;
                   Ip_S = mCurrentOp_X.OpParam.Connect_X.DstIpAddr_X.ToString();
                   FullIp_S = mCurrentOp_X.OpParam.Connect_X.DstIpAddr_X.ToString(mCurrentOp_X.OpParam.Connect_X.DstPort_U16);
                   // The '=' is inside URI_CLIENT_NAME_ARG
                   BOF_SNPRINTF_NULL_CLIPPED(pWsCltKey_c, sizeof(pWsCltKey_c), "/?%s%s", WS_CLT_KEY_ARG, mCurrentOp_X.OpParam.Connect_X.pWsCltKey_c);
+                  //BOF_SNPRINTF_NULL_CLIPPED(pWsCltKey_c, sizeof(pWsCltKey_c), "/");
+
+                  memset(&ClientConnectInfo_X, 0, sizeof(ClientConnectInfo_X));
+                  ClientConnectInfo_X.context = mpLwsContext_X;
                   ClientConnectInfo_X.address = Ip_S.c_str();
                   ClientConnectInfo_X.port = mCurrentOp_X.OpParam.Connect_X.DstPort_U16;
                   ClientConnectInfo_X.path = pWsCltKey_c;
                   ClientConnectInfo_X.host = lws_canonical_hostname(mpLwsContext_X);
                   ClientConnectInfo_X.origin = FullIp_S.c_str();
                   ClientConnectInfo_X.protocol = S_pLwsClientProtocol_X[0].name;
-                  ClientConnectInfo_X.ietf_version_or_minus_one = -1; // IETF version
+                  //ClientConnectInfo_X.ietf_version_or_minus_one = -1; // IETF version
 
                   mWebSocketState_X.pWebSocket_X = lws_client_connect_via_info(&ClientConnectInfo_X);
 #if defined(DBG_PROTO)
@@ -1479,7 +1469,7 @@ BOFERR BofWebSocket::V_OnProcessing()
                 SocketOperationWriteOp_X.Reset();
                 BOF_LWS_ALLOCATE_BUFFER(SocketOperationWriteOp_X.Buffer_X, mCurrentOp_X.OpParam.Write_X.Nb_U32);
                 BOF_LWS_WRITE_BUFFER(SocketOperationWriteOp_X.Buffer_X, mCurrentOp_X.OpParam.Write_X.Nb_U32, mCurrentOp_X.OpParam.Write_X.pBuffer_U8);
-                BOF_LOG_TO_DBG("-->ALLOCIO buf %zx:%p sz %zx BEGIN %zx:%p\n", SocketOperationWriteOp_X.Buffer_X.Capacity_U64, SocketOperationWriteOp_X.Buffer_X.pData_U8, SocketOperationWriteOp_X.Buffer_X.Size_U64, SocketOperationWriteOp_X.Buffer_X.RemainToRead(), &SocketOperationWriteOp_X.Buffer_X.pData_U8[SocketOperationWriteOp_X.Buffer_X.Offset_U64]);
+                //BOF_LOG_TO_DBG("-->ALLOCIO buf %zx:%p sz %zx BEGIN %zx:%p\n", SocketOperationWriteOp_X.Buffer_X.Capacity_U64, SocketOperationWriteOp_X.Buffer_X.pData_U8, SocketOperationWriteOp_X.Buffer_X.Size_U64, SocketOperationWriteOp_X.Buffer_X.RemainToRead(), &SocketOperationWriteOp_X.Buffer_X.pData_U8[SocketOperationWriteOp_X.Buffer_X.Offset_U64]);
 
                 /*
                 SocketOperationWriteOp_X.Buffer_X.SetStorage(mCurrentOp_X.OpParam.Write_X.Nb_U32 + LWS_PRE, mCurrentOp_X.OpParam.Write_X.Nb_U32 + LWS_PRE, mCurrentOp_X.OpParam.Write_X.pBuffer_U8);

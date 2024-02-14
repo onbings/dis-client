@@ -17,7 +17,8 @@
  */
 #include "dis_client.h"
 #include <bofstd/bofsystem.h>
-//opt/evs/evs-gbio/bin/dis_service --DisServer=ws://10.129.171.112:8080
+#include <bofstd/bofguid.h>
+ //opt/evs/evs-gbio/bin/dis_service --DisServer=ws://10.129.171.112:8080
 #if defined(__EMSCRIPTEN__)
 #include <filesystem>
 BOFERR EmscriptenCallback(void *_pArg)
@@ -76,6 +77,141 @@ BOFERR EmscriptenCallback(void *_pArg)
 }
 #endif
 
+//#define TEST_WEBSOCKET
+#if defined(TEST_WEBSOCKET)
+#define DIS_CLIENT_MAIN_LOOP_IDLE_TIME 100                          // 100ms We no state machine action during this time (keep imgui main loop cpu friendly)
+#define DIS_CLIENT_WS_TIMEOUT (DIS_CLIENT_MAIN_LOOP_IDLE_TIME * 10) // 1000ms Timeout fo ws connect, read or write op
+#define DIS_SERVICE_STATE_TIMEOUT (DIS_CLIENT_WS_TIMEOUT * 3)       // 3000ms Maximum time in a given state before returning to DIS_SERVICE_STATE_OPEN_WS
+#define DIS_CLIENT_RX_BUFFER_SIZE 0x40000
+#define DIS_CLIENT_NB_MAX_BUFFER_ENTRY 32
+#define DIS_CLIENT_END_OF_COMMAND(pDisService)     \
+  {                                                \
+    (pDisService)->LastCmdSentTimeoutInMs_U32 = 0; \
+    (pDisService)->WaitForReplyId_U32 = 0;         \
+  }
+#define BOF_LOG_TO_DBG(pFormat,...)  {std::string Dbg;Dbg=BOF::Bof_Sprintf(pFormat, __VA_ARGS__);OutputDebugString(Dbg.c_str());}
+
+class DisTest
+{
+private:
+  std::unique_ptr< DisClientWebSocket> mpuDisClientWebSocket = nullptr;
+  std::string mUniqueName_S;
+  WS_CALLBBACK_PARAM mWsCbParam_X;
+  DIS_DBG_SERVICE mDisDbgService_X;
+
+public:
+  DisTest()
+  {
+    BOFWEBRPC::BOF_WEB_SOCKET_PARAM WebSocketParam_X;
+    BOFERR Sts_E;
+    mUniqueName_S = BOF::BofGuid().ToString(true);
+    mWsCbParam_X.pDisService = (DisService *)this;
+    mWsCbParam_X.pDisService_X = &mDisDbgService_X;
+    WebSocketParam_X.pUser=&mWsCbParam_X;
+    WebSocketParam_X.NbMaxOperationPending_U32 = 4;
+    WebSocketParam_X.RxBufferSize_U32 = DIS_CLIENT_RX_BUFFER_SIZE;
+    WebSocketParam_X.NbMaxBufferEntry_U32 = DIS_CLIENT_NB_MAX_BUFFER_ENTRY;
+    WebSocketParam_X.OnOperation = nullptr;
+    WebSocketParam_X.OnOpen = BOF_BIND_1_ARG_TO_METHOD(this, DisTest::OnWebSocketOpenEvent);
+    WebSocketParam_X.OnClose = BOF_BIND_1_ARG_TO_METHOD(this, DisTest::OnWebSocketCloseEvent);
+    WebSocketParam_X.OnError = BOF_BIND_2_ARG_TO_METHOD(this, DisTest::OnWebSocketErrorEvent);
+    WebSocketParam_X.OnMessage = BOF_BIND_4_ARG_TO_METHOD(this, DisTest::OnWebSocketMessageEvent);
+    WebSocketParam_X.NbMaxClient_U32 = 0; // 0: client
+    // WebSocketParam_X.ServerIp_X = BOF::BOF_SOCKET_ADDRESS(mDisClientParam_X.DisServerEndpoint_S);
+    WebSocketParam_X.WebSocketThreadParam_X.Name_S = mUniqueName_S; //mainly usefull for mpuDisClientWebSocket->Connect
+    WebSocketParam_X.WebSocketThreadParam_X.ThreadSchedulerPolicy_E = BOF::BOF_THREAD_SCHEDULER_POLICY::BOF_THREAD_SCHEDULER_POLICY_OTHER;
+    WebSocketParam_X.WebSocketThreadParam_X.ThreadPriority_E = BOF::BOF_THREAD_PRIORITY::BOF_THREAD_PRIORITY_000;
+    mpuDisClientWebSocket = std::make_unique<DisClientWebSocket>(WebSocketParam_X);
+    mpuDisClientWebSocket->Run();
+  }
+  bool IsConnected()
+  {
+    return  mDisDbgService_X.IsWebSocketConnected_B;
+  }
+  BOFERR OpenWebSocket(const std::string &_rIpAddress_S)
+  {
+    BOFERR Rts_E = BOF_ERR_INIT;
+    if (mpuDisClientWebSocket)
+    {
+      Rts_E = mpuDisClientWebSocket->ResetWebSocketOperation();
+      Rts_E = mpuDisClientWebSocket->Connect(DIS_CLIENT_WS_TIMEOUT, _rIpAddress_S, mUniqueName_S);  //mUniqueName_S must be different for each connection
+    }
+    return Rts_E;
+  }
+  BOFERR CloseWebSocket()
+  {
+    BOFERR Rts_E = BOF_ERR_INIT;
+    if (mpuDisClientWebSocket)
+    {
+      Rts_E = mpuDisClientWebSocket->Disconnect(DIS_CLIENT_WS_TIMEOUT);
+    }
+    return Rts_E;
+  }
+
+
+  BOFERR OnWebSocketOpenEvent(void *_pWsCbParam)
+  {
+    BOFERR Rts_E = BOF_ERR_INTERNAL;
+    WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+
+    if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X))
+    {
+      pWsCbParam_X->pDisService_X->IsWebSocketConnected_B = true;
+      Rts_E = BOF_ERR_NO_ERROR;
+    }
+    return Rts_E;
+  }
+  BOFERR OnWebSocketErrorEvent(void *_pWsCbParam, BOFERR _Sts_E)
+  {
+    BOFERR Rts_E = BOF_ERR_INTERNAL;
+    WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+
+    if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X))
+    {
+      Rts_E = CloseWebSocket();
+      pWsCbParam_X->pDisService_X->Ws = reinterpret_cast<uintptr_t>(pWsCbParam_X->pDisService_X);
+      Rts_E = BOF_ERR_NO_ERROR;
+    }
+    return Rts_E;
+  }
+  BOFERR OnWebSocketCloseEvent(void *_pWsCbParam)
+  {
+    BOFERR Rts_E = BOF_ERR_INTERNAL;
+    WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+
+    if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X))
+    {
+      pWsCbParam_X->pDisService_X->IsWebSocketConnected_B = false;
+      pWsCbParam_X->pDisService_X->Ws = -1;
+      DIS_CLIENT_END_OF_COMMAND(pWsCbParam_X->pDisService_X);
+      Rts_E = BOF_ERR_NO_ERROR;
+    }
+    return Rts_E;
+  }
+  BOFERR OnWebSocketMessageEvent(void *_pWsCbParam, uint32_t _Nb_U32, uint8_t *_pData_U8, BOF::BOF_BUFFER &_rReply_X)
+  {
+    BOFERR Rts_E = BOF_ERR_INTERNAL;
+    WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+    BOF::BOF_RAW_BUFFER *pRawBuffer_X;
+    bool FinalFragment_B;
+
+    if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X) && (_pData_U8))
+    {
+      pWsCbParam_X->pDisService_X->puRxBufferCollection->SetAppendMode(0, true, nullptr); // By default we append
+      FinalFragment_B = true;
+      Rts_E = pWsCbParam_X->pDisService_X->puRxBufferCollection->PushBuffer(0, _Nb_U32, _pData_U8, &pRawBuffer_X);
+      pWsCbParam_X->pDisService_X->puRxBufferCollection->SetAppendMode(0, !FinalFragment_B, &pRawBuffer_X); // If it was the final one, we stop append->Result is pushed and committed
+      // DisClient::S_Log("err %d data %d:%p Rts:indx %d slot %x 1: %x:%p 2: %x:%p\n", Rts_E, _Nb_U32, _pData_U8, pRawBuffer_X->IndexInBuffer_U32, pRawBuffer_X->SlotEmpySpace_U32, pRawBuffer_X->Size1_U32, pRawBuffer_X->pData1_U8, pRawBuffer_X->Size2_U32, pRawBuffer_X->pData2_U8);
+      if (Rts_E != BOF_ERR_NO_ERROR)
+      {
+        CloseWebSocket();
+      }
+    }
+    return Rts_E;
+  }
+};
+#endif
+
 int main(int _Argc_i, char *_pArgv[])
 {
   int Rts_i;
@@ -123,6 +259,54 @@ int main(int _Argc_i, char *_pArgv[])
   {
     // BOF::Bof_GetCurrentDirectory(Cwd_S);
     printf("\nPwd %s\nRunning BofStd V %s on %s under %s\n", Cwd_S.c_str(), StdParam_X.Version_S.c_str(), StdParam_X.ComputerName_S.c_str(), StdParam_X.OsName_S.c_str());
+
+
+#if defined(TEST_WEBSOCKET)
+    DisTest DisTest1, DisTest2;
+    BOFERR Sts_E;
+    uint32_t i_U32;
+
+    for (i_U32 = 0; i_U32 < 10; i_U32++)
+    {
+      BOF_LOG_TO_DBG("=%d====>Initial State %s/%s\n", i_U32, DisTest1.IsConnected() ? "Connected" : "Disconnected", DisTest2.IsConnected() ? "Connected" : "Disconnected");
+      if ((DisTest1.IsConnected()) || (DisTest2.IsConnected()))
+      {
+        BOF_LOG_TO_DBG("jj");
+      }
+      BOF_LOG_TO_DBG("=%d====>Open first=========================\n", i_U32);
+      Sts_E = DisTest1.OpenWebSocket("ws://10.129.171.112:8080");
+      if (Sts_E == BOF_ERR_NO_ERROR)
+      {
+        BOF_LOG_TO_DBG("=%d====>Open second=========================\n", i_U32);
+        Sts_E = DisTest2.OpenWebSocket("ws://10.129.171.112:8080");
+      }
+      BOF_LOG_TO_DBG("=%d====>OpenWebSocket Sts %s State %s/%s\n", i_U32, BOF::Bof_ErrorCode(Sts_E), DisTest1.IsConnected() ? "Connected" : "Disconnected", DisTest2.IsConnected() ? "Connected" : "Disconnected");
+      if ((!DisTest1.IsConnected()) || (!DisTest2.IsConnected()))
+      {
+        BOF_LOG_TO_DBG("jj");
+      }
+      Sts_E = DisTest1.CloseWebSocket();
+      if (Sts_E == BOF_ERR_NO_ERROR)
+      {
+        Sts_E = DisTest2.CloseWebSocket();
+      }
+      BOF_LOG_TO_DBG("=%d====>CloseWebSocket Sts %s State %s\n", i_U32,BOF::Bof_ErrorCode(Sts_E), DisTest1.IsConnected() ? "Connected" : "Disconnected", DisTest2.IsConnected() ? "Connected" : "Disconnected");
+      if ((DisTest1.IsConnected()) || (DisTest2.IsConnected()))
+      {
+        BOF_LOG_TO_DBG("jj");
+      }
+    }
+#endif
+
+
+
+
+
+
+
+
+
+
 
     DisClientParam_X.DiscoverPollTimeInMs_U32 = 2000;
     DisClientParam_X.DisServerPollTimeInMs_U32 = 1000;

@@ -668,10 +668,6 @@ BOFERR DisClient::V_RefreshGui()
   y_U32 = 0;
   std::lock_guard Lock(mDisDeviceCollectionMtx);
   {
-    if (mDisClientDbgServiceCollection.size() == 2)
-    {
-      printf("jj");
-    }
     for (auto &rDisClientDbgService_X : mDisClientDbgServiceCollection)
     {
       DisServiceIndex_S32 = rDisClientDbgService_X.second.ServiceIndex_S32;

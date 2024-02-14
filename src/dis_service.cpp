@@ -366,10 +366,6 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
         break;
 
       case DIS_SERVICE_STATE::DIS_SERVICE_STATE_CREATE_WS:
-        if (_rStateMachine_X.DisDevice_X.Name_S == "Xt2-DisDevice")
-        {
-          printf("jj");
-        }
         mDisService_X.WsCbParam_X.pDisService = this;
         mDisService_X.WsCbParam_X.pDisService_X = &mDisService_X;
 #if defined(__EMSCRIPTEN__)
@@ -423,10 +419,6 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
         break;
 
       case DIS_SERVICE_STATE::DIS_SERVICE_STATE_OPEN_WS:
-        if (_rStateMachine_X.DisDevice_X.Name_S == "Xt2-DisDevice")
-        {
-          printf("jj");
-        }
         Sts_E = OpenWebSocket(&mDisService_X);
         if (Sts_E == BOF_ERR_NO_ERROR)
         {
@@ -631,7 +623,7 @@ BOFERR DisService::SendCommand(DIS_DBG_SERVICE *_pDisService_X, uint32_t _Timeou
       }
       _pDisService_X->LastCmdSentTimer_U32 = BOF::Bof_GetMsTickCount();
       Rts_E = WriteWebSocket(_pDisService_X, Command_S.c_str());
-      DisClient::S_Log("%u %s==>Send '%s' sts %s\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str(), Command_S.c_str(), BOF::Bof_ErrorCode(Rts_E));
+      //DisClient::S_Log("%u %s==>Send '%s' sts %s\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str(), Command_S.c_str(), BOF::Bof_ErrorCode(Rts_E));
       if (Rts_E == BOF_ERR_NO_ERROR)
       {
         _pDisService_X->LastCmdSentTimeoutInMs_U32 = _TimeoutInMsForReply_U32;
@@ -666,7 +658,7 @@ BOFERR DisService::CheckForCommandReply(DIS_DBG_SERVICE *_pDisService_X, std::st
         Rts_E = BOF_ERR_EBADF;
         try
         {
-          DisClient::S_Log("%u %s=2=>Chk\n%s\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str(), pData_c);
+          //DisClient::S_Log("%u %s=2=>Chk\n%s\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str(), pData_c);
           //DisClient::S_Log("%u %s=2=>Chk DataOk\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str());
           CommandJsonData = nlohmann::json::parse(pData_c);
           auto It = CommandJsonData.find("protocolInfo");
@@ -866,7 +858,7 @@ BOFERR DisService::OpenWebSocket(DIS_DBG_SERVICE *_pDisService_X)
   if ((_pDisService_X) && (_pDisService_X->puDisClientWebSocket))
   {
     Rts_E = _pDisService_X->puDisClientWebSocket->ResetWebSocketOperation();
-    Rts_E = _pDisService_X->puDisClientWebSocket->Connect(DIS_CLIENT_WS_TIMEOUT, mDisServiceParam_X.DisServerEndpoint_S, "DisClientWs");
+    Rts_E = _pDisService_X->puDisClientWebSocket->Connect(DIS_CLIENT_WS_TIMEOUT, mDisServiceParam_X.DisServerEndpoint_S, _pDisService_X->DisDevice_X.DeviceUniqueKey_S);
   }
   return Rts_E;
 }
