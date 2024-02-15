@@ -33,7 +33,7 @@ std::map<std::string, DIS_DEVICE> DisDiscovery::GetDisDeviceCollection()
   return mDisDeviceCollection;
 }
 
-BOFERR DisDiscovery::Simul_AddDevice(DIS_DEVICE &_rDisDevice_X)
+BOFERR DisDiscovery::AddDevice(DIS_DEVICE &_rDisDevice_X)
 {
   BOFERR Rts_E = BOF_ERR_EINVAL;
   BOF::BOF_SOCKET_ADDRESS Ip_X(_rDisDevice_X.IpAddress_S);
@@ -56,18 +56,18 @@ BOFERR DisDiscovery::Simul_AddDevice(DIS_DEVICE &_rDisDevice_X)
     }
     if (Rts_E == BOF_ERR_NO_ERROR)
     {
-      _rDisDevice_X.DeviceUniqueKey_S = pDeviceUniqueKey_c;  //Put the key in data to avoid re-computation when we need it
+      _rDisDevice_X.MetaData_X.DeviceUniqueKey_S = pDeviceUniqueKey_c;  //Put the key in data to avoid re-computation when we need it
       mDisDeviceCollection[pDeviceUniqueKey_c] = _rDisDevice_X;
     }
   }
   return Rts_E;
 }
-BOFERR DisDiscovery::Simul_RemoveDevice(const DIS_DEVICE &_rDisDevice_X)
+BOFERR DisDiscovery::RemoveDevice(const DIS_DEVICE &_rDisDevice_X)
 {
   BOFERR Rts_E = BOF_ERR_INTERNAL;
 
   std::lock_guard Lock(mDisDeviceCollectionMtx);
-  auto Iter = mDisDeviceCollection.find(_rDisDevice_X.DeviceUniqueKey_S);
+  auto Iter = mDisDeviceCollection.find(_rDisDevice_X.MetaData_X.DeviceUniqueKey_S);
   if (Iter != mDisDeviceCollection.end())
   {
     mDisDeviceCollection.erase(Iter);

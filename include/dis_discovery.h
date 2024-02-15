@@ -45,11 +45,18 @@ struct DIS_DISCOVERY_PARAM
 // This unique name is used as primary key in std::map (cf DIS_DEVICE_BUILD_UNIQUE_NAME macro)
 struct DIS_DEVICE
 {
+//Coming from discovery system
   uint32_t Type_U32;
   uint32_t Sn_U32;
   std::string Name_S;
   std::string IpAddress_S;
-  std::string DeviceUniqueKey_S;
+
+  struct META_DATA
+  {
+    std::string DeviceUniqueKey_S;  //Meta data added by DisDiscovery::AddDevice
+    uint32_t NodeId_U32;            //Meta data added by DisClient::V_OnProcessing
+  } MetaData_X;  // Instance of META_DATA
+
   DIS_DEVICE()
   {
     Reset();
@@ -60,7 +67,9 @@ struct DIS_DEVICE
     Sn_U32 = 0;
     Name_S = "";
     IpAddress_S = "";
-    DeviceUniqueKey_S = "";
+
+    MetaData_X.DeviceUniqueKey_S = "";
+    MetaData_X.NodeId_U32 = 0;
   }
 };
 
@@ -74,8 +83,8 @@ public:
   BOFERR Stop();
   std::map<std::string, DIS_DEVICE> GetDisDeviceCollection(); // Return a COPY of the discovered devices
 
-  BOFERR Simul_AddDevice(DIS_DEVICE &_rdisDevice_X);
-  BOFERR Simul_RemoveDevice(const DIS_DEVICE &_rDisDevice_X);
+  BOFERR AddDevice(DIS_DEVICE &_rdisDevice_X);
+  BOFERR RemoveDevice(const DIS_DEVICE &_rDisDevice_X);
 
 private:
   BOFERR V_OnProcessing() override;

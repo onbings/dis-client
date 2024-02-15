@@ -307,7 +307,6 @@ int main(int _Argc_i, char *_pArgv[])
 
 
 
-
     DisClientParam_X.DiscoverPollTimeInMs_U32 = 2000;
     DisClientParam_X.DisServerPollTimeInMs_U32 = 1000;
     DisClientParam_X.FontSize_U32 = 24;

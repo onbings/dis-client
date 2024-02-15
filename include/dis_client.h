@@ -76,9 +76,7 @@ struct DIS_CLIENT_NODE
   uint32_t NodeId_U32;
   float x_f;
   float y_f;
-
-  //bool Input_B;
-  float Value_f;
+  std::string Name_S;
 
   DIS_CLIENT_NODE()
   {
@@ -89,17 +87,16 @@ struct DIS_CLIENT_NODE
     NodeId_U32 = 0;
     x_f = 0.0f;
     y_f = 0.0f;
-//    Input_B = false;
-    Value_f = 0.0f;
+    Name_S = "";
   }
 };
 
-struct SIMULATOR_ENTRY
+struct DIS_DEVICE_SIMULATOR_ENTRY
 {
   bool DevicePresent_B;
   DIS_DEVICE DisDevice_X;
 
-  SIMULATOR_ENTRY()
+  DIS_DEVICE_SIMULATOR_ENTRY()
   {
     Reset();
   }
@@ -136,6 +133,7 @@ private:
   void DisplayPageInfo(int32_t _x_U32, int32_t _y_U32, DIS_CLIENT_DBG_SERVICE &_rDisClientDbgService_X);
   void UpdateConsoleMenubar(DIS_CLIENT_DBG_SERVICE &_rDisClientDbgService_X);
   void DisplaySimulator(int32_t _x_U32, int32_t _y_U32);
+  void DisplayDiscoveryGraph(int32_t _x_U32, int32_t _y_U32);
 
 private:
   BOFERR PrintAt(uint32_t _x_U32, uint32_t _y_U32, const std::string &_rHexaForeColor_S, const std::string &_rHexaBackColor_S, const std::string &_rText_S);
@@ -145,7 +143,8 @@ private:
   uint32_t mIdleTimer_U32 = 0;
   BOF::BOF_SIZE<uint32_t> mConsoleCharSize_X;
 
-  std::vector<SIMULATOR_ENTRY> mSimulatorEntryCollection;
+  std::vector<DIS_DEVICE_SIMULATOR_ENTRY> mSimulatorEntryCollection;
+  uint32_t mGraphRootNodeId_U32 = 0;
 
   std::unique_ptr<DisDiscovery> mpuDisDiscovery = nullptr;
   std::mutex mDisDeviceCollectionMtx;
@@ -154,7 +153,7 @@ private:
   std::mutex mDisClientDbgServiceCollectionMtx;
   std::map<std::string, DIS_CLIENT_DBG_SERVICE> mDisClientDbgServiceCollection;
 
-  std::unique_ptr<BOF::BofDirGraph<DIS_CLIENT_NODE>> mpuNodeGraph = nullptr;
-  std::vector<std::pair<uint32_t, uint32_t>> mLinkCollection;
+  std::unique_ptr<BOF::BofDirGraph<DIS_CLIENT_NODE>> mpuDiscoveryGraph = nullptr;
+  std::vector<std::pair<uint32_t, uint32_t>> mDiscoveryLinkCollection;
   ImNodesMiniMapLocation mMinimapLocation = ImNodesMiniMapLocation_BottomRight;
 };

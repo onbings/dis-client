@@ -332,7 +332,7 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
   {
     if (mDisService_X.DisClientState_E != mDisService_X.DisClientLastState_E)
     {
-      DisClient::S_Log("[%u] ENTER: %s Sz %zd State change %s->%s: %s\n", BOF::Bof_GetMsTickCount(), _rStateMachine_X.DisDevice_X.DeviceUniqueKey_S.c_str(), mDisService_X.DisDbgServiceItemCollection.size(),
+      DisClient::S_Log("[%u] ENTER: %s Sz %zd State change %s->%s: %s\n", BOF::Bof_GetMsTickCount(), _rStateMachine_X.DisDevice_X.MetaData_X.DeviceUniqueKey_S.c_str(), mDisService_X.DisDbgServiceItemCollection.size(),
                        S_DisClientStateTypeEnumConverter.ToString(mDisService_X.DisClientLastState_E).c_str(),
                        S_DisClientStateTypeEnumConverter.ToString(mDisService_X.DisClientState_E).c_str(), mDisService_X.IsWebSocketConnected_B ? "Connected" : "Disconnected");
       mDisService_X.DisClientLastState_E = mDisService_X.DisClientState_E;
@@ -383,7 +383,7 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
         WebSocketParam_X.OnMessage = BOF_BIND_4_ARG_TO_METHOD(this, DisService::OnWebSocketMessageEvent);
         WebSocketParam_X.NbMaxClient_U32 = 0; // 0: client
         // WebSocketParam_X.ServerIp_X = BOF::BOF_SOCKET_ADDRESS(mDisClientParam_X.DisServerEndpoint_S);
-        WebSocketParam_X.WebSocketThreadParam_X.Name_S = _rStateMachine_X.DisDevice_X.DeviceUniqueKey_S;
+        WebSocketParam_X.WebSocketThreadParam_X.Name_S = _rStateMachine_X.DisDevice_X.MetaData_X.DeviceUniqueKey_S;
         WebSocketParam_X.WebSocketThreadParam_X.ThreadSchedulerPolicy_E = BOF::BOF_THREAD_SCHEDULER_POLICY::BOF_THREAD_SCHEDULER_POLICY_OTHER;
         WebSocketParam_X.WebSocketThreadParam_X.ThreadPriority_E = BOF::BOF_THREAD_PRIORITY::BOF_THREAD_PRIORITY_000;
         mDisService_X.puDisClientWebSocket = std::make_unique<DisClientWebSocket>(WebSocketParam_X);
@@ -554,7 +554,7 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
 
     if (mDisService_X.DisClientState_E != mDisService_X.DisClientLastState_E)
     {
-      DisClient::S_Log("[%u] LEAVE: %s Sz %zd State change %s->%s: %s\n", BOF::Bof_GetMsTickCount(), _rStateMachine_X.DisDevice_X.DeviceUniqueKey_S.c_str(), mDisService_X.DisDbgServiceItemCollection.size(),
+      DisClient::S_Log("[%u] LEAVE: %s Sz %zd State change %s->%s: %s\n", BOF::Bof_GetMsTickCount(), _rStateMachine_X.DisDevice_X.MetaData_X.DeviceUniqueKey_S.c_str(), mDisService_X.DisDbgServiceItemCollection.size(),
                        S_DisClientStateTypeEnumConverter.ToString(mDisService_X.DisClientLastState_E).c_str(),
                        S_DisClientStateTypeEnumConverter.ToString(mDisService_X.DisClientState_E).c_str(), mDisService_X.IsWebSocketConnected_B ? "Connected" : "Disconnected");
       mDisService_X.DisClientLastState_E = mDisService_X.DisClientState_E;
@@ -563,7 +563,7 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
     if (DeltaState_U32 > DIS_SERVICE_STATE_TIMEOUT)
     {
       mDisService_X.DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_OPEN_WS;
-      DisClient::S_Log("[%u] ERROR: %s Sz %zd State timeout (%d/%d)  %s->%s: %s\n", BOF::Bof_GetMsTickCount(), _rStateMachine_X.DisDevice_X.DeviceUniqueKey_S.c_str(), mDisService_X.DisDbgServiceItemCollection.size(),
+      DisClient::S_Log("[%u] ERROR: %s Sz %zd State timeout (%d/%d)  %s->%s: %s\n", BOF::Bof_GetMsTickCount(), _rStateMachine_X.DisDevice_X.MetaData_X.DeviceUniqueKey_S.c_str(), mDisService_X.DisDbgServiceItemCollection.size(),
                        DeltaState_U32, DIS_SERVICE_STATE_TIMEOUT, S_DisClientStateTypeEnumConverter.ToString(mDisService_X.DisClientLastState_E).c_str(),
                        S_DisClientStateTypeEnumConverter.ToString(mDisService_X.DisClientState_E).c_str(), mDisService_X.IsWebSocketConnected_B ? "Connected" : "Disconnected");
       DIS_CLIENT_END_OF_COMMAND(&mDisService_X);
@@ -691,7 +691,7 @@ BOFERR DisService::CheckForCommandReply(DIS_DBG_SERVICE *_pDisService_X, std::st
         catch (nlohmann::json::exception &re)
         {
           Rts_E = BOF_ERR_INVALID_ANSWER;
-          DisClient::S_Log("[%u] %s CheckForCommandReply: exception caught '%s'\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str(), re.what());
+          DisClient::S_Log("[%u] %s CheckForCommandReply: exception caught '%s'\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.MetaData_X.DeviceUniqueKey_S.c_str(), re.what());
         }
       }
     }
@@ -858,7 +858,7 @@ BOFERR DisService::OpenWebSocket(DIS_DBG_SERVICE *_pDisService_X)
   if ((_pDisService_X) && (_pDisService_X->puDisClientWebSocket))
   {
     Rts_E = _pDisService_X->puDisClientWebSocket->ResetWebSocketOperation();
-    Rts_E = _pDisService_X->puDisClientWebSocket->Connect(DIS_CLIENT_WS_TIMEOUT, mDisServiceParam_X.DisServerEndpoint_S, _pDisService_X->DisDevice_X.DeviceUniqueKey_S);
+    Rts_E = _pDisService_X->puDisClientWebSocket->Connect(DIS_CLIENT_WS_TIMEOUT, mDisServiceParam_X.DisServerEndpoint_S, _pDisService_X->DisDevice_X.MetaData_X.DeviceUniqueKey_S);
   }
   return Rts_E;
 }
