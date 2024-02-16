@@ -7,31 +7,29 @@
       "name": "nlohmann-json"
     },
     {
-      "name": "freetype",
-	  "platform": "windows"	  
+      "name": "freetype"
     },	
     {
-      "name": "sdl2",
-	  "platform": "windows"	  
+      "name": "sdl2"
     },	
     {
       "name": "bofstd"
     },
     {
       "name": "libwebsockets",
-	  "platform": "!wasm32"
+	    "platform": "!wasm32"
     },
     {
       "name": "libuv",
-	  "platform": "!wasm32"
+	    "platform": "!wasm32"
     },
     {
       "name": "protobuf",
-	  "platform": "!wasm32"
+	    "platform": "!wasm32"
     },
     {
       "name": "grpc",
-	  "platform": "!wasm32"
+	    "platform": "!wasm32"
     }	
   ]
 }

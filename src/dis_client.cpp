@@ -16,6 +16,7 @@
  *
  */
 #include <bofstd/boffs.h>
+#include <bofstd/bofsocketos.h>
 #include "dis_client.h"
 
 #if defined(_WIN32)
@@ -267,7 +268,6 @@ void DisClient::DisplayDiscoveryGraph(int32_t _x_U32, int32_t _y_U32)
   DIS_CLIENT_NODE *pDisClientNode_X;
   std::vector<uint32_t> const *pNodeHeighbourCollection;
 
-  char pPin_c[256];
   uint32_t PinId_U32, FirstOutId_U32, InIndex_U32, LinkId_U32;
   bool IsVisisble_B = true;
 
@@ -308,8 +308,7 @@ void DisClient::DisplayDiscoveryGraph(int32_t _x_U32, int32_t _y_U32)
       {
         ImNodes::BeginOutputAttribute(PinId_U32, ImNodesPinShape_Triangle);
         ImGui::Indent(40);
-        sprintf(pPin_c, "Dis_%d", PinId_U32);
-        ImGui::Text(pPin_c);
+        ImGui::Text("Dis_%d", PinId_U32);
         ImNodes::EndOutputAttribute();
         // DisClient::S_Log("Node %d pin %s %d\n", rNode_X.NodeId_U32, pTitle_c, PinId_U32);
         PinId_U32++;
@@ -328,8 +327,7 @@ void DisClient::DisplayDiscoveryGraph(int32_t _x_U32, int32_t _y_U32)
       // ImNodes::EndNodeTitleBar();
       ImNodes::BeginInputAttribute(PinId_U32, ImNodesPinShape_Circle);
       ImGui::Indent(40);
-      sprintf(pPin_c, "%s", rNode_X.Name_S.c_str());
-      ImGui::Text(pPin_c);
+      ImGui::Text("%s", rNode_X.Name_S.c_str());
       // ImGui::DragFloat("Val", &rNode_X.Value_f, 0.01f, -10.0f, 10.0f,"%.2f");
       ImNodes::EndInputAttribute();
       // DisClient::S_Log("Node %d pin %s %d\n", rNode_X.NodeId_U32, pTitle_c, PinId_U32);
@@ -902,18 +900,18 @@ BOFERR DisClient::V_OnProcessing()
 
   DIS_CLIENT_NODE *pDisClientNode_X, DisClientNode_X;
 
-  // Periodic thread started by LaunchBofProcessingThread 
+  // Periodic thread started by LaunchBofProcessingThread
   std::lock_guard Lock(mDisDeviceCollectionMtx);
   {
     DisDeviceCollection = mpuDisDiscovery->GetDisDeviceCollection();
     // Flag services which have disappeared
     for (const auto &rExistingItem : mDisDeviceCollection)
     {
-      //S_Log("Chk %s %d\n", rExistingItem.first.c_str(), rExistingItem.second.MetaData_X.NodeId_U32);
+      // S_Log("Chk %s %d\n", rExistingItem.first.c_str(), rExistingItem.second.MetaData_X.NodeId_U32);
       auto pItem = DisDeviceCollection.find(rExistingItem.first);
       if (pItem != DisDeviceCollection.end())
       {
-//Device still present, copy Meta data added by DisClient::V_OnProcessing from mDisDeviceCollection in DisDeviceCollection
+        // Device still present, copy Meta data added by DisClient::V_OnProcessing from mDisDeviceCollection in DisDeviceCollection
         pItem->second.MetaData_X.NodeId_U32 = rExistingItem.second.MetaData_X.NodeId_U32;
       }
       else
@@ -938,17 +936,17 @@ BOFERR DisClient::V_OnProcessing()
     for (const auto &rItem : DisDelDeviceCollection)
     {
       pDisClientNode_X = mpuDiscoveryGraph->Node(rItem.second.MetaData_X.NodeId_U32);
-      //S_Log("DEL %d %p\n", rItem.second.MetaData_X.NodeId_U32, pDisClientNode_X);
+      // S_Log("DEL %d %p\n", rItem.second.MetaData_X.NodeId_U32, pDisClientNode_X);
       if (pDisClientNode_X)
       {
         mpuDiscoveryGraph->EraseNode(pDisClientNode_X->NodeId_U32);
       }
-      
+
       DisClientDbgService_X.puDisService->Stop();
       mDisClientDbgServiceCollection.erase(rItem.first); // destructor called ?
     }
 
-//Is something has changed ?
+    // Is something has changed ?
     if ((DisAddDeviceCollection.size()) || (DisDelDeviceCollection.size()))
     {
       i_U32 = (DisDeviceCollection.size() > DisAddDeviceCollection.size()) ? DisDeviceCollection.size() - DisAddDeviceCollection.size() : 0;
@@ -962,8 +960,8 @@ BOFERR DisClient::V_OnProcessing()
         BOF_ASSERT(NodeId_U32);
         auto IterDev = DisDeviceCollection.find(rItem.first);
         BOF_ASSERT(IterDev != DisDeviceCollection.end());
-        IterDev->second.MetaData_X.NodeId_U32 = NodeId_U32;   //Will go in mDisDeviceCollection just after
-        //S_Log("Add %d %p\n", NodeId_U32);
+        IterDev->second.MetaData_X.NodeId_U32 = NodeId_U32; // Will go in mDisDeviceCollection just after
+        // S_Log("Add %d %p\n", NodeId_U32);
 
         pDisClientNode_X = mpuDiscoveryGraph->Node(NodeId_U32);
         BOF_ASSERT(pDisClientNode_X);
@@ -993,7 +991,7 @@ BOFERR DisClient::V_OnProcessing()
       }
       mDisDeviceCollection = DisDeviceCollection;
     }
-  } //std::lock_guard Lock(mDisDeviceCollectionMtx)
+  } // std::lock_guard Lock(mDisDeviceCollectionMtx)
   // while ((!IsThreadLoopMustExit()) && (Rts_E == BOF_ERR_NO_ERROR));
   return Rts_E;
 }

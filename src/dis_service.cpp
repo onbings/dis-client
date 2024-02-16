@@ -56,9 +56,9 @@ EM_BOOL WebSocket_OnOpen(int _Event_i, const EmscriptenWebSocketOpenEvent *_pWeb
   EM_BOOL Rts_B = EM_FALSE;
   WS_CALLBBACK_PARAM *pWsCallbackParam_X = (WS_CALLBBACK_PARAM *)_pUserData;
 
-  if ((pWsCallbackParam_X) && (pWsCallbackParam_X->pDisClient))
+  if ((pWsCallbackParam_X) && (pWsCallbackParam_X->pDisService))
   {
-    Rts_B = (pWsCallbackParam_X->pDisClient->OnWebSocketOpenEvent(pWsCallbackParam_X->pDisService_X, _pWebsocketEvent_X) == BOF_ERR_NO_ERROR) ? EM_TRUE : EM_FALSE;
+    Rts_B = (pWsCallbackParam_X->pDisService->OnWebSocketOpenEvent(pWsCallbackParam_X->pDisService_X, _pWebsocketEvent_X) == BOF_ERR_NO_ERROR) ? EM_TRUE : EM_FALSE;
   }
   return Rts_B;
 }
@@ -68,9 +68,9 @@ EM_BOOL WebSocket_OnError(int _Event_i, const EmscriptenWebSocketErrorEvent *_pW
   EM_BOOL Rts_B = EM_FALSE;
   WS_CALLBBACK_PARAM *pWsCallbackParam_X = (WS_CALLBBACK_PARAM *)_pUserData;
 
-  if ((pWsCallbackParam_X) && (pWsCallbackParam_X->pDisClient))
+  if ((pWsCallbackParam_X) && (pWsCallbackParam_X->pDisService))
   {
-    Rts_B = (pWsCallbackParam_X->pDisClient->OnWebSocketErrorEvent(pWsCallbackParam_X->pDisService_X, _pWebsocketEvent_X) == BOF_ERR_NO_ERROR) ? EM_TRUE : EM_FALSE;
+    Rts_B = (pWsCallbackParam_X->pDisService->OnWebSocketErrorEvent(pWsCallbackParam_X->pDisService_X, _pWebsocketEvent_X) == BOF_ERR_NO_ERROR) ? EM_TRUE : EM_FALSE;
   }
   return Rts_B;
 }
@@ -79,9 +79,9 @@ EM_BOOL WebSocket_OnClose(int _Event_i, const EmscriptenWebSocketCloseEvent *_pW
 {
   EM_BOOL Rts_B = EM_FALSE;
   WS_CALLBBACK_PARAM *pWsCallbackParam_X = (WS_CALLBBACK_PARAM *)_pUserData;
-  if ((pWsCallbackParam_X) && (pWsCallbackParam_X->pDisClient))
+  if ((pWsCallbackParam_X) && (pWsCallbackParam_X->pDisService))
   {
-    Rts_B = (pWsCallbackParam_X->pDisClient->OnWebSocketCloseEvent(pWsCallbackParam_X->pDisService_X, _pWebsocketEvent_X) == BOF_ERR_NO_ERROR) ? EM_TRUE : EM_FALSE;
+    Rts_B = (pWsCallbackParam_X->pDisService->OnWebSocketCloseEvent(pWsCallbackParam_X->pDisService_X, _pWebsocketEvent_X) == BOF_ERR_NO_ERROR) ? EM_TRUE : EM_FALSE;
   }
   return Rts_B;
 }
@@ -89,9 +89,9 @@ EM_BOOL WebSocket_OnMessage(int _Event_i, const EmscriptenWebSocketMessageEvent 
 {
   EM_BOOL Rts_B = EM_FALSE;
   WS_CALLBBACK_PARAM *pWsCallbackParam_X = (WS_CALLBBACK_PARAM *)_pUserData;
-  if ((pWsCallbackParam_X) && (pWsCallbackParam_X->pDisClient))
+  if ((pWsCallbackParam_X) && (pWsCallbackParam_X->pDisService))
   {
-    Rts_B = (pWsCallbackParam_X->pDisClient->OnWebSocketMessageEvent(pWsCallbackParam_X->pDisService_X, _pWebsocketEvent_X) == BOF_ERR_NO_ERROR) ? EM_TRUE : EM_FALSE;
+    Rts_B = (pWsCallbackParam_X->pDisService->OnWebSocketMessageEvent(pWsCallbackParam_X->pDisService_X, _pWebsocketEvent_X) == BOF_ERR_NO_ERROR) ? EM_TRUE : EM_FALSE;
   }
   return Rts_B;
 }
@@ -217,11 +217,11 @@ BOFERR DisService::DecodePageLayout(const nlohmann::json &_rPageLayoutJsonData, 
         if ((SubPageIterator != CrtPage.end()) && (SubPageIterator->is_array()))
         {
           const auto &SubPageCollection = *SubPageIterator;
-          //DisClient::S_Log("SubPage JSON: %s", SubPageCollection.dump(2).c_str());
+          // DisClient::S_Log("SubPage JSON: %s", SubPageCollection.dump(2).c_str());
           for (j_U32 = 0; j_U32 < SubPageCollection.size(); j_U32++)
           {
             const auto &CrtSubPage = SubPageCollection[j_U32];
-            //DisClient::S_Log("SubPage[%d] JSON: %s", j_U32, CrtSubPage.dump(2).c_str());
+            // DisClient::S_Log("SubPage[%d] JSON: %s", j_U32, CrtSubPage.dump(2).c_str());
             DisDbgSubPage_X.Reset();
             DisDbgSubPage_X.Label_S = CrtSubPage.value("label", "Label_NotFound_" + std::to_string(j_U32)) + '[' + std::to_string(DisDbgPage_X.MaxChannel_U32) + ']';
             DisDbgSubPage_X.Help_S = CrtSubPage.value("help", "Help_NotFound_" + std::to_string(j_U32));
@@ -368,11 +368,11 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
       case DIS_SERVICE_STATE::DIS_SERVICE_STATE_CREATE_WS:
         mDisService_X.WsCbParam_X.pDisService = this;
         mDisService_X.WsCbParam_X.pDisService_X = &mDisService_X;
+        DisClient::S_Log("DIS_SERVICE_STATE_CREATE_WS ptr mDisService_X %p pDisService %p pDisService_X %p\n", &mDisService_X, mDisService_X.WsCbParam_X.pDisService, mDisService_X.WsCbParam_X.pDisService_X);
+
 #if defined(__EMSCRIPTEN__)
 #else
-        WebSocketParam_X.pUser = &mDisService_X.WsCbParam_X;
-        DisClient::S_Log("ptr mDisServiceCollection %p pDisClient %p pDisService_X %p\n", WebSocketParam_X.pUser, mDisService_X.WsCbParam_X.pDisService, mDisService_X.WsCbParam_X.pDisService_X);
-
+        WebSocketParam_X.pUser = mDisService_X.WsCbParam_X.pDisService_X;
         WebSocketParam_X.NbMaxOperationPending_U32 = 4;
         WebSocketParam_X.RxBufferSize_U32 = DIS_CLIENT_RX_BUFFER_SIZE;
         WebSocketParam_X.NbMaxBufferEntry_U32 = DIS_CLIENT_NB_MAX_BUFFER_ENTRY;
@@ -427,6 +427,7 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
         break;
 
       case DIS_SERVICE_STATE::DIS_SERVICE_STATE_CONNECT:
+        DisClient::S_Log("DIS_SERVICE_STATE_CONNECT ptr %p Ws %d IsWebSocketConnected_B %d\n", &mDisService_X, mDisService_X.Ws, mDisService_X.IsWebSocketConnected_B);
         if (mDisService_X.IsWebSocketConnected_B)
         {
           mDisService_X.DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_GET_DIS_SERVICE;
@@ -462,7 +463,7 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
         break;
 
       case DIS_SERVICE_STATE::DIS_SERVICE_STATE_GET_DEBUG_PAGE_LAYOUT:
-        //DisClient::S_Log("DIS_SERVICE_STATE_GET_DEBUG_PAGE_LAYOUT %d/%d\n",mDisService_X.DisDbgServicePageLayoutIndex_U32,mDisService_X.DisDbgServiceItemCollection.size());
+        // DisClient::S_Log("DIS_SERVICE_STATE_GET_DEBUG_PAGE_LAYOUT %d/%d\n",mDisService_X.DisDbgServicePageLayoutIndex_U32,mDisService_X.DisDbgServiceItemCollection.size());
         if (mDisService_X.DisDbgServicePageLayoutIndex_U32 < mDisService_X.DisDbgServiceItemCollection.size())
         {
           if (StsCmd_E == BOF_ERR_NO)
@@ -493,7 +494,7 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
               {
                 mDisService_X.DisClientState_E = DIS_SERVICE_STATE::DIS_SERVICE_STATE_OPEN_WS;
               }
-              //DisClient::S_Log("DIS_SERVICE_STATE_GET_DEBUG_PAGE_LAYOUT %d/%d Sts %d\n", mDisService_X.DisDbgServicePageLayoutIndex_U32, mDisService_X.DisDbgServiceItemCollection.size(), Sts_E);
+              // DisClient::S_Log("DIS_SERVICE_STATE_GET_DEBUG_PAGE_LAYOUT %d/%d Sts %d\n", mDisService_X.DisDbgServicePageLayoutIndex_U32, mDisService_X.DisDbgServiceItemCollection.size(), Sts_E);
             }
           }
         }
@@ -533,7 +534,7 @@ DIS_SERVICE_STATE DisService::StateMachine(const DIS_DBG_STATE_MACHINE &_rStateM
             if ((_rStateMachine_X.CtrlFlag_U32 & (DIS_CTRL_FLAG_BACK | DIS_CTRL_FLAG_FORE)) == (DIS_CTRL_FLAG_BACK | DIS_CTRL_FLAG_FORE))
             {
               Sts_E = DecodePageInfo(nlohmann::json::parse(mDisService_X.LastWebSocketMessage_S));
-              //DisClient::S_Log("[%u] NewPageData Sts %d\n%s\n", BOF::Bof_GetMsTickCount(), Sts_E, mDisService_X.LastWebSocketMessage_S.c_str());
+              // DisClient::S_Log("[%u] NewPageData Sts %d\n%s\n", BOF::Bof_GetMsTickCount(), Sts_E, mDisService_X.LastWebSocketMessage_S.c_str());
 
               if (Sts_E == BOF_ERR_NO_ERROR)
               {
@@ -623,7 +624,7 @@ BOFERR DisService::SendCommand(DIS_DBG_SERVICE *_pDisService_X, uint32_t _Timeou
       }
       _pDisService_X->LastCmdSentTimer_U32 = BOF::Bof_GetMsTickCount();
       Rts_E = WriteWebSocket(_pDisService_X, Command_S.c_str());
-      //DisClient::S_Log("%u %s==>Send '%s' sts %s\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str(), Command_S.c_str(), BOF::Bof_ErrorCode(Rts_E));
+      // DisClient::S_Log("%u %s==>Send '%s' sts %s\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str(), Command_S.c_str(), BOF::Bof_ErrorCode(Rts_E));
       if (Rts_E == BOF_ERR_NO_ERROR)
       {
         _pDisService_X->LastCmdSentTimeoutInMs_U32 = _TimeoutInMsForReply_U32;
@@ -648,7 +649,7 @@ BOFERR DisService::CheckForCommandReply(DIS_DBG_SERVICE *_pDisService_X, std::st
   {
     MaxSize_U32 = sizeof(pData_c) - 1;
     Rts_E = ReadWebSocket(_pDisService_X, MaxSize_U32, pData_c);
-    //DisClient::S_Log("%u %s=1=>Chk Sts %s Max %d\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str(),BOF::Bof_ErrorCode(Rts_E), MaxSize_U32);
+    // DisClient::S_Log("%u %s=1=>Chk Sts %s Max %d\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str(),BOF::Bof_ErrorCode(Rts_E), MaxSize_U32);
     if (Rts_E == BOF_ERR_NO_ERROR)
     {
       Rts_E = BOF_ERR_EMPTY;
@@ -658,8 +659,8 @@ BOFERR DisService::CheckForCommandReply(DIS_DBG_SERVICE *_pDisService_X, std::st
         Rts_E = BOF_ERR_EBADF;
         try
         {
-          //DisClient::S_Log("%u %s=2=>Chk\n%s\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str(), pData_c);
-          //DisClient::S_Log("%u %s=2=>Chk DataOk\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str());
+          // DisClient::S_Log("%u %s=2=>Chk\n%s\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str(), pData_c);
+          // DisClient::S_Log("%u %s=2=>Chk DataOk\n", BOF::Bof_GetMsTickCount(), _pDisService_X->DisDevice_X.DeviceUniqueKey_S.c_str());
           CommandJsonData = nlohmann::json::parse(pData_c);
           auto It = CommandJsonData.find("protocolInfo");
           if (It != CommandJsonData.end())
@@ -719,14 +720,14 @@ BOFERR DisService::OpenWebSocket(DIS_DBG_SERVICE *_pDisService_X)
   if (_pDisService_X)
   {
     Rts_E = BOF_ERR_NOT_SUPPORTED;
-    EmscriptenWebSocketCreateAttributes WebSocketCreateAttribute_X = {_pDisService_X->IpAddress_S.c_str(), nullptr, EM_TRUE};
+    EmscriptenWebSocketCreateAttributes WebSocketCreateAttribute_X = {mDisServiceParam_X.DisServerEndpoint_S.c_str(), nullptr, EM_TRUE};
 
     if (emscripten_websocket_is_supported())
     {
       CloseWebSocket(_pDisService_X);
       _pDisService_X->Ws = emscripten_websocket_new(&WebSocketCreateAttribute_X);
 
-      DisClient::S_Log("CREATE Ws %d\n", _pDisService_X->Ws);
+      DisClient::S_Log("CREATE Ptr %p Ws %d on '%s'\n", _pDisService_X, _pDisService_X->Ws, mDisServiceParam_X.DisServerEndpoint_S.c_str());
       if (_pDisService_X->Ws > 0)
       {
         emscripten_websocket_set_onopen_callback(_pDisService_X->Ws, &_pDisService_X->WsCbParam_X, WebSocket_OnOpen);
@@ -789,11 +790,16 @@ BOFERR DisService::WriteWebSocket(DIS_DBG_SERVICE *_pDisService_X, const char *_
 BOFERR DisService::OnWebSocketOpenEvent(void *_pWsCbParam, const EmscriptenWebSocketOpenEvent *_pWebsocketEvent_X)
 {
   BOFERR Rts_E = BOF_ERR_EINVAL;
-  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pWsCbParam;
 
-  if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X) && (_pWebsocketEvent_X))
+  if ((pDisService_X) && (_pWebsocketEvent_X))
   {
-    pWsCbParam_X->pDisService_X->IsWebSocketConnected_B = true;
+    DisClient::S_Log("AVANT OnWebSocketOpenEvent ptr %p Ws %d IsWebSocketConnected_B %d\n", pDisService_X, pDisService_X->Ws, pDisService_X->IsWebSocketConnected_B);
+
+    pDisService_X->IsWebSocketConnected_B = true;
+
+    DisClient::S_Log("APRES OnWebSocketOpenEvent ptr %p Ws %d IsWebSocketConnected_B %d\n", pDisService_X, pDisService_X->Ws, pDisService_X->IsWebSocketConnected_B);
+
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
@@ -801,11 +807,11 @@ BOFERR DisService::OnWebSocketOpenEvent(void *_pWsCbParam, const EmscriptenWebSo
 BOFERR DisService::OnWebSocketErrorEvent(void *_pWsCbParam, const EmscriptenWebSocketErrorEvent *_pWebsocketEvent_X)
 {
   BOFERR Rts_E = BOF_ERR_INTERNAL;
-  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pWsCbParam;
 
-  if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X) && (_pWebsocketEvent_X))
+  if ((pDisService_X) && (_pWebsocketEvent_X))
   {
-    Rts_E = CloseWebSocket(pWsCbParam_X->pDisService_X);
+    Rts_E = CloseWebSocket(pDisService_X);
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
@@ -813,13 +819,13 @@ BOFERR DisService::OnWebSocketErrorEvent(void *_pWsCbParam, const EmscriptenWebS
 BOFERR DisService::OnWebSocketCloseEvent(void *_pWsCbParam, const EmscriptenWebSocketCloseEvent *_pWebsocketEvent_X)
 {
   BOFERR Rts_E = BOF_ERR_INTERNAL;
-  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pWsCbParam;
 
-  if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X) && (_pWebsocketEvent_X))
+  if ((pDisService_X) && (_pWebsocketEvent_X))
   {
-    pWsCbParam_X->pDisService_X->IsWebSocketConnected_B = false;
-    pWsCbParam_X->pDisService_X->Ws = -1;
-    DIS_CLIENT_END_OF_COMMAND(pWsCbParam_X->pDisService_X);
+    pDisService_X->IsWebSocketConnected_B = false;
+    pDisService_X->Ws = -1;
+    DIS_CLIENT_END_OF_COMMAND(pDisService_X);
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
@@ -827,26 +833,26 @@ BOFERR DisService::OnWebSocketCloseEvent(void *_pWsCbParam, const EmscriptenWebS
 BOFERR DisService::OnWebSocketMessageEvent(void *_pWsCbParam, const EmscriptenWebSocketMessageEvent *_pWebsocketEvent_X)
 {
   BOFERR Rts_E = BOF_ERR_INTERNAL;
-  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pWsCbParam;
   EMSCRIPTEN_RESULT Sts;
   BOF::BOF_RAW_BUFFER *pRawBuffer_X;
   bool FinalFragment_B;
 
-  if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X) && (_pWebsocketEvent_X))
+  if ((pDisService_X) && (_pWebsocketEvent_X))
   {
     if (_pWebsocketEvent_X->isText)
     {
       // For only ascii chars.
       // DisClient::S_Log("----------------->TXT message from %d: %d:%s\n", _pWebsocketEvent_X->socket, _pWebsocketEvent_X->numBytes, _pWebsocketEvent_X->data);
     }
-    pWsCbParam_X->pDisService_X->puRxBufferCollection->SetAppendMode(0, true, nullptr); // By default we append
+    pDisService_X->puRxBufferCollection->SetAppendMode(0, true, nullptr); // By default we append
     FinalFragment_B = true;
-    Rts_E = pWsCbParam_X->pDisService_X->puRxBufferCollection->PushBuffer(0, _pWebsocketEvent_X->numBytes, (const uint8_t *)_pWebsocketEvent_X->data, &pRawBuffer_X);
-    pWsCbParam_X->pDisService_X->puRxBufferCollection->SetAppendMode(0, !FinalFragment_B, &pRawBuffer_X); // If it was the final one, we stop append->Result is pushed and committed
+    Rts_E = pDisService_X->puRxBufferCollection->PushBuffer(0, _pWebsocketEvent_X->numBytes, (const uint8_t *)_pWebsocketEvent_X->data, &pRawBuffer_X);
+    pDisService_X->puRxBufferCollection->SetAppendMode(0, !FinalFragment_B, &pRawBuffer_X); // If it was the final one, we stop append->Result is pushed and committed
     // DisClient::S_Log("err %d data %d:%p Rts:indx %d slot %x 1: %x:%p 2: %x:%p\n", Rts_E, _pWebsocketEvent_X->numBytes, (const uint8_t *)_pWebsocketEvent_X->data, pRawBuffer_X->IndexInBuffer_U32, pRawBuffer_X->SlotEmpySpace_U32, pRawBuffer_X->Size1_U32, pRawBuffer_X->pData1_U8, pRawBuffer_X->Size2_U32, pRawBuffer_X->pData2_U8);
     if (Rts_E != BOF_ERR_NO_ERROR)
     {
-      CloseWebSocket(pWsCbParam_X->pDisService_X);
+      CloseWebSocket(pDisService_X);
     }
   }
   return Rts_E;
@@ -890,11 +896,11 @@ BOFERR DisService::WriteWebSocket(DIS_DBG_SERVICE *_pDisService_X, const char *_
 BOFERR DisService::OnWebSocketOpenEvent(void *_pWsCbParam)
 {
   BOFERR Rts_E = BOF_ERR_INTERNAL;
-  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pWsCbParam;
 
-  if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X))
+  if (pDisService_X)
   {
-    pWsCbParam_X->pDisService_X->IsWebSocketConnected_B = true;
+    pDisService_X->IsWebSocketConnected_B = true;
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
@@ -902,12 +908,12 @@ BOFERR DisService::OnWebSocketOpenEvent(void *_pWsCbParam)
 BOFERR DisService::OnWebSocketErrorEvent(void *_pWsCbParam, BOFERR _Sts_E)
 {
   BOFERR Rts_E = BOF_ERR_INTERNAL;
-  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pWsCbParam;
 
-  if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X))
+  if (pDisService_X)
   {
-    Rts_E = CloseWebSocket(pWsCbParam_X->pDisService_X);
-    pWsCbParam_X->pDisService_X->Ws = reinterpret_cast<uintptr_t>(pWsCbParam_X->pDisService_X);
+    Rts_E = CloseWebSocket(pDisService_X);
+    pDisService_X->Ws = reinterpret_cast<uintptr_t>(pDisService_X);
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
@@ -915,13 +921,13 @@ BOFERR DisService::OnWebSocketErrorEvent(void *_pWsCbParam, BOFERR _Sts_E)
 BOFERR DisService::OnWebSocketCloseEvent(void *_pWsCbParam)
 {
   BOFERR Rts_E = BOF_ERR_INTERNAL;
-  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pWsCbParam;
 
-  if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X))
+  if (pDisService_X)
   {
-    pWsCbParam_X->pDisService_X->IsWebSocketConnected_B = false;
-    pWsCbParam_X->pDisService_X->Ws = -1;
-    DIS_CLIENT_END_OF_COMMAND(pWsCbParam_X->pDisService_X);
+    pDisService_X->IsWebSocketConnected_B = false;
+    pDisService_X->Ws = -1;
+    DIS_CLIENT_END_OF_COMMAND(pDisService_X);
     Rts_E = BOF_ERR_NO_ERROR;
   }
   return Rts_E;
@@ -929,20 +935,20 @@ BOFERR DisService::OnWebSocketCloseEvent(void *_pWsCbParam)
 BOFERR DisService::OnWebSocketMessageEvent(void *_pWsCbParam, uint32_t _Nb_U32, uint8_t *_pData_U8, BOF::BOF_BUFFER &_rReply_X)
 {
   BOFERR Rts_E = BOF_ERR_INTERNAL;
-  WS_CALLBBACK_PARAM *pWsCbParam_X = (WS_CALLBBACK_PARAM *)_pWsCbParam;
+  DIS_DBG_SERVICE *pDisService_X = (DIS_DBG_SERVICE *)_pWsCbParam;
   BOF::BOF_RAW_BUFFER *pRawBuffer_X;
   bool FinalFragment_B;
 
-  if ((pWsCbParam_X) && (pWsCbParam_X->pDisService) && (pWsCbParam_X->pDisService_X) && (_pData_U8))
+  if ((pDisService_X) && (_pData_U8))
   {
-    pWsCbParam_X->pDisService_X->puRxBufferCollection->SetAppendMode(0, true, nullptr); // By default we append
+    pDisService_X->puRxBufferCollection->SetAppendMode(0, true, nullptr); // By default we append
     FinalFragment_B = true;
-    Rts_E = pWsCbParam_X->pDisService_X->puRxBufferCollection->PushBuffer(0, _Nb_U32, _pData_U8, &pRawBuffer_X);
-    pWsCbParam_X->pDisService_X->puRxBufferCollection->SetAppendMode(0, !FinalFragment_B, &pRawBuffer_X); // If it was the final one, we stop append->Result is pushed and committed
+    Rts_E = pDisService_X->puRxBufferCollection->PushBuffer(0, _Nb_U32, _pData_U8, &pRawBuffer_X);
+    pDisService_X->puRxBufferCollection->SetAppendMode(0, !FinalFragment_B, &pRawBuffer_X); // If it was the final one, we stop append->Result is pushed and committed
     // DisClient::S_Log("err %d data %d:%p Rts:indx %d slot %x 1: %x:%p 2: %x:%p\n", Rts_E, _Nb_U32, _pData_U8, pRawBuffer_X->IndexInBuffer_U32, pRawBuffer_X->SlotEmpySpace_U32, pRawBuffer_X->Size1_U32, pRawBuffer_X->pData1_U8, pRawBuffer_X->Size2_U32, pRawBuffer_X->pData2_U8);
     if (Rts_E != BOF_ERR_NO_ERROR)
     {
-      CloseWebSocket(pWsCbParam_X->pDisService_X);
+      CloseWebSocket(pDisService_X);
     }
   }
   return Rts_E;

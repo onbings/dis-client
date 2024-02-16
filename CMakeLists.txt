@@ -1,8 +1,7 @@
 #see README.md
-#cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe -G Ninja
-#cmake -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe
+#cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DHELLOIMGUI_USE_SDL2=ON -DHELLOIMGUI_HAS_OPENGL3=ON -DHELLOIMGUI_USE_FREETYPE=OFF -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe -G Ninja
 
-#cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug  -DHELLOIMGUI_USE_SDL2=ON -DHELLOIMGUI_HAS_OPENGL3=ON -SC:/pro/github/dis-client -BC:/bld/dis-client-win
+#cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DHELLOIMGUI_USE_SDL2=ON -DHELLOIMGUI_HAS_OPENGL3=ON -SC:/pro/github/dis-client -BC:/bld/dis-client-win
 
 #https://github.com/microsoft/vcpkg/discussions/36049
 #https://github.com/microsoft/vcpkg/discussions/30108#top
@@ -232,6 +231,9 @@ endif()
 # they must be built with a strict control of options which is not possible with vcpkg 
 # build in manifest mode 
 message("==============================================Start fetch=========================")
+#fetch_external_library_add(sdl2 "${LIST_OF_LIB}" https://github.com/libsdl-org/SDL release-2.30.0)
+fetch_external_library_add(freetype "${LIST_OF_LIB}" https://github.com/freetype/freetype VER-2-13-2)
+make_external_library_available("${LIST_OF_LIB}")
 #fetch_external_library_add(googletest "${LIST_OF_LIB}" https://github.com/google/googletest release-1.12.1)
 #fetch_external_library_add(spdlog "${LIST_OF_LIB}" https://github.com/gabime/spdlog v1.12.0)
 #make_external_library_available("${LIST_OF_LIB}")
@@ -290,6 +292,9 @@ set(bofwebrpc
    bofwebrpc/lib/src/bofwebsocket.cpp
 
    bofwebrpc/lib/include/bofwebrpc/bofwebrpcversioninfo.h.in
+
+   ./include/dis_client_websocket.h
+   ./src/dis_client_websocket.cpp   
 )
 set(dis-client-srv
    main.cpp 
@@ -300,8 +305,6 @@ set(dis-client-srv
    ./src/dis_discovery.cpp
    ./ include/dis_service.h
    ./src/dis_service.cpp
-   ./include/dis_client_websocket.h
-   ./src/dis_client_websocket.cpp
 )
 
 # Build your app
