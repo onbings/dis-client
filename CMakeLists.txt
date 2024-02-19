@@ -1,7 +1,8 @@
 #see README.md
 #cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=C:/pro/emsdk/upstream/emscripten/cmake/Modules/Platform/emscripten.cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=wasm32-emscripten -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DHELLOIMGUI_USE_SDL2=ON -DHELLOIMGUI_HAS_OPENGL3=ON -DHELLOIMGUI_USE_FREETYPE=OFF -SC:/pro/github/dis-client -BC:/bld/dis-client-web -DCMAKE_CROSSCOMPILING_EMULATOR=C:/pro/emsdk/node/16.20.0_64bit/bin/node.exe -G Ninja
 
-#cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DHELLOIMGUI_USE_SDL2=ON -DHELLOIMGUI_HAS_OPENGL3=ON -SC:/pro/github/dis-client -BC:/bld/dis-client-win
+#cmake -DCMAKE_TOOLCHAIN_FILE=C:/pro/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DHELLOIMGUI_USE_SDL2=ON -DHELLOIMGUI_HAS_OPENGL3=ON -DHELLOIMGUI_USE_FREETYPE=OFF -SC:/pro/github/dis-client -BC:/bld/dis-client-win
+#rem: under windows you can use -DHELLOIMGUI_USE_FREETYPE=ON. 
 
 #https://github.com/microsoft/vcpkg/discussions/36049
 #https://github.com/microsoft/vcpkg/discussions/30108#top
@@ -232,8 +233,11 @@ endif()
 # build in manifest mode 
 message("==============================================Start fetch=========================")
 #fetch_external_library_add(sdl2 "${LIST_OF_LIB}" https://github.com/libsdl-org/SDL release-2.30.0)
-fetch_external_library_add(freetype "${LIST_OF_LIB}" https://github.com/freetype/freetype VER-2-13-2)
-make_external_library_available("${LIST_OF_LIB}")
+#wasm-ld: error: --shared-memory is disallowed by sfnt.c.o because it was not compiled with 'atomics' or 'bulk-memory' features.
+#BUT AFTER COMPILING freetype with fetch_external_library_add I still got:
+#wasm-ld: error: --shared-memory is disallowed by png.c.o because it was not compiled with 'atomics' or 'bulk-memory' features.
+#fetch_external_library_add(freetype "${LIST_OF_LIB}" https://github.com/freetype/freetype VER-2-13-2)
+#make_external_library_available("${LIST_OF_LIB}")
 #fetch_external_library_add(googletest "${LIST_OF_LIB}" https://github.com/google/googletest release-1.12.1)
 #fetch_external_library_add(spdlog "${LIST_OF_LIB}" https://github.com/gabime/spdlog v1.12.0)
 #make_external_library_available("${LIST_OF_LIB}")
@@ -270,8 +274,8 @@ if (NOT TARGET hello_imgui)
 endif()
 
 #remove_definitions(-DIMGUI_ENABLE_FREETYPE_LUNASVG)
-message("-----------------------> Undefine UIMGUI_ENABLE_FREETYPE_LUNASVG as something is broken")
-target_compile_options(imgui PRIVATE -UIMGUI_ENABLE_FREETYPE_LUNASVG)
+#message("-----------------------> Undefine UIMGUI_ENABLE_FREETYPE_LUNASVG as something is broken")
+#target_compile_options(imgui PRIVATE -UIMGUI_ENABLE_FREETYPE_LUNASVG)
 
 set(bofimgui
    ./bofimgui/src/bof_imgui.cpp
