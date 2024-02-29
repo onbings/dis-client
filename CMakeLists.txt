@@ -91,14 +91,14 @@ message("emscripten fs destination file directory: ${DISCLIENT_EMSCRIPTEN_FS_DST
     message("===EMSCRIPTEN=== Generate .wasm and .js files")
   endif()
 
-  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread")  #hang with imgui: -s NO_DISABLE_EXCEPTION_CATCHING
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")  #hang with imgui: -s NO_DISABLE_EXCEPTION_CATCHING
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -fwasm-exceptions")  #hang with imgui: -s NO_DISABLE_EXCEPTION_CATCHING
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fwasm-exceptions")  #hang with imgui: -s NO_DISABLE_EXCEPTION_CATCHING
 #ici ca bloque qq part dans imgui car je pense qu'on est dans un autre thread entre imgui et le main...
 #  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -pthread -sPROXY_TO_PTHREAD") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY")  # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
 #  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -sPROXY_TO_PTHREAD") #-sUSE_PTHREADS=1") #-sPTHREAD_POOL_SIZE=4") # -sPROXY_TO_PTHREAD -sASYNCIFY") # -sUSE_PTHREADS=1) # -sSHARED_MEMORY=1")
 
   #The @ symbol is needed because sometimes it is useful to package files that are not nested below the compile-time directory, and for which #there is therefore no default mapping to a location in the virtual file system.
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s TOTAL_STACK=${DISCLIENT_EMSCRIPTEN_STACK} -s TOTAL_MEMORY=${DISCLIENT_EMSCRIPTEN_MEMORY} -s PTHREAD_POOL_SIZE=${DISCLIENT_EMSCRIPTEN_THREAD_POOL} --embed-file ${DISCLIENT_EMSCRIPTEN_FS_SRC_ROOT_DIR}@${DISCLIENT_EMSCRIPTEN_FS_DST_ROOT_DIR}")    
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fwasm-exceptions -s TOTAL_STACK=${DISCLIENT_EMSCRIPTEN_STACK} -s TOTAL_MEMORY=${DISCLIENT_EMSCRIPTEN_MEMORY} -s PTHREAD_POOL_SIZE=${DISCLIENT_EMSCRIPTEN_THREAD_POOL} --embed-file ${DISCLIENT_EMSCRIPTEN_FS_SRC_ROOT_DIR}@${DISCLIENT_EMSCRIPTEN_FS_DST_ROOT_DIR}")    
   #-sPROXY_TO_PTHREAD  not good for  imgui car je pense qu'on est dans un autre thread entre imgui et le main...
   #-s ASYNCIFY (very long and sometime forever)
   message("===EMSCRIPTEN=== CMAKE_EXE_LINKER_FLAGS is ${CMAKE_EXE_LINKER_FLAGS}")

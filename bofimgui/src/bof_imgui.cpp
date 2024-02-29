@@ -281,7 +281,8 @@ BOFERR Bof_ImGui::MainLoop()
 
     // These pointers will be filled when the application starts, and you can use them to customize your application behavior using the selected backend.
     // RunnerParam_X.backendPointers;
-    RunnerParam_X.backendType = HelloImGui::BackendType::FirstAvailable;
+    RunnerParam_X.platformBackendType = HelloImGui::PlatformBackendType::FirstAvailable;
+    RunnerParam_X.rendererBackendType = HelloImGui::RendererBackendType::FirstAvailable;
     RunnerParam_X.fpsIdling.enableIdling = true;
     RunnerParam_X.useImGuiTestEngine = false;
 

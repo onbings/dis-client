@@ -298,7 +298,7 @@ BofWebSocket::BofWebSocket(const BOF_WEB_SOCKET_PARAM &_rWebSocketParam_X)
   lws_set_log_level(LLLF_LOG_TIMESTAMP | LLL_ERR | LLL_WARN | LLL_NOTICE | LLL_INFO | LLL_HEADER | LLL_EXT | LLL_CLIENT | LLL_LATENCY | LLL_USER | LLL_THREAD, nullptr);
   //                    LLL_DEBUG | LLL_INFO | LLL_NOTICE | LLL_WARN | LLL_ERR | LLL_CLIENT | LLL_LATENCY, nullptr);  //);
   lws_set_log_level(0, nullptr);
-  Sts_E = Bof_CreateEvent(mWebSocketParam_X.WebSocketThreadParam_X.Name_S, false, 1, false, false, mCancelEvent_X);
+  Sts_E = Bof_CreateEvent(mWebSocketParam_X.WebSocketThreadParam_X.Name_S, false, 1, false, false, false, mCancelEvent_X);
   BOF_ASSERT(Sts_E == BOF_ERR_NO_ERROR);
 
   CircularBufferParam_X.MultiThreadAware_B = true;

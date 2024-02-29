@@ -18,6 +18,7 @@ typedef struct lws BOF_WEB_SOCKET_LWS;
 #include <bofstd/bofrawcircularbuffer.h>
 #include <bofstd/bofsocketos.h>
 #include <bofstd/bofthread.h>
+#include <bofstd/bofbuffer.h>
 
 #include <map>
 
