@@ -33,13 +33,13 @@ void LogHelper(Logger &_rLogFunction, const char *_pFormat_c, ...)
 }
 
 // DBG_LOG macro for conditionally logging messages
-#define DBG_LOG(fmt, ...)                             \
-  do                                                  \
-  {                                                   \
-    if (mImguiParam_X.TheLogger)                      \
-    {                                                 \
-      LogHelper(mImguiParam_X.TheLogger, fmt, __VA_ARGS__); \
-    }                                                 \
+#define DBG_LOG(fmt, ...)                                   \
+  do                                                        \
+  {                                                         \
+    if (mImguiParam_X.TheLogger)                            \
+    {                                                       \
+      LogHelper(mImguiParam_X.TheLogger, fmt, ##__VA_ARGS__); \
+    }                                                       \
   } while (0)
 
 Bof_ImGui::Bof_ImGui(const BOF_IMGUI_PARAM &_rImguiParam_X)
@@ -134,7 +134,7 @@ std::string Bof_ImGui::S_GetKeyboardState()
     if (ImGui::IsKeyPressed((ImGuiKey)i_U32, true))
     {
       Rts_S += S_pKeyNameCollection_c[i_U32 - ImGuiKey_Tab];
-      //printf("rts %s\n", Rts_S.c_str());
+      // printf("rts %s\n", Rts_S.c_str());
     }
   }
   // char pKeyCombi_c[0x100];
@@ -155,7 +155,7 @@ BOFERR Bof_ImGui::MainLoop()
   BOFERR Rts_E = mLastError_E;
   HelloImGui::RunnerParams RunnerParam_X;
   uint8_t pColor_U8[4];
-
+  // emscripten_set_main_loop_arg(emscripten_imgui_main_loop, NULL, 0, true);
   if (Rts_E == BOF_ERR_NO_ERROR)
   {
     mShowDemoWindow_B = mImguiParam_X.ShowDemoWindow_B;
@@ -181,7 +181,7 @@ BOFERR Bof_ImGui::MainLoop()
     // If callback not defined, call Impl_Frame_3D_ClearColor(); with RunnerParam_X.imGuiWindowParams.backgroundColor (BackgroudHexaColor_S)
     if (S_HexaColor(mImguiParam_X.BackgroudHexaColor_S, pColor_U8))
     {
-      RunnerParam_X.imGuiWindowParams.backgroundColor = ImVec4((float)pColor_U8[0]/255.0f, (float)pColor_U8[1] / 255.0f, (float)pColor_U8[2] / 255.0f, (float)pColor_U8[3] / 255.0f);
+      RunnerParam_X.imGuiWindowParams.backgroundColor = ImVec4((float)pColor_U8[0] / 255.0f, (float)pColor_U8[1] / 255.0f, (float)pColor_U8[2] / 255.0f, (float)pColor_U8[3] / 255.0f);
     }
     else
     {
@@ -216,7 +216,7 @@ BOFERR Bof_ImGui::MainLoop()
     RunnerParam_X.appWindowParams.windowGeometry.windowSizeState = HelloImGui::WindowSizeState::Standard;
     RunnerParam_X.appWindowParams.windowGeometry.windowSizeMeasureMode = HelloImGui::WindowSizeMeasureMode::RelativeTo96Ppi;
     // if true, then save & restore from last run
-    RunnerParam_X.appWindowParams.restorePreviousGeometry = false; 
+    RunnerParam_X.appWindowParams.restorePreviousGeometry = false;
     RunnerParam_X.appWindowParams.borderless = false;
     RunnerParam_X.appWindowParams.resizable = true;
     RunnerParam_X.appWindowParams.hidden = false;
@@ -228,9 +228,9 @@ BOFERR Bof_ImGui::MainLoop()
     RunnerParam_X.appWindowParams.handleEdgeInsets = true;
 
     RunnerParam_X.imGuiWindowParams.defaultImGuiWindowType = HelloImGui::DefaultImGuiWindowType::ProvideFullScreenDockSpace;
-    //Above at if (S_HexaColor(mImguiParam_X.BackgroudHexaColor_S, pColor_U8)):  RunnerParam_X.imGuiWindowParams.backgroundColor = ImVec4(1.f, 0.f, 0.f, 0.f);
-    // In order to fully customize the menu, set showMenuBar to true, and set showMenu_App and showMenu_View params to false.Then, implement the
-    // callback `RunnerParams.callbacks.ShowMenus` which can optionally call `HelloImGui::ShowViewMenu` and `HelloImGui::ShowAppMenu`.
+    // Above at if (S_HexaColor(mImguiParam_X.BackgroudHexaColor_S, pColor_U8)):  RunnerParam_X.imGuiWindowParams.backgroundColor = ImVec4(1.f, 0.f, 0.f, 0.f);
+    //  In order to fully customize the menu, set showMenuBar to true, and set showMenu_App and showMenu_View params to false.Then, implement the
+    //  callback `RunnerParams.callbacks.ShowMenus` which can optionally call `HelloImGui::ShowViewMenu` and `HelloImGui::ShowAppMenu`.
     RunnerParam_X.imGuiWindowParams.showMenuBar = mImguiParam_X.ShowMenuBar_B;
     RunnerParam_X.imGuiWindowParams.showMenu_App = false;
     RunnerParam_X.imGuiWindowParams.showMenu_View = false;
@@ -293,6 +293,10 @@ BOFERR Bof_ImGui::MainLoop()
     RunnerParam_X.emscripten_fps = 0;
 #endif
     HelloImGui::Run(RunnerParam_X);
+
+    // HelloImGui::SimpleRunnerParams SimpleRunnerParam_X;
+    // SimpleRunnerParam_X.guiFunction = BOF_BIND_0_ARG_TO_METHOD(this, Bof_ImGui::V_ShowGui);
+    // HelloImGui::Run(SimpleRunnerParam_X);
   }
   return Rts_E;
 }
@@ -369,7 +373,7 @@ BOF::BOF_SIZE<uint32_t> Bof_ImGui::GetTextSize(const char *_pText_c)
   }
   return Rts_X;
 }
-bool Bof_ImGui::S_HexaColor(const std::string &_rHexaColor_S, uint8_t(&_rColor_U8)[4])
+bool Bof_ImGui::S_HexaColor(const std::string &_rHexaColor_S, uint8_t (&_rColor_U8)[4])
 {
   bool Rts_B = false;
   uint32_t Rgba_U32;
@@ -478,16 +482,16 @@ void Bof_ImGui::V_CustomBackground()
 }
 void Bof_ImGui::V_ShowMenus()
 {
-  // DBG_LOG("V_ShowMenus\n", 0);
+  DBG_LOG("V_ShowMenus\n", 0);
 }
 void Bof_ImGui::V_ShowStatus()
 {
-  // DBG_LOG("V_ShowStatus\n", 0);
+  DBG_LOG("V_ShowStatus\n", 0);
 }
 void Bof_ImGui::V_ShowGui()
 {
-  // DBG_LOG("V_ShowGui\n", 0);
-  //HandleComputerKeyboard();
+  DBG_LOG("V_ShowGui\n", 0);
+  // HandleComputerKeyboard();
 
   // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
   if (mImguiParam_X.ShowDemoWindow_B)
@@ -504,11 +508,11 @@ void Bof_ImGui::V_ShowGui()
 }
 void Bof_ImGui::V_BeforeImGuiRender()
 {
-  // DBG_LOG("V_BeforeImGuiRender\n", 0);
+  DBG_LOG("V_BeforeImGuiRender\n", 0);
 }
 void Bof_ImGui::V_AfterSwap()
 {
-  // DBG_LOG("V_AfterSwap\n", 0);
+  DBG_LOG("V_AfterSwap\n", 0);
 }
 bool Bof_ImGui::V_AnyBackendEventCallback(void *_pEvent)
 {

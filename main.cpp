@@ -18,7 +18,7 @@
 #include "dis_client.h"
 #include <bofstd/bofsystem.h>
 #include <bofstd/bofguid.h>
- //opt/evs/evs-gbio/bin/dis_service --DisServer=ws://10.129.171.112:8080
+// opt/evs/evs-gbio/bin/dis_service --DisServer=ws://10.129.171.112:8080
 #if defined(__EMSCRIPTEN__)
 #include <filesystem>
 BOFERR EmscriptenCallback(void *_pArg)
@@ -77,7 +77,7 @@ BOFERR EmscriptenCallback(void *_pArg)
 }
 #endif
 
-//#define TEST_WEBSOCKET
+// #define TEST_WEBSOCKET
 #if defined(TEST_WEBSOCKET)
 #define DIS_CLIENT_MAIN_LOOP_IDLE_TIME 100                          // 100ms We no state machine action during this time (keep imgui main loop cpu friendly)
 #define DIS_CLIENT_WS_TIMEOUT (DIS_CLIENT_MAIN_LOOP_IDLE_TIME * 10) // 1000ms Timeout fo ws connect, read or write op
@@ -89,12 +89,17 @@ BOFERR EmscriptenCallback(void *_pArg)
     (pDisService)->LastCmdSentTimeoutInMs_U32 = 0; \
     (pDisService)->WaitForReplyId_U32 = 0;         \
   }
-#define BOF_LOG_TO_DBG(pFormat,...)  {std::string Dbg;Dbg=BOF::Bof_Sprintf(pFormat, __VA_ARGS__);OutputDebugString(Dbg.c_str());}
+#define BOF_LOG_TO_DBG(pFormat, ...)              \
+  {                                               \
+    std::string Dbg;                              \
+    Dbg = BOF::Bof_Sprintf(pFormat, ##__VA_ARGS__); \
+    OutputDebugString(Dbg.c_str());               \
+  }
 
 class DisTest
 {
 private:
-  std::unique_ptr< DisClientWebSocket> mpuDisClientWebSocket = nullptr;
+  std::unique_ptr<DisClientWebSocket> mpuDisClientWebSocket = nullptr;
   std::string mUniqueName_S;
   WS_CALLBBACK_PARAM mWsCbParam_X;
   DIS_DBG_SERVICE mDisDbgService_X;
@@ -107,7 +112,7 @@ public:
     mUniqueName_S = BOF::BofGuid().ToString(true);
     mWsCbParam_X.pDisService = (DisService *)this;
     mWsCbParam_X.pDisService_X = &mDisDbgService_X;
-    WebSocketParam_X.pUser=&mWsCbParam_X;
+    WebSocketParam_X.pUser = &mWsCbParam_X;
     WebSocketParam_X.NbMaxOperationPending_U32 = 4;
     WebSocketParam_X.RxBufferSize_U32 = DIS_CLIENT_RX_BUFFER_SIZE;
     WebSocketParam_X.NbMaxBufferEntry_U32 = DIS_CLIENT_NB_MAX_BUFFER_ENTRY;
@@ -118,7 +123,7 @@ public:
     WebSocketParam_X.OnMessage = BOF_BIND_4_ARG_TO_METHOD(this, DisTest::OnWebSocketMessageEvent);
     WebSocketParam_X.NbMaxClient_U32 = 0; // 0: client
     // WebSocketParam_X.ServerIp_X = BOF::BOF_SOCKET_ADDRESS(mDisClientParam_X.DisServerEndpoint_S);
-    WebSocketParam_X.WebSocketThreadParam_X.Name_S = mUniqueName_S; //mainly usefull for mpuDisClientWebSocket->Connect
+    WebSocketParam_X.WebSocketThreadParam_X.Name_S = mUniqueName_S; // mainly usefull for mpuDisClientWebSocket->Connect
     WebSocketParam_X.WebSocketThreadParam_X.ThreadSchedulerPolicy_E = BOF::BOF_THREAD_SCHEDULER_POLICY::BOF_THREAD_SCHEDULER_POLICY_OTHER;
     WebSocketParam_X.WebSocketThreadParam_X.ThreadPriority_E = BOF::BOF_THREAD_PRIORITY::BOF_THREAD_PRIORITY_000;
     mpuDisClientWebSocket = std::make_unique<DisClientWebSocket>(WebSocketParam_X);
@@ -126,7 +131,7 @@ public:
   }
   bool IsConnected()
   {
-    return  mDisDbgService_X.IsWebSocketConnected_B;
+    return mDisDbgService_X.IsWebSocketConnected_B;
   }
   BOFERR OpenWebSocket(const std::string &_rIpAddress_S)
   {
@@ -134,7 +139,7 @@ public:
     if (mpuDisClientWebSocket)
     {
       Rts_E = mpuDisClientWebSocket->ResetWebSocketOperation();
-      Rts_E = mpuDisClientWebSocket->Connect(DIS_CLIENT_WS_TIMEOUT, _rIpAddress_S, mUniqueName_S);  //mUniqueName_S must be different for each connection
+      Rts_E = mpuDisClientWebSocket->Connect(DIS_CLIENT_WS_TIMEOUT, _rIpAddress_S, mUniqueName_S); // mUniqueName_S must be different for each connection
     }
     return Rts_E;
   }
@@ -147,7 +152,6 @@ public:
     }
     return Rts_E;
   }
-
 
   BOFERR OnWebSocketOpenEvent(void *_pWsCbParam)
   {
@@ -211,6 +215,11 @@ public:
   }
 };
 #endif
+BOFERR AppBofAssertCallback(const std::string &_rFile_S, uint32_t _Line_U32, const std::string &_rMasg_S)
+{
+  printf("Assert in %s line %d Msg %s\n", _rFile_S.c_str(), _Line_U32, _rMasg_S.c_str());
+  return BOF_ERR_NO_ERROR;
+}
 
 int main(int _Argc_i, char *_pArgv[])
 {
@@ -241,7 +250,7 @@ int main(int _Argc_i, char *_pArgv[])
   */
   BOF::Bof_MsSleep(1000); // Breakpoints in WebAssembly code are resolved asynchronously See above comment
   StdParam_X.AssertInRelease_B = true;
-  StdParam_X.AssertCallback = nullptr;
+  StdParam_X.AssertCallback = AppBofAssertCallback;
 #if 0
 #if defined(__EMSCRIPTEN__)
 #if defined(IMGUI_IMPL_API)
@@ -259,7 +268,6 @@ int main(int _Argc_i, char *_pArgv[])
   {
     // BOF::Bof_GetCurrentDirectory(Cwd_S);
     printf("\nPwd %s\nRunning BofStd V %s on %s under %s\n", Cwd_S.c_str(), StdParam_X.Version_S.c_str(), StdParam_X.ComputerName_S.c_str(), StdParam_X.OsName_S.c_str());
-
 
 #if defined(TEST_WEBSOCKET)
     DisTest DisTest1, DisTest2;
@@ -290,7 +298,7 @@ int main(int _Argc_i, char *_pArgv[])
       {
         Sts_E = DisTest2.CloseWebSocket();
       }
-      BOF_LOG_TO_DBG("=%d====>CloseWebSocket Sts %s State %s\n", i_U32,BOF::Bof_ErrorCode(Sts_E), DisTest1.IsConnected() ? "Connected" : "Disconnected", DisTest2.IsConnected() ? "Connected" : "Disconnected");
+      BOF_LOG_TO_DBG("=%d====>CloseWebSocket Sts %s State %s\n", i_U32, BOF::Bof_ErrorCode(Sts_E), DisTest1.IsConnected() ? "Connected" : "Disconnected", DisTest2.IsConnected() ? "Connected" : "Disconnected");
       if ((DisTest1.IsConnected()) || (DisTest2.IsConnected()))
       {
         BOF_LOG_TO_DBG("jj");
@@ -298,25 +306,16 @@ int main(int _Argc_i, char *_pArgv[])
     }
 #endif
 
-
-
-
-
-
-
-
-
-
     DisClientParam_X.DiscoverPollTimeInMs_U32 = 2000;
     DisClientParam_X.DisServerPollTimeInMs_U32 = 1000;
     DisClientParam_X.FontSize_U32 = 24;
     DisClientParam_X.ConsoleWidth_U32 = 80;
     DisClientParam_X.ConsoleHeight_U32 = 25;
     DisClientParam_X.ImguiParam_X.WindowTitle_S = "Dis-Client";
-    DisClientParam_X.ImguiParam_X.Size_X = BOF::BOF_SIZE<uint32_t>(1600, 900);  // 800, 600);
-    //DisClientParam_X.ImguiParam_X.BackgroudHexaColor_S = "#00FF0050";
+    DisClientParam_X.ImguiParam_X.Size_X = BOF::BOF_SIZE<uint32_t>(1600, 900); // 800, 600);
+    // DisClientParam_X.ImguiParam_X.BackgroudHexaColor_S = "#00FF0050";
     DisClientParam_X.ImguiParam_X.TheLogger = DisClient::S_Log;
-    //DisClientParam_X.ImguiParam_X.ShowDemoWindow_B = true;
+    // DisClientParam_X.ImguiParam_X.ShowDemoWindow_B = true;
     DisClientParam_X.ImguiParam_X.ShowMenuBar_B = false;
     DisClientParam_X.ImguiParam_X.ShowStatusBar_B = false;
     std::unique_ptr<DisClient> puDisClient = std::make_unique<DisClient>(DisClientParam_X);

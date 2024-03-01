@@ -876,7 +876,7 @@ BOFERR DisClient::Run()
 {
   BOFERR Rts_E;
 
-  Rts_E = LaunchBofProcessingThread("DisDiscovery", false, mDisClientParam_X.DiscoverPollTimeInMs_U32, BOF::BOF_THREAD_SCHEDULER_POLICY::BOF_THREAD_SCHEDULER_POLICY_OTHER,
+  Rts_E = LaunchBofProcessingThread("DisClient", false, mDisClientParam_X.DiscoverPollTimeInMs_U32, BOF::BOF_THREAD_SCHEDULER_POLICY::BOF_THREAD_SCHEDULER_POLICY_OTHER,
                                     BOF::BOF_THREAD_PRIORITY::BOF_THREAD_PRIORITY_000, 0, 2000, 0);
   return Rts_E;
 }
